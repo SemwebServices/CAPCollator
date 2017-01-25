@@ -48,7 +48,9 @@
         <ul class="nav navbar-nav">
           <li class="${controllerName=='home' && actionName=='index' ? 'active' : ''}"><g:link controller="home" action="index">Home</g:link></li>
           <sec:ifLoggedIn>
-            <li class="${controllerName=='sourcefeed' && actionName=='index' ? 'active' : ''}"><g:link controller="sourcefeed" action="index">Feeds</g:link></li>
+            <sec:ifAnyGranted roles="ROLE_ADMIN">
+              <li class="${controllerName=='admin' && actionName=='registerConsumer' ? 'active' : ''}"><g:link controller="admin" action="registerConsumer">Register Consumer</g:link></li>
+            </sec:ifAnyGranted>
           </sec:ifLoggedIn>
         </ul>
       </div><!--/.nav-collapse -->
