@@ -5,7 +5,9 @@ import grails.plugin.springsecurity.annotation.Secured
 class HubClientController {
 
   def index() {
+
     log.debug("HubClientController::index params:${params} ct:${request.contentType}");
+
     def result = [:]
 
     switch ( request.contentType ) {
