@@ -4,6 +4,8 @@ import grails.plugin.springsecurity.annotation.Secured
 
 class HubClientController {
 
+  def capEventHandlerService
+
   def index() {
 
     log.debug("HubClientController::index params:${params} ct:${request.contentType}");
@@ -14,6 +16,26 @@ class HubClientController {
 
       case 'application/json':
         log.debug("Found JSON in request: ${request.JSON}");
+        if ( request.JSON.link ) {
+          def cap_link = null
+          if ( request.JSON.link instanceof List ) {
+            request.JSON.link.each { link_entry -> 
+              if ( ( cap_link == null ) && ( link_entry.'@rel' == 'alternate' ) ) {
+                cap_link = link_entry.'@href'
+              }
+            }
+          }
+          else {
+            if ( request.JSON.link.'@rel' == 'alternate' ) {
+              cap_link = link_entry.'@href'
+            }
+          }
+          log.debug("Got cap link ${cap_link}");
+          capEventHandlerService.process(cap_link)
+        }
+        else {
+          log.debug("Can't find link element");
+        }
         break;
 
       case 'application/xml':
