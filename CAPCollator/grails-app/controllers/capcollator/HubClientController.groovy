@@ -27,7 +27,7 @@ class HubClientController {
           }
           else {
             if ( request.JSON.link.'@rel' == 'alternate' ) {
-              cap_link = link_entry.'@href'
+              cap_link = request.JSON.link.'@href'
             }
           }
           log.debug("Got cap link ${cap_link}");
