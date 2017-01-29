@@ -30,6 +30,10 @@ class CapEventHandlerService {
         // Render the cap object as JSON
         String json_text = capcollator.Utils.XmlToJson(entry);
 
+        // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
+
+        // Look at the various info.area elements - if the "polygon" element is null see if we can find an info.area.geocode we understand well enough to expand
+
         log.debug("Cap AS JSON : ${json_text}");
       }
       else {
