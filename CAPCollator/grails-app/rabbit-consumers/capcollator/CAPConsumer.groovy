@@ -4,7 +4,13 @@ import com.budjb.rabbitmq.consumer.MessageContext
 
 class CAPConsumer {
 
-    def handleMessage(def body, MessageContext context) {
-        log.debug("CAPConsumer::handleMessage(${body},${context}");
-    }
+  def capEventHandlerService
+
+  static rabbitConfig = [
+    "queue": "CAPCollatorQueue"
+  ]
+
+  def handleMessage(def body, MessageContext context) {
+    capEventHandlerService.handleNotification(body,context);
+  }
 }

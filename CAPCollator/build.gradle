@@ -54,6 +54,9 @@ dependencies {
     runtime 'org.postgresql:postgresql:9.4.1212'
     compile 'org.grails.plugins:rabbitmq-native:3.3.2'
 
+    compile group: 'xom', name: 'xom', version: '1.2.5'
+    compile 'net.sf.json-lib:json-lib:2.4:jdk15'
+
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails.plugins:geb"
     testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"

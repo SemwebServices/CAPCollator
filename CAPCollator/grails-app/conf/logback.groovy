@@ -29,7 +29,7 @@ logger ('grails.app.controllers', DEBUG)
 logger ('grails.app.domains', DEBUG)
 logger ('grails.app.jobs', DEBUG)
 logger ('grails.app.services', DEBUG)
-logger ('com.k_int', DEBUG)
+logger ('capcollator', DEBUG)
 logger ('grails.gorm.multitenancy.Tenants', DEBUG)
 
 def targetDir = BuildSettings.TARGET_DIR
