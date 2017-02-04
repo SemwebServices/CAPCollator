@@ -26,3 +26,9 @@ service internally to poll RSS and turn feeds into event streams.
     CREATE DATABASE capcollatorprod;
     GRANT ALL PRIVILEGES ON DATABASE capcollatorprod to capcollator;
 
+
+
+### Gaz data
+
+See http://eric.clst.org/Stuff/USGeoJSON
+http://www.nws.noaa.gov/geodata/catalog/wsom/html/pubzone.htm
