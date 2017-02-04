@@ -18,12 +18,23 @@ class AtomEventHandlerService {
     log.debug("${context.properties.headers}");
 
     try {
-      body?.link.each { link ->
+      def list_of_links = null
+      // Json will be different if we have just 1 body.link - so wrap if needed
+      if ( body.link instanceof List ) {
+        list_of_links = body.link
+      }
+      else {
+        list_of_links = [ body.link ]
+      }
+      
+
+      list_of_links.each { link ->
         log.debug("Looking in link attribute for cap ${link}");
 
         // Different feeds behave differently wrt properly setting the type attribute. 
         // Until we get to grips a little better - try and parse every link - and if we manage to parse XML, see if the root node is a cap element
-        if ( ( 'application/cap+xml'.equals(link['@type']) ) ||
+        if ( ( ( link.get('@type') != null ) && 
+               ( 'application/cap+xml'.equals(link.get('@type')) ) ) ||
              ( true ) ) {
 
           try {
@@ -71,7 +82,7 @@ class AtomEventHandlerService {
       }
     }
     catch ( Exception e ) {
-      log.error("problem handling cap alert ${body} ${context} ${e.message}");
+      log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
     }
   }
 
