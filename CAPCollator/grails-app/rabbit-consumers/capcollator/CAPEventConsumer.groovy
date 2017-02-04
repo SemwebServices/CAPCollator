@@ -2,15 +2,16 @@ package capcollator
 
 import com.budjb.rabbitmq.consumer.MessageContext
 
-class CAPConsumer {
+class CAPEventConsumer {
 
   def capEventHandlerService
 
   static rabbitConfig = [
-    "queue": "CAPCollatorQueue"
+    "exchange": "CAPExchange",
+    "binding": "CAPAlert.#"
   ]
 
   def handleMessage(def body, MessageContext context) {
-    capEventHandlerService.handleNotification(body,context);
+    capEventHandlerService.process(body);
   }
 }
