@@ -14,6 +14,7 @@ class BootStrap {
 
   def init = { servletContext ->
     setUpUserAccounts()
+    syncSubscriptionList()
   }
 
   def setUpUserAccounts() {
@@ -53,6 +54,39 @@ class BootStrap {
           log.debug("  -> ${role} already present");
         }
       }
+    }
+  }
+
+
+  def syncSubscriptionList() {
+    try {
+      def live_json_data = new groovy.json.JsonSlurper().parse(new java.net.URL('https://s3-eu-west-1.amazonaws.com/alert-hub-subscriptions/json'))
+      ingestSubscriptions(live_json_data.subscriptions)
+    }
+    catch ( Exception e ) {
+      log.error("problem syncing cap feed list",e);
+    }
+  }
+
+  def ingestSubscriptions(list_of_subscriptions) {
+    list_of_subscriptions.each { subscription_definition ->
+      // "subscription" : {
+      //   "subscriptionId" : "country-ae-city-swic1190-lang-en",
+      //   "subscriptionName" : "Official Public alerts for Dubai in country-ae, in English",
+      //   "subscriptionUrl" : "https://alert-feeds.s3.amazonaws.com/country-ae-city-swic1190-lang-en/rss.xml",
+      //   "languageOnly" : "en",
+      //   "highPriorityOnly" : false,
+      //   "officialOnly" : true,
+      //   "xPathFilterId" : "actual-public",
+      //   "xPathFilter" : "//cap:status='Actual' and //cap:scope='Public'",
+      //   "areaFilterId" : "country-ae-city-swic1190",
+      //   "areaFilter" : {
+      //     "polygonCoordinates" : [[54.8833,24.7833],[55.55,24.7833],[55.55,25.35],[54.8833,25.35],[54.8833,24.7833]],
+      //     "circleCenterRadius" : "none"
+      //   },
+      //   "feedRssXml" : ""...
+      //   "feedItemsLimit": 200
+      log.debug("Add or update subscription ${subscription_definition.subscription.subscriptionId}");
     }
   }
 
