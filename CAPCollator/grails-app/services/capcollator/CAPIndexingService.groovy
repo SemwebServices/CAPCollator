@@ -13,13 +13,27 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress
 
 import static groovy.json.JsonOutput.*
 
+import org.grails.datastore.mapping.engine.event.*
+import grails.events.*
+import javax.annotation.*
+
 @Transactional
 class CAPIndexingService {
 
   def ESWrapperService
 
+  @PostConstruct
+  def init() {
+    on("gorm:saveOrUpdateEvent") { saveOrUpdateEvent ->
+      log.debug("got saveOrUpdateEvent ${saveOrUpdateEvent}");
+      if ( saveOrUpdateEvent.getEntity().getName() == 'capcollator.Subscription' ) {
+        log.debug("Subscription saved or updated");
+      }
+    }
+  }
+
   def reindexSubscriptions() {
-    Subscription.findAll() { sub ->
+    Subscription.findAll().each { sub ->
 
       def es_record = [
                     recid:sub.subscriptionId,
@@ -43,4 +57,6 @@ class CAPIndexingService {
       ESWrapperService.index('alertssubscriptions','alertssubscription',es_record);
     }
   }
+
+
 }

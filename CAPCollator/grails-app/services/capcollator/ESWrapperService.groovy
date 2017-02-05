@@ -34,7 +34,7 @@ class ESWrapperService {
       result=future.get()
     }
     catch ( Exception e ) {
-      log.error("Error processing ${toJson(es_record)}",e);
+      log.error("Error processing ${toJson(record)}",e);
     }
     result
   }
