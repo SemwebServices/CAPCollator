@@ -70,7 +70,6 @@ class BootStrap {
 
   def ingestSubscriptions(list_of_subscriptions) {
     list_of_subscriptions.each { subscription_definition ->
-      // "subscription" : {
       //   "subscriptionId" : "country-ae-city-swic1190-lang-en",
       //   "subscriptionName" : "Official Public alerts for Dubai in country-ae, in English",
       //   "subscriptionUrl" : "https://alert-feeds.s3.amazonaws.com/country-ae-city-swic1190-lang-en/rss.xml",
@@ -87,6 +86,37 @@ class BootStrap {
       //   "feedRssXml" : ""...
       //   "feedItemsLimit": 200
       log.debug("Add or update subscription ${subscription_definition.subscription.subscriptionId}");
+
+      if ( subscription_definition.subscription?.subscriptionId && 
+           ( subscription_definition.subscription?.subscriptionId.trim().length() > 0 ) ) {
+
+        def sub = Subscription.findBySubscriptionId(subscription_definition.subscription.subscriptionId)
+        def filter_type=null
+        def filter_geometry=subscription_definition.subscription.areaFilter.polygonCoordinates
+
+        if ( ( subscription_definition.subscription.areaFilter.circleCenterRadius=="none") ||
+             ( subscription_definition.subscription.areaFilter.circleCenterRadius=="") ||
+             ( subscription_definition.subscription.areaFilter.circleCenterRadius==null) ) {
+          filter_type='polygon'
+        }
+        else {
+          filter_type='circle'
+        }
+
+        if ( sub ) {
+          log.debug("located existing subscrition for ${subscription_definition.subscription.subscriptionId}");
+        }
+        else {
+          def polygon = null;
+          sub=new Subscription(
+                       subscriptionId:subscription_definition.subscription?.subscriptionId,
+                       subscriptionName: subscription_definition.subscription?.subscriptionName,
+                       subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
+                       filterType:filter_type,
+                       filterGeometry:filter_geometry).save(flush:true, failOnError:true);
+        }
+      }
+
     }
   }
 

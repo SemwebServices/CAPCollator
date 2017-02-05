@@ -159,4 +159,9 @@ rabbitmq:
         host: localhost
         username: guest
         password: guest
-
+---
+elasticSearch:
+    client:
+        mode: 'transport'
+        hosts:
+        - {host: 'localhost', port: 9300}

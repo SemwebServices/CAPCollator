@@ -20,6 +20,9 @@ apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.grails-gsp"
 apply plugin:"asset-pipeline"
 
+def elasticsearchVersion = '2.1.1'
+ext['elasticsearch.version'] = elasticsearchVersion
+
 repositories {
     mavenLocal()
     maven { url "https://repo.grails.org/grails/core" }
@@ -53,6 +56,15 @@ dependencies {
     runtime "com.h2database:h2"
     runtime 'org.postgresql:postgresql:9.4.1212'
     compile 'org.grails.plugins:rabbitmq-native:3.3.2'
+    // compile 'org.grails.plugins:elasticsearch:1.2.0'
+    compile 'org.elasticsearch:elasticsearch:5.1.1'
+    compile 'org.elasticsearch.client:transport:5.1.1'
+
+    // log4j deps for es5 above
+    compile 'org.apache.logging.log4j:log4j-api:2.7'
+    compile 'org.apache.logging.log4j:log4j-core:2.7'
+
+
 
     compile group: 'xom', name: 'xom', version: '1.2.5'
     compile 'net.sf.json-lib:json-lib:2.4:jdk15'
