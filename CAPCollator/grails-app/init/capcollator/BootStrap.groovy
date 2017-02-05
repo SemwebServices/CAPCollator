@@ -85,7 +85,7 @@ class BootStrap {
       //   },
       //   "feedRssXml" : ""...
       //   "feedItemsLimit": 200
-      log.debug("Add or update subscription ${subscription_definition.subscription.subscriptionId}");
+      log.debug("Add or update subscription ${subscription_definition}");
 
       if ( subscription_definition.subscription?.subscriptionId && 
            ( subscription_definition.subscription?.subscriptionId.trim().length() > 0 ) ) {
@@ -107,13 +107,13 @@ class BootStrap {
           log.debug("located existing subscrition for ${subscription_definition.subscription.subscriptionId}");
         }
         else {
-          def polygon = null;
-          sub=new Subscription(
-                       subscriptionId:subscription_definition.subscription?.subscriptionId,
-                       subscriptionName: subscription_definition.subscription?.subscriptionName,
-                       subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
-                       filterType:filter_type,
-                       filterGeometry:filter_geometry).save(flush:true, failOnError:true);
+          log.debug("New sub ${filter_type} ${filter_geometry}");
+          // sub=new Subscription(
+          //             subscriptionId:subscription_definition.subscription?.subscriptionId,
+          //             subscriptionName: subscription_definition.subscription?.subscriptionName,
+          //             subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
+          //             filterType:filter_type,
+          //             filterGeometry:filter_geometry).save(flush:true, failOnError:true);
         }
       }
 
