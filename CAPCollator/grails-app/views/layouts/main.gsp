@@ -50,6 +50,7 @@
           <sec:ifLoggedIn>
             <sec:ifAnyGranted roles="ROLE_ADMIN">
               <li class="${controllerName=='admin' && actionName=='registerConsumer' ? 'active' : ''}"><g:link controller="admin" action="registerConsumer">Register Consumer</g:link></li>
+              <li class="${controllerName=='admin' && actionName=='reindex' ? 'active' : ''}"><g:link controller="admin" action="reindex">Reindex</g:link></li>
             </sec:ifAnyGranted>
           </sec:ifLoggedIn>
         </ul>
