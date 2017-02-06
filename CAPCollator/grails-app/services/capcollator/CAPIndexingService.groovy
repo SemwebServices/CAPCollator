@@ -17,6 +17,9 @@ import org.grails.datastore.mapping.engine.event.*
 import grails.events.*
 import javax.annotation.*
 
+
+import org.grails.datastore.mapping.engine.event.SaveOrUpdateEvent
+
 @Transactional
 class CAPIndexingService {
 
@@ -27,11 +30,8 @@ class CAPIndexingService {
 
     log.debug("Register gorm:saveOrUpdateEvent");
 
-    on("gorm:saveOrUpdateEvent") { saveOrUpdateEvent ->
-      log.debug("got saveOrUpdateEvent ${saveOrUpdateEvent}");
-      if ( saveOrUpdateEvent.getEntity().getName() == 'capcollator.Subscription' ) {
-        log.debug("Subscription saved or updated");
-      }
+    on("gorm:saveOrUpdate") { SaveOrUpdateEvent event ->
+      log.debug("GOT EVENT 4 $event")
     }
   }
 

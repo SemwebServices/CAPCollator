@@ -15,6 +15,8 @@ class Subscription {
   String filterType
   String filterGeometry
 
+  String notes
+
   static transients = []
 
   static constraints = {
@@ -23,6 +25,7 @@ class Subscription {
      subscriptionUrl blank: true, nullable: false
           filterType blank:true, nullable:true
       filterGeometry blank:true, nullable:true
+               notes blank:true, nullable:true
   }
 
   static mapping = {
