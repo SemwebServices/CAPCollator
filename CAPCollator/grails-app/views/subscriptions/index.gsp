@@ -17,6 +17,7 @@
         <th>URL</th>
         <th>Type</th>
         <th>Geom</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -28,6 +29,9 @@
           <td>${sub.subscriptionUrl}</td>
           <td>${sub.filterType}</td>
           <td>${sub.filterGeometry}</td>
+          <td>
+            <g:link controller="subscriptions" action="touch" class="btn btn-primary" role="button" id="${sub.id}">Touch</g:link>
+          </td>
         </tr>
       </g:each>
     </tbody>

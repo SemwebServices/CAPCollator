@@ -2,7 +2,7 @@ package capcollator
 
 import grails.plugin.springsecurity.annotation.Secured
 
-class SubscriptionController {
+class SubscriptionsController {
 
   def CAPIndexingService
 
@@ -13,5 +13,11 @@ class SubscriptionController {
     result
   }
 
+  @Secured(['ROLE_ADMIN', 'IS_AUTHENTICATED_FULLY'])
+  def touch() {
+    def sub=Subscription.get(params.id)
+    sub.save(flush:true, failOnError:true);
+    redirect(action:'index');
+  }
 
 }
