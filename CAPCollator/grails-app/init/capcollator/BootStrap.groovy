@@ -2,6 +2,8 @@ package capcollator
 
 class BootStrap {
 
+  def CAPIndexingService
+
   def sysusers = [
     [
      name:'admin',
@@ -14,7 +16,9 @@ class BootStrap {
 
   def init = { servletContext ->
     setUpUserAccounts()
-    syncSubscriptionList()
+    // syncSubscriptionList()
+
+    CAPIndexingService.freshen()
   }
 
   def setUpUserAccounts() {
@@ -92,7 +96,7 @@ class BootStrap {
 
         def sub = Subscription.findBySubscriptionId(subscription_definition.subscription.subscriptionId)
         def filter_type=null
-        def filter_geometry=subscription_definition.subscription.areaFilter.polygonCoordinates
+        def filter_geometry="${subscription_definition.subscription.areaFilter.polygonCoordinates}"
 
         if ( ( subscription_definition.subscription.areaFilter.circleCenterRadius=="none") ||
              ( subscription_definition.subscription.areaFilter.circleCenterRadius=="") ||
@@ -108,12 +112,12 @@ class BootStrap {
         }
         else {
           log.debug("New sub ${filter_type} ${filter_geometry}");
-          // sub=new Subscription(
-          //             subscriptionId:subscription_definition.subscription?.subscriptionId,
-          //             subscriptionName: subscription_definition.subscription?.subscriptionName,
-          //             subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
-          //             filterType:filter_type,
-          //             filterGeometry:filter_geometry).save(flush:true, failOnError:true);
+          sub=new Subscription(
+                      subscriptionId:subscription_definition.subscription?.subscriptionId,
+                      subscriptionName: subscription_definition.subscription?.subscriptionName,
+                      subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
+                      filterType:filter_type,
+                      filterGeometry:filter_geometry).save(flush:true, failOnError:true);
         }
       }
 

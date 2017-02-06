@@ -52,6 +52,7 @@
               <li class="${controllerName=='admin' && actionName=='registerConsumer' ? 'active' : ''}"><g:link controller="admin" action="registerConsumer">Register Consumer</g:link></li>
               <li class="${controllerName=='admin' && actionName=='reindex' ? 'active' : ''}"><g:link controller="admin" action="reindex">Reindex</g:link></li>
             </sec:ifAnyGranted>
+            <li class="${controllerName=='subscriptions' && actionName=='index' ? 'active' : ''}"><g:link controller="subscriptions" action="index">Subscriptions</g:link></li>
           </sec:ifLoggedIn>
         </ul>
       </div><!--/.nav-collapse -->

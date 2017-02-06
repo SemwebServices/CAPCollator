@@ -22,14 +22,21 @@ class CAPIndexingService {
 
   def ESWrapperService
 
-  @PostConstruct
+  @javax.annotation.PostConstruct
   def init() {
+
+    log.debug("Register gorm:saveOrUpdateEvent");
+
     on("gorm:saveOrUpdateEvent") { saveOrUpdateEvent ->
       log.debug("got saveOrUpdateEvent ${saveOrUpdateEvent}");
       if ( saveOrUpdateEvent.getEntity().getName() == 'capcollator.Subscription' ) {
         log.debug("Subscription saved or updated");
       }
     }
+  }
+
+  def freshen() {
+    log.debug("freshen...");
   }
 
   def reindexSubscriptions() {
