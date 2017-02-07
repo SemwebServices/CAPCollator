@@ -49,8 +49,14 @@
           <li class="${controllerName=='home' && actionName=='index' ? 'active' : ''}"><g:link controller="home" action="index">Home</g:link></li>
           <sec:ifLoggedIn>
             <sec:ifAnyGranted roles="ROLE_ADMIN">
-              <li class="${controllerName=='admin' && actionName=='registerConsumer' ? 'active' : ''}"><g:link controller="admin" action="registerConsumer">Register Consumer</g:link></li>
-              <li class="${controllerName=='admin' && actionName=='reindex' ? 'active' : ''}"><g:link controller="admin" action="reindex">Reindex</g:link></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li class="${controllerName=='admin' && actionName=='registerConsumer' ? 'active' : ''}"><g:link controller="admin" action="registerConsumer">Register Consumer</g:link></li>
+                  <li class="${controllerName=='admin' && actionName=='reindex' ? 'active' : ''}"><g:link controller="admin" action="reindex">Reindex</g:link></li>
+                  <li class="${controllerName=='admin' && actionName=='syncSubList' ? 'active' : ''}"><g:link controller="admin" action="syncSubList">Load Subscription List</g:link></li>
+                </ul>
+              </li>
             </sec:ifAnyGranted>
             <li class="${controllerName=='subscriptions' && actionName=='index' ? 'active' : ''}"><g:link controller="subscriptions" action="index">Subscriptions</g:link></li>
           </sec:ifLoggedIn>
