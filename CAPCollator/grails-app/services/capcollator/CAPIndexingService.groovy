@@ -31,9 +31,9 @@ class CAPIndexingService {
     log.debug("Register gorm:saveOrUpdateEvent");
 
     on("gorm:saveOrUpdate") { SaveOrUpdateEvent event ->
-      log.debug("GOT EVENT 4 $event")
-      if ( event.entity instanceof Subscription ) {
-        indexSub(event.entity)
+      log.debug("GOT EVENT 4 $event ${event.entity} ${event.entityObject}")
+      if ( event.entityObject instanceof Subscription ) {
+        indexSub(event.entityObject)
       }
     }
   }
@@ -68,7 +68,7 @@ class CAPIndexingService {
     es_record.subshape.type=sub.filterType
 
     // geometry is a string containing a geo json structure
-    es_record.subshape.coordinates=new groovy.json.JsonSlurper().parse(sub.filterGeometry)
+    es_record.subshape.coordinates=new groovy.json.JsonSlurper().parseText(sub.filterGeometry)
 
     log.debug("Send es record ${es_record.subshape.coordinates}");
     ESWrapperService.index('alertssubscriptions','alertssubscription',es_record);
