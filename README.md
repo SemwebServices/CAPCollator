@@ -38,3 +38,8 @@ http://www.nws.noaa.gov/geodata/catalog/wsom/html/pubzone.htm
 # Installation
 
 In order to work fully, the ES mappings need to be installed. run the es5_config.sh script from the scripts directory BEFORE running
+
+
+## ES Queries
+
+http://localhost:9200/alertssubscriptions/alertsubscription/_search?q=*

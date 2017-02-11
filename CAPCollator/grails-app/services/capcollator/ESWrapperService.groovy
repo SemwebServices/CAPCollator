@@ -27,10 +27,13 @@ class ESWrapperService {
     esclient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
   }
 
-  def index(index,typename,record) {
+  def index(index,typename,id,record) {
     def result=null;
     try {
-      def future = esclient.prepareIndex(index,typename).setSource(record)
+      // Convert the record to JSON
+      // def json_string = toJson( record )
+      // log.debug("Sending to ${index} ${typename} \n${json_string}\n");
+      def future = esclient.prepareIndex(index,typename,id).setSource(record)
       result=future.get()
     }
     catch ( Exception e ) {
@@ -38,5 +41,21 @@ class ESWrapperService {
     }
     result
   }
+
+  def update(index,typename,id,record) {
+    def result=null;
+    try {
+      // Convert the record to JSON
+      // def json_string = toJson( record )
+      // log.debug("Sending to ${index} ${typename} \n${json_string}\n");
+      def future = esclient.prepareUpdate(index,typename,id).setUpsert(record)
+      result=future.get()
+    }
+    catch ( Exception e ) {
+      log.error("Error processing ${toJson(record)}",e);
+    }
+    result
+  }
+
 
 }

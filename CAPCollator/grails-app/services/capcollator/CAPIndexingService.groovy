@@ -71,7 +71,8 @@ class CAPIndexingService {
     es_record.subshape.coordinates=new groovy.json.JsonSlurper().parseText(sub.filterGeometry)
 
     log.debug("Send es record ${es_record.subshape.coordinates}");
-    ESWrapperService.index('alertssubscriptions','alertssubscription',es_record);
+
+    ESWrapperService.index('alertssubscriptions','alertsubscription',"${sub.id}-sub".toString(),es_record);
   }
 
 

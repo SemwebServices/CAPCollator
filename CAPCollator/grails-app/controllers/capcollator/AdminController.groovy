@@ -50,15 +50,19 @@ class AdminController {
     
             def sub = Subscription.findBySubscriptionId(subscription_definition.subscription.subscriptionId)
             def filter_type=null
-            def filter_geometry="${subscription_definition.subscription.areaFilter.polygonCoordinates}"
+            def filter_geometry=null
     
             if ( ( subscription_definition.subscription.areaFilter.circleCenterRadius=="none") ||
                  ( subscription_definition.subscription.areaFilter.circleCenterRadius=="") ||
                  ( subscription_definition.subscription.areaFilter.circleCenterRadius==null) ) {
               filter_type='polygon'
+              // geo_json polygons actually have an outer array that is not present in the json file of subscriptions.
+              // In order to have the DB contain real geo-json we add the outer array element here.
+              filter_geometry = "[${subscription_definition.subscription.areaFilter.polygonCoordinates}]"
             }
             else {
               filter_type='circle'
+              filter_geometry = "${subscription_definition.subscription.areaFilter.polygonCoordinates}"
             }
     
             if ( sub ) {
