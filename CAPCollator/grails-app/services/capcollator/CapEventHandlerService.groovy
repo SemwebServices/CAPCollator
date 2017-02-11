@@ -7,6 +7,7 @@ import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 class CapEventHandlerService {
 
   RabbitMessagePublisher rabbitMessagePublisher
+  def ESWrapperService
 
   def process(cap) {
     log.debug("CapEventHandlerService::process ${cap}");
@@ -21,12 +22,14 @@ class CapEventHandlerService {
           list_of_area_elements.each { area ->
             if ( area.polygon ) {
               // We got a polygon
-              matchSubscriptions(cap,area.polygon)
+              def matching_subscriptions = matchSubscriptions(cap,area.polygon)
             }
           }
         }
       }
     }
+
+    // Index the CAP event
   }
 
   def matchSubscriptions(cap,polygon) {
@@ -42,32 +45,32 @@ class CapEventHandlerService {
 
     log.debug("find subs for polygon ring ${polygon_ring}");
 
-    // Find out any matching subscriptions
-    //    var postData = JSON.stringify({
-    //                     "from":0,
-    //                     "size":1000,
-    //                     "query":{
-    //                       "bool": {
-    //                         "must": {
-    //                           "match_all": {}
-    //                         },
-    //                         "filter": {
-    //                             "geo_shape": {
-    //                               "subshape": {
-    //                                 "shape": shape,
-    //                                 "relation":'intersects'
-    //                               }
-    //                             }
-    //                           }
-    //                         }
-    //                       },
-    //                       "sort":{
-    //                         "recid":{order:'asc'}
-    //                       }
-    //
-    //    });
+    String query = '''{
+       "from":0,
+       "size":1000,
+       "query":{
+         "bool": {
+           "must": {
+             "match_all": {}
+           },
+           "filter": {
+               "geo_shape": {
+                 "subshape": {
+                   "shape": '''+polygon_ring+''',
+                   "relation":'intersects'
+                 }
+               }
+             }
+           }
+         },
+         "sort":{
+           "recid":{order:'asc'}
+         }
+}'''
 
+    log.debug("Query will be \n${query}");
 
-    // Index the CAP event
+    String[] indexes_to_search = [ 'alertssubscriptions' ]
+    ESWrapperService.search(indexes_to_search,query);
   }
 }

@@ -57,5 +57,16 @@ class ESWrapperService {
     result
   }
 
-
+  def search(String[] indexes, String query_json) {
+    def result=null;
+    try {
+      org.elasticsearch.action.search.SearchRequest sr = new org.elasticsearch.action.search.SearchRequest(indexes, query_json.getBytes())
+      def future = esclient.search(sr)
+      result = future.get()
+    }
+    catch ( Exception e ) {
+      log.error("Error processing ${indexes} ${query_json}",e);
+    }
+    result
+  }
 }
