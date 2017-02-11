@@ -13,6 +13,10 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress
 
 import static groovy.json.JsonOutput.*
 
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.index.query.QueryBuilders
+
 @Transactional
 class ESWrapperService {
 
@@ -60,9 +64,9 @@ class ESWrapperService {
   def search(String[] indexes, String query_json) {
     def result=null;
     try {
-      org.elasticsearch.action.search.SearchRequest sr = new org.elasticsearch.action.search.SearchRequest(indexes, query_json.getBytes())
-      def future = esclient.search(sr)
-      result = future.get()
+      org.elasticsearch.action.search.SearchRequestBuilder srb = esclient.prepareSearch(indexes)
+      srb.setQuery(QueryBuilders.wrapperQuery(query_json))
+      result = srb.get()
     }
     catch ( Exception e ) {
       log.error("Error processing ${indexes} ${query_json}",e);

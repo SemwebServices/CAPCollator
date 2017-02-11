@@ -46,9 +46,6 @@ class CapEventHandlerService {
     log.debug("find subs for polygon ring ${polygon_ring}");
 
     String query = '''{
-       "from":0,
-       "size":1000,
-       "query":{
          "bool": {
            "must": {
              "match_all": {}
@@ -62,13 +59,7 @@ class CapEventHandlerService {
                }
              }
            }
-         },
-         "sort":{
-           "recid":{order:'asc'}
-         }
-}'''
-
-    log.debug("Query will be \n${query}");
+         }'''
 
     String[] indexes_to_search = [ 'alertssubscriptions' ]
     ESWrapperService.search(indexes_to_search,query);
