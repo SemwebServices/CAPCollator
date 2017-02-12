@@ -16,6 +16,9 @@ class CapEventHandlerService {
     if ( cap?.info ) {
       def list_of_info_elements = cap.info instanceof List ? cap.info : [ cap.info ]
 
+      // Create a set - this will prevent duplicate subscriptions if multiple info elements match
+      def matching_subscriptions = new java.util.HashSet()
+
       list_of_info_elements.each { ie ->
         log.debug("  -> Check info element");
         def polygons_found=0
@@ -25,18 +28,23 @@ class CapEventHandlerService {
             if ( area.polygon ) {
               polygons_found++
               // We got a polygon
-              def matching_subscriptions = matchSubscriptions(cap,area.polygon)
+              matching_subscriptions.addAll(matchSubscriptions(cap,area.polygon))
             }
           }
         }
-        log.debug("  -> Found ${polygons_found} polygons in this info section");
       }
+
+      log.debug("The following subscriptions matched : ${matching_subscriptions}");
+
+      // Index the CAP event
     }
 
-    // Index the CAP event
   }
 
   def matchSubscriptions(cap,polygon) {
+
+    def result=[]
+
     log.debug("matchSubscriptions(cap...,${polygon} ${polygon?.class?.name})");
 
     // Some feeds wrap the outer polygon in an array, if so, extract it.
@@ -80,10 +88,10 @@ class CapEventHandlerService {
 
     if ( matching_subs ) {
       matching_subs.getHits().getHits().each { matching_sub ->
-        log.debug("Matched sub: ${matching_sub}");
-        log.debug("${matching_sub.sourceAsMap().recid}");
-        log.debug("${matching_sub.sourceAsMap().shortcode}");
+        result.add(matching_sub.sourceAsMap().shortcode)
       }
     }
+
+    result
   }
 }
