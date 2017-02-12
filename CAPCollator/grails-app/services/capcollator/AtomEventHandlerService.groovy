@@ -40,36 +40,45 @@ class AtomEventHandlerService {
           try {
             def cap_link = link.'@href'
 
-            log.debug("Attempt Fetch and parse ${cap_link}");
+            log.debug("test ${cap_link}");
+            java.net.URL cap_link_url = new java.net.URL(cap_link)
+            java.net.URLConnection conn = cap_link_url.openConnection()
+            
+            log.debug("URL Connection reports content type ${conn.getContentType()}");
 
-            def parser = new XmlSlurper()
-            parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
-            parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            def parsed_cap = parser.parse(cap_link)
-
-            //                      .declareNamespace(
-            //                                        xmlschema:"http://www.w3.org/2001/XMLSchema",
-            //                                        cap11:"urn:oasis:names:tc:emergency:cap:1.1",
-            //                                        cap12:"urn:oasis:names:tc:emergency:cap:1.2")
-        
-            if ( parsed_cap.identifier ) {
-              log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
-
-              def entry = domNodeToString(parsed_cap)
-
-              // Render the cap object as JSON
-              String json_text = capcollator.Utils.XmlToJson(entry);
-
-              // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
+            if ( conn.getContentType().toLowerCase().startsWith('text/xml') ||
+                 conn.getContentType().toLowerCase().startsWith('application/xml') ) {
+              def parser = new XmlSlurper()
+              parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
+              parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+              // def parsed_cap = parser.parse(cap_link)
+              def parsed_cap = parser.parse(conn.getInputStream())
   
-              // Look at the various info.area elements - if the "polygon" element is null see if we can find an info.area.geocode we understand well enough to expand
-
-              broadcastCapEvent(json_text, context.properties.headers)
+              //                      .declareNamespace(
+              //                                        xmlschema:"http://www.w3.org/2001/XMLSchema",
+              //                                        cap11:"urn:oasis:names:tc:emergency:cap:1.1",
+              //                                        cap12:"urn:oasis:names:tc:emergency:cap:1.2")
+          
+              if ( parsed_cap.identifier ) {
+                log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
   
-              log.debug("Cap AS JSON : ${json_text}");
+                def entry = domNodeToString(parsed_cap)
+  
+                // Render the cap object as JSON
+                String json_text = capcollator.Utils.XmlToJson(entry);
+  
+                // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
+    
+                // Look at the various info.area elements - if the "polygon" element is null see if we can find an info.area.geocode we understand well enough to expand
+  
+                broadcastCapEvent(json_text, context.properties.headers)
+              }
+              else {
+                log.warn("No valid CAP from ${cap_link} -- consider improving rules for handling this");
+              }
             }
             else {
-              log.warn("No valid CAP from ${cap_link} -- consider improving rules for handling this");
+              log.warn("${cap_link} seems not to be XML and therefore cannot be a CAP message - skipping");
             }
           }
           catch ( Exception e ) {

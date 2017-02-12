@@ -39,9 +39,12 @@ class CapEventHandlerService {
   def matchSubscriptions(cap,polygon) {
     log.debug("matchSubscriptions(cap...,${polygon} ${polygon?.class?.name})");
 
+    // Some feeds wrap the outer polygon in an array, if so, extract it.
+    def polygon_ring_string = polygon instanceof List ? polygon[0] : polygon
+
     // Polygon as given is a ring list of space separated pairs - "x1,y1 x2,y2 x3,y3 x4,y4 x1,y1"
     def polygon_ring = []
-    def list_of_pairs = polygon.split(' ')
+    def list_of_pairs = polygon_ring_string.split(' ')
     list_of_pairs.each { coordinate_pair ->
       // geohash wants lon,lat the other way to our geojson, so flip them
       def split_pair = coordinate_pair.split(',')
@@ -78,6 +81,8 @@ class CapEventHandlerService {
     if ( matching_subs ) {
       matching_subs.getHits().getHits().each { matching_sub ->
         log.debug("Matched sub: ${matching_sub}");
+        log.debug("${matching_sub.sourceAsMap().recid}");
+        log.debug("${matching_sub.sourceAsMap().shortcode}");
       }
     }
   }
