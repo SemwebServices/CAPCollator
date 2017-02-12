@@ -17,6 +17,8 @@ class AtomEventHandlerService {
     log.debug("AtomEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
 
+    def ts_1 = System.currentTimeMillis();
+
     try {
       def list_of_links = null
       // Json will be different if we have just 1 body.link - so wrap if needed
@@ -38,6 +40,7 @@ class AtomEventHandlerService {
              ( true ) ) {
 
           try {
+            def ts_2 = System.currentTimeMillis();
             def cap_link = link.'@href'
 
             log.debug("test ${cap_link}");
@@ -61,12 +64,24 @@ class AtomEventHandlerService {
               //                                        cap12:"urn:oasis:names:tc:emergency:cap:1.2")
           
               if ( parsed_cap.identifier ) {
+                def ts_3 = System.currentTimeMillis();
                 log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
   
                 def entry = domNodeToString(parsed_cap)
   
-                // Render the cap object as JSON
-                String json_text = capcollator.Utils.XmlToJson(entry);
+                // Render the cap object as JSON - We wrap the converted message in an object so we can add some metadata about
+                // processing time - for stats / tracking the delay through the system
+                String json_text = '''{ "AlertMetadata":{
+"CCHistory":[
+ { "event":"CAPCollator notified", "timestamp":'''+ts_1+''' },
+ { "event":"CAPCollator fetch alert", "timestamp":'''+ts_2+''' },
+ { "event":"CAPCollator publish CAP event", "timestamp":'''+ts_3+''' }
+],
+"SourceUrl":"'''+cap_link+'''",
+"effective":"'''+parsed_cap.info?.effective+'''",
+"expires":"'''+parsed_cap.info?.expires+'''"
+}, 
+"AlertBody":'''+capcollator.Utils.XmlToJson(entry)+'}'
   
                 // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
     

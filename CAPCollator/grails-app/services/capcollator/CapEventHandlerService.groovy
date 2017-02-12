@@ -10,11 +10,13 @@ class CapEventHandlerService {
   def ESWrapperService
 
   def process(cap_notification) {
-    log.debug("CapEventHandlerService::process ${cap_notification}");
+    // log.debug("CapEventHandlerService::process ${cap_notification}");
+
+    def cap_body = cap_notification.AlertBody
 
     // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
-    if ( cap_notification?.info ) {
-      def list_of_info_elements = cap_notification.info instanceof List ? cap_notification.info : [ cap_notification.info ]
+    if ( cap_body?.info ) {
+      def list_of_info_elements = cap_body.info instanceof List ? cap_body.info : [ cap_body.info ]
 
       // Create a set - this will prevent duplicate subscriptions if multiple info elements match
       def matching_subscriptions = new java.util.HashSet()
@@ -28,7 +30,12 @@ class CapEventHandlerService {
             if ( area.polygon ) {
               polygons_found++
               // We got a polygon
-              matching_subscriptions.addAll(matchSubscriptions(area.polygon))
+              def inner_polygon_ring = geoJsonToPolygon(area.polygon)
+              matching_subscriptions.addAll(matchSubscriptions(inner_polygon_ring))
+
+              // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
+              // database of alerts geo searchable
+              area.cc_poly = [ type:'polygon', coordinates:[ inner_polygon_ring ] ]
             }
           }
         }
@@ -43,31 +50,49 @@ class CapEventHandlerService {
   }
 
   def indexAlert(cap_notification, matching_subscriptions) {
-    log.debug("indexAlert(${cap_notification},${matching_subscriptions}");
+    if ( cap_notification.AlertMetadata ) {
+      // Store the matching subscriptions in the metadata
+      cap_notification.AlertMetadata['MatchedSubscriptions']=matching_subscriptions
+      // Drop the signature -- it's very verbose and applies to the underlying XML document. 
+      // Consumers should return the source CAP if they want to validate the alert
+      cap_notification.AlertBody.Signature=null
+      ESWrapperService.index('alerts','alert',cap_notification)
+    }
   }
 
-  def matchSubscriptions(polygon) {
-
-    def result=[]
-
-    log.debug("matchSubscriptions(cap...,${polygon} ${polygon?.class?.name})");
+  def geoJsonToPolygon(polygon) {
 
     // Some feeds wrap the outer polygon in an array, if so, extract it.
     def polygon_ring_string = polygon instanceof List ? polygon[0] : polygon
 
     // Polygon as given is a ring list of space separated pairs - "x1,y1 x2,y2 x3,y3 x4,y4 x1,y1"
     def polygon_ring = []
+
+    def last_pair = null
     def list_of_pairs = polygon_ring_string.split(' ')
     list_of_pairs.each { coordinate_pair ->
       // geohash wants lon,lat the other way to our geojson, so flip them
       def split_pair = coordinate_pair.split(',')
       if ( split_pair.size() == 2 ) {
-        polygon_ring.add([split_pair[1],split_pair[0]])
+        if ( ( last_pair != null ) && ( ( last_pair[0] == split_pair[0] ) && ( last_pair[1] == split_pair[1] ) ) ) {
+          log.debug("Skipping repeated pair of coordinates ${split_pair}");
+        }
+        else {
+          polygon_ring.add([split_pair[1],split_pair[0]])
+          last_pair = split_pair
+        }
       }
       else {
         log.error("Problem attempting to split coordiate pair ${coordinate_pair}");
       }
     }
+
+    return polygon_ring
+  }
+
+  def matchSubscriptions(polygon_ring) {
+
+    def result=[]
 
     String query = '''{
          "bool": {
