@@ -78,8 +78,7 @@ class AtomEventHandlerService {
  { "event":"CAPCollator publish CAP event", "timestamp":'''+ts_3+''' }
 ],
 "SourceUrl":"'''+cap_link+'''",
-"effective":"'''+parsed_cap.info?.effective+'''",
-"expires":"'''+parsed_cap.info?.expires+'''"
+"expires":"'''+parsed_cap.info?.expires?.text()+'''"
 }, 
 "AlertBody":'''+capcollator.Utils.XmlToJson(entry)+'}'
   
