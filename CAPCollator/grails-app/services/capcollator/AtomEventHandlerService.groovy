@@ -47,6 +47,7 @@ class AtomEventHandlerService {
             log.debug("URL Connection reports content type ${conn.getContentType()}");
 
             if ( conn.getContentType().toLowerCase().startsWith('text/xml') ||
+                 conn.getContentType().toLowerCase().startsWith('application/octet-stream') ||   // Because of http://www.gestiondelriesgo.gov.co
                  conn.getContentType().toLowerCase().startsWith('application/xml') ) {
               def parser = new XmlSlurper()
               parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 

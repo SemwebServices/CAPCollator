@@ -9,12 +9,12 @@ class CapEventHandlerService {
   RabbitMessagePublisher rabbitMessagePublisher
   def ESWrapperService
 
-  def process(cap) {
-    log.debug("CapEventHandlerService::process ${cap}");
+  def process(cap_notification) {
+    log.debug("CapEventHandlerService::process ${cap_notification}");
 
     // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
-    if ( cap?.info ) {
-      def list_of_info_elements = cap.info instanceof List ? cap.info : [ cap.info ]
+    if ( cap_notification?.info ) {
+      def list_of_info_elements = cap_notification.info instanceof List ? cap_notification.info : [ cap_notification.info ]
 
       // Create a set - this will prevent duplicate subscriptions if multiple info elements match
       def matching_subscriptions = new java.util.HashSet()
@@ -28,7 +28,7 @@ class CapEventHandlerService {
             if ( area.polygon ) {
               polygons_found++
               // We got a polygon
-              matching_subscriptions.addAll(matchSubscriptions(cap,area.polygon))
+              matching_subscriptions.addAll(matchSubscriptions(area.polygon))
             }
           }
         }
@@ -37,11 +37,16 @@ class CapEventHandlerService {
       log.debug("The following subscriptions matched : ${matching_subscriptions}");
 
       // Index the CAP event
+      indexAlert(cap_notification, matching_subscriptions)
     }
 
   }
 
-  def matchSubscriptions(cap,polygon) {
+  def indexAlert(cap_notification, matching_subscriptions) {
+    log.debug("indexAlert(${cap_notification},${matching_subscriptions}");
+  }
+
+  def matchSubscriptions(polygon) {
 
     def result=[]
 
