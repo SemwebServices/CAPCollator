@@ -17,15 +17,19 @@ class CapEventHandlerService {
       def list_of_info_elements = cap.info instanceof List ? cap.info : [ cap.info ]
 
       list_of_info_elements.each { ie ->
+        log.debug("  -> Check info element");
+        def polygons_found=0
         if ( ie.area ) {
           def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
           list_of_area_elements.each { area ->
             if ( area.polygon ) {
+              polygons_found++
               // We got a polygon
               def matching_subscriptions = matchSubscriptions(cap,area.polygon)
             }
           }
         }
+        log.debug("  -> Found ${polygons_found} polygons in this info section");
       }
     }
 
@@ -33,17 +37,21 @@ class CapEventHandlerService {
   }
 
   def matchSubscriptions(cap,polygon) {
-    log.debug("matchSubscriptions(cap...,${polygon})");
+    log.debug("matchSubscriptions(cap...,${polygon} ${polygon?.class?.name})");
 
     // Polygon as given is a ring list of space separated pairs - "x1,y1 x2,y2 x3,y3 x4,y4 x1,y1"
     def polygon_ring = []
-    polygon.split(' ').each { coordinate_pair ->
+    def list_of_pairs = polygon.split(' ')
+    list_of_pairs.each { coordinate_pair ->
       // geohash wants lon,lat the other way to our geojson, so flip them
       def split_pair = coordinate_pair.split(',')
-      polygon_ring.add([split_pair[1],split_pair[0]])
+      if ( split_pair.size() == 2 ) {
+        polygon_ring.add([split_pair[1],split_pair[0]])
+      }
+      else {
+        log.error("Problem attempting to split coordiate pair ${coordinate_pair}");
+      }
     }
-
-    log.debug("find subs for polygon ring ${polygon_ring}");
 
     String query = '''{
          "bool": {
@@ -53,8 +61,11 @@ class CapEventHandlerService {
            "filter": {
                "geo_shape": {
                  "subshape": {
-                   "shape": '''+polygon_ring+''',
-                   "relation":'intersects'
+                   "shape": {
+                     "type": "polygon",
+                     "coordinates":['''+polygon_ring+''']
+                   },
+                   "relation":"intersects"
                  }
                }
              }
@@ -62,6 +73,12 @@ class CapEventHandlerService {
          }'''
 
     String[] indexes_to_search = [ 'alertssubscriptions' ]
-    ESWrapperService.search(indexes_to_search,query);
+    def matching_subs = ESWrapperService.search(indexes_to_search,query);
+
+    if ( matching_subs ) {
+      matching_subs.getHits().getHits().each { matching_sub ->
+        log.debug("Matched sub: ${matching_sub}");
+      }
+    }
   }
 }
