@@ -7,6 +7,7 @@ import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 class AtomEventHandlerService {
 
   RabbitMessagePublisher rabbitMessagePublisher
+  def eventService
 
   def process(cap_url) {
     log.debug("AtomEventHandlerService::process ${cap_url}");
@@ -18,6 +19,8 @@ class AtomEventHandlerService {
     log.debug("${context.properties.headers}");
 
     def ts_1 = System.currentTimeMillis();
+
+    int num_cap_files_found = 0;
 
     try {
       def list_of_links = null
@@ -64,6 +67,7 @@ class AtomEventHandlerService {
               //                                        cap12:"urn:oasis:names:tc:emergency:cap:1.2")
           
               if ( parsed_cap.identifier ) {
+                num_cap_files_found++
                 def ts_3 = System.currentTimeMillis();
                 log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
   
@@ -83,9 +87,7 @@ class AtomEventHandlerService {
 "AlertBody":'''+capcollator.Utils.XmlToJson(entry)+'}'
   
                 // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
-    
                 // Look at the various info.area elements - if the "polygon" element is null see if we can find an info.area.geocode we understand well enough to expand
-  
                 broadcastCapEvent(json_text, context.properties.headers)
               }
               else {
@@ -108,7 +110,13 @@ class AtomEventHandlerService {
     catch ( Exception e ) {
       log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
     }
+
+    if ( num_cap_files_found == 0 ) {
+      eventService.registerEvent('ATOMEntryWithoutValidCapFile',System.currentTimeMillis());
+    }
   }
+
+  
 
   def domNodeToString(node) {
     //Create stand-alone XML for the entry

@@ -8,11 +8,13 @@ class CapEventHandlerService {
 
   RabbitMessagePublisher rabbitMessagePublisher
   def ESWrapperService
+  def eventService
 
   def process(cap_notification) {
     // log.debug("CapEventHandlerService::process ${cap_notification}");
 
     def cap_body = cap_notification.AlertBody
+    def polygons_found=0
 
     // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
     if ( cap_body?.info ) {
@@ -23,7 +25,6 @@ class CapEventHandlerService {
 
       list_of_info_elements.each { ie ->
         log.debug("  -> Check info element");
-        def polygons_found=0
         if ( ie.area ) {
           def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
           list_of_area_elements.each { area ->
@@ -45,6 +46,10 @@ class CapEventHandlerService {
 
       // Index the CAP event
       indexAlert(cap_notification, matching_subscriptions)
+    }
+
+    if ( polygons_found == 0 ) {
+      eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
     }
 
   }
