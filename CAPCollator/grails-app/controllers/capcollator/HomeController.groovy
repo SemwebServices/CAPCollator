@@ -2,5 +2,11 @@ package capcollator
 
 class HomeController {
 
-    def index() { }
+  def eventService
+
+  def index() { 
+    def result = [:]
+    result.statsCache = eventService.statsCache
+    result
+  }
 }

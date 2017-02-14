@@ -9,7 +9,7 @@ class EventService {
 
   def registerEvent(String eventCode, long timestamp) {
     log.debug("registerEvent ${eventCode} ${timestamp}");
-    Calendar c = new Calendar()
+    Calendar c = new java.util.GregorianCalendar()
     c.setTimeInMillis(timestamp)
 
     if ( stats_cache[eventCode] == null ) {
@@ -36,5 +36,9 @@ class EventService {
     }
 
     counter_data[counter_code].counter_data[slot]++
+  }
+
+  def getStatsCache() {
+    return stats_cache;
   }
 }

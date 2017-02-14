@@ -72,6 +72,11 @@ class AtomEventHandlerService {
                 log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
   
                 def entry = domNodeToString(parsed_cap)
+
+                def latest_expiry = null;
+                parsed_cap.info.each { info_element ->
+                  latest_expiry = info_element.expires?.text()
+                }
   
                 // Render the cap object as JSON - We wrap the converted message in an object so we can add some metadata about
                 // processing time - for stats / tracking the delay through the system
@@ -82,7 +87,7 @@ class AtomEventHandlerService {
  { "event":"CAPCollator publish CAP event", "timestamp":'''+ts_3+''' }
 ],
 "SourceUrl":"'''+cap_link+'''",
-"expires":"'''+parsed_cap.info?.expires?.text()+'''"
+"expires":"'''+latest_expiry?:''+'''"
 }, 
 "AlertBody":'''+capcollator.Utils.XmlToJson(entry)+'}'
   
