@@ -44,16 +44,21 @@ class CapEventHandlerService {
 
         log.debug("The following subscriptions matched : ${matching_subscriptions}");
 
+        if ( polygons_found == 0 ) {
+          eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
+          if ( cap_notification.AlertMetadata.tags == null ) {
+            cap_notification.AlertMetadata.tags=[]
+          } 
+          cap_notification.AlertMetadata.tags.add('No_Polygon_Provided');
+        }
+
         // Index the CAP event
         indexAlert(cap_notification, matching_subscriptions)
       }
 
-      if ( polygons_found == 0 ) {
-        eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
-      }
     }
     catch ( Exception e ) {
-      log.debug("Exception procesasing CAP notification:\n${cap_notification}\n",e);
+      log.debug("Exception processing CAP notification:\n${cap_notification}\n",e);
     }
 
   }
