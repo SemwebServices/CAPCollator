@@ -32,6 +32,7 @@ class EventService {
     // If we've clicked onto the next slot in the circular queue, then reset the counter.
     if ( ( counter_data[counter_code].current_slot == null ) ||
          ( counter_data[counter_code].current_slot != slot ) ) {
+      counter_data[counter_code].current_slot = slot
       counter_data[counter_code].counter_data[slot] = 0;
     }
 
