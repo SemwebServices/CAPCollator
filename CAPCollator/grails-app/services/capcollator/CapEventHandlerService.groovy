@@ -12,44 +12,48 @@ class CapEventHandlerService {
 
   def process(cap_notification) {
     // log.debug("CapEventHandlerService::process ${cap_notification}");
+    try {
+      def cap_body = cap_notification.AlertBody
+      def polygons_found=0
 
-    def cap_body = cap_notification.AlertBody
-    def polygons_found=0
+      // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
+      if ( cap_body?.info ) {
+        def list_of_info_elements = cap_body.info instanceof List ? cap_body.info : [ cap_body.info ]
 
-    // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
-    if ( cap_body?.info ) {
-      def list_of_info_elements = cap_body.info instanceof List ? cap_body.info : [ cap_body.info ]
+        // Create a set - this will prevent duplicate subscriptions if multiple info elements match
+        def matching_subscriptions = new java.util.HashSet()
 
-      // Create a set - this will prevent duplicate subscriptions if multiple info elements match
-      def matching_subscriptions = new java.util.HashSet()
+        list_of_info_elements.each { ie ->
+          log.debug("  -> Check info element");
+          if ( ie.area ) {
+            def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
+            list_of_area_elements.each { area ->
+              if ( area.polygon ) {
+                polygons_found++
+                // We got a polygon
+                def inner_polygon_ring = geoJsonToPolygon(area.polygon)
+                matching_subscriptions.addAll(matchSubscriptions(inner_polygon_ring))
 
-      list_of_info_elements.each { ie ->
-        log.debug("  -> Check info element");
-        if ( ie.area ) {
-          def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
-          list_of_area_elements.each { area ->
-            if ( area.polygon ) {
-              polygons_found++
-              // We got a polygon
-              def inner_polygon_ring = geoJsonToPolygon(area.polygon)
-              matching_subscriptions.addAll(matchSubscriptions(inner_polygon_ring))
-
-              // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
-              // database of alerts geo searchable
-              area.cc_poly = [ type:'polygon', coordinates:[ inner_polygon_ring ] ]
+                // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
+                // database of alerts geo searchable
+                area.cc_poly = [ type:'polygon', coordinates:[ inner_polygon_ring ] ]
+              }
             }
           }
         }
+
+        log.debug("The following subscriptions matched : ${matching_subscriptions}");
+
+        // Index the CAP event
+        indexAlert(cap_notification, matching_subscriptions)
       }
 
-      log.debug("The following subscriptions matched : ${matching_subscriptions}");
-
-      // Index the CAP event
-      indexAlert(cap_notification, matching_subscriptions)
+      if ( polygons_found == 0 ) {
+        eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
+      }
     }
-
-    if ( polygons_found == 0 ) {
-      eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
+    catch ( Exception e ) {
+      log.debug("Exception procesasing CAP notification:\n${cap_notification}\n",e);
     }
 
   }

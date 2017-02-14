@@ -1,0 +1,3 @@
+curl -XPUT 'localhost:9200/alertssubscriptions/alertsubscription/1/_create?pretty' -H 'Content-Type: application/json' -d'
+{"recid":"country-us-city-swic818-lang-en","name":"Official Public alerts for Rochester, New York in country-us, in English","shortcode":"country-us-city-swic818-lang-en","subshape":{"type":"polygon","coordinates":[[[-77.7016323,43.1033023],[-77.5311656,43.1033023],[-77.5311656,43.2676254],[-77.7016323,43.2676254],[-77.7016323,43.1033023]]]},"subscriptionUrl":null,"languageOnly":null,"highPriorityOnly":null,"officialOnly":null,"xPathFilterId":null,"xPathFilter":null,"areaFilterId":null,"loadSubsVersion":"1.1"}
+'

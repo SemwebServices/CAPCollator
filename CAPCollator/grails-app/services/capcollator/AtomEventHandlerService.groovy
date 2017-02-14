@@ -41,7 +41,7 @@ class AtomEventHandlerService {
         if ( ( ( link.get('@type') != null ) && 
                ( 'application/cap+xml'.equals(link.get('@type')) ) ) ||
              ( true ) ) {
-
+          log.debug("  -> processing  (${link.get('@type')})");
           try {
             def ts_2 = System.currentTimeMillis();
             def cap_link = link.'@href'
@@ -74,10 +74,14 @@ class AtomEventHandlerService {
                 def entry = domNodeToString(parsed_cap)
 
                 def latest_expiry = null;
+                def latest_effective = null;
                 parsed_cap.info.each { info_element ->
                   latest_expiry = info_element.expires?.text()
+                  latest_effective = info_element.effective?.text()
                 }
   
+                log.debug("latest_expiry is ${latest_expiry}");
+
                 // Render the cap object as JSON - We wrap the converted message in an object so we can add some metadata about
                 // processing time - for stats / tracking the delay through the system
                 String json_text = '''{ "AlertMetadata":{
@@ -87,7 +91,8 @@ class AtomEventHandlerService {
  { "event":"CAPCollator publish CAP event", "timestamp":'''+ts_3+''' }
 ],
 "SourceUrl":"'''+cap_link+'''",
-"expires":"'''+latest_expiry?:''+'''"
+"Expires":"'''+latest_expiry+'''",
+"Effective":"'''+latest_effective+'''"
 }, 
 "AlertBody":'''+capcollator.Utils.XmlToJson(entry)+'}'
   
