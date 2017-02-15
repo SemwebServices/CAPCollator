@@ -52,6 +52,8 @@ class CapEventHandlerService {
           cap_notification.AlertMetadata.tags.add('No_Polygon_Provided');
         }
 
+        publishAlert(cap_notification, matching_subscriptions);
+
         // Index the CAP event
         indexAlert(cap_notification, matching_subscriptions)
       }
@@ -61,6 +63,22 @@ class CapEventHandlerService {
       log.debug("Exception processing CAP notification:\n${cap_notification}\n",e);
     }
 
+  }
+
+  def publishAlert(cap_notification, matching_subscriptions) {
+    matching_subscriptions.each { sub_id ->
+      try {
+        def result = rabbitMessagePublisher.send {
+              exchange = "CAPExchange"
+              routingKey = 'CAPSubMatch.'+sub_id
+              body = cap_notification
+        }
+        log.debug("Result of Rabbit RPC publish: ${result}");
+      }
+      catch ( Exception e ) {
+        log.error("Problem trying to publish to rabbit",e);
+      }
+    }
   }
 
   def indexAlert(cap_notification, matching_subscriptions) {
