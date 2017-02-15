@@ -23,14 +23,16 @@
     <tbody>
       <g:each in="${subscriptions}" var="${sub}">
         <tr>
-          <td>${sub.id}</td>
+          <td><g:link controller="subscriptions" action="details" id="${sub.id}">${sub.id}</g:link></td>
           <td>${sub.subscriptionId}</td>
           <td>${sub.subscriptionName}</td>
           <td>${sub.subscriptionUrl}</td>
           <td>${sub.filterType}</td>
           <td>${sub.filterGeometry}</td>
           <td>
-            <g:link controller="subscriptions" action="touch" class="btn btn-primary" role="button" id="${sub.id}">Touch</g:link>
+            <sec:ifAnyGranted roles="ROLE_ADMIN">
+              <g:link controller="subscriptions" action="touch" class="btn btn-primary" role="button" id="${sub.id}">Touch</g:link>
+            </sec:ifAnyGranted>
           </td>
         </tr>
       </g:each>
