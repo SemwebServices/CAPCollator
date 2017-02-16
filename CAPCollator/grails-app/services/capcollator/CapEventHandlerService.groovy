@@ -73,7 +73,6 @@ class CapEventHandlerService {
               routingKey = 'CAPSubMatch.'+sub_id
               body = cap_notification
         }
-        log.debug("Result of Rabbit RPC publish: ${result}");
       }
       catch ( Exception e ) {
         log.error("Problem trying to publish to rabbit",e);
