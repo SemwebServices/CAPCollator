@@ -4,12 +4,16 @@
 grails.plugin.springsecurity.userLookup.userDomainClassName = 'capcollator.User'
 grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'capcollator.UserRole'
 grails.plugin.springsecurity.authority.className = 'capcollator.Role'
+
+// Remember that these patterns are based on the controller/action not the URL Mappings
+// So use /home/topic instead of /topics/**
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	[pattern: '/',                  access: ['permitAll']],
 	[pattern: '/error',             access: ['permitAll']],
 	[pattern: '/subscriptions',     access: ['permitAll']],
 	[pattern: '/subscriptions/**',  access: ['permitAll']],
 	[pattern: '/home/index',        access: ['permitAll']],
+	[pattern: '/home/topic',        access: ['permitAll']],
 	[pattern: '/index',             access: ['permitAll']],
         [pattern: '/hubClient/**',      access: ['permitAll']],
 	[pattern: '/index.gsp',         access: ['permitAll']],

@@ -16,4 +16,10 @@ class HomeController {
     result
   }
 
+  def topic() {
+    log.debug("Topic: ${params}");
+    def result = [:]
+    result
+  }
+
 }
