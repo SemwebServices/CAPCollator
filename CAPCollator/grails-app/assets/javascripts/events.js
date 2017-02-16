@@ -11,11 +11,9 @@
 
 if (typeof jQuery !== 'undefined') {
     (function($) {
-        $(document).ajaxStart(function() {
-            $('#spinner').fadeIn();
-        }).ajaxStop(function() {
-            $('#spinner').fadeOut();
-        });
+      var feed_id = $("#feed-watcher").data( "feedid" );
+      console.log("data-feedid on body tag %o",feed_id);
+      console.log("data on body tag %o",$("#feed-watcher").data());
     })(jQuery);
 }
 

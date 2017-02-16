@@ -68,5 +68,6 @@
   
   <g:layoutBody/>
 
+  <asset:deferredScripts/>
 </body>
 </html>
