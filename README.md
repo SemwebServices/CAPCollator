@@ -56,7 +56,7 @@ used to proxy the rabbitmq web_stomp plugin in front of apache for easy connecti
 
       AllowEncodedSlashes On
       <LocationMatch "/rabbitws/">
-        ProxyPass http://localhost:15670/ nocanon
-        ProxyPassReverse http://localhost:15670/
+        ProxyPass http://localhost:15674/ nocanon
+        ProxyPassReverse http://localhost:15674/
       </LocationMatch>
 
