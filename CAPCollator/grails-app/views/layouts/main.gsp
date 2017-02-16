@@ -60,6 +60,7 @@
             </sec:ifAnyGranted>
             <li class="${controllerName=='subscriptions' && actionName=='index' ? 'active' : ''}"><g:link controller="subscriptions" action="index">Subscriptions</g:link></li>
           </sec:ifLoggedIn>
+          <li class="${controllerName=='home' && actionName=='topic' ? 'active' : ''}"><g:link controller="home" action="topic" id="unfiltered">Unfiltered</g:link></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>
