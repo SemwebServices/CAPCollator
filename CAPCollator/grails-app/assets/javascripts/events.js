@@ -54,14 +54,12 @@ function initEvents(feed_id) {
       // client.send(m.headers['reply-to'], {"content-type":"text/plain"}, reversedText);
     });
 
-    var id2 = client.subscribe("/exchange/CAPExchange/CAPSubMatch.#", function(m) {
-      console.log("/exchange/CAPExchange/CAPSubMatch.# Got message %o",m);
+    // var id2 = client.subscribe("/exchange/CAPExchange/CAPSubMatch.#", function(m) {
+    //   console.log("/exchange/CAPExchange/CAPSubMatch.# Got message %o",m);
       // reply by sending the reversed text to the temp queue defined in the "reply-to" header
       // var reversedText = m.body.split("").reverse().join("");
       // client.send(m.headers['reply-to'], {"content-type":"text/plain"}, reversedText);
-    });
-
-    console.log("Subscribe complete %o, %o",id, id2);
+    // });
   };
 
   var on_error =  function() {
