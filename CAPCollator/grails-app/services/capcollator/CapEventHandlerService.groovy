@@ -66,8 +66,10 @@ class CapEventHandlerService {
   }
 
   def publishAlert(cap_notification, matching_subscriptions) {
+    log.debug("Publishing CAPSubMatch. notifications");
     matching_subscriptions.each { sub_id ->
       try {
+        log.debug("Publishing CAPSubMatch.${sub_id} notification");
         def result = rabbitMessagePublisher.send {
               exchange = "CAPExchange"
               routingKey = 'CAPSubMatch.'+sub_id

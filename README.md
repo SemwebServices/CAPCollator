@@ -49,3 +49,14 @@ http://localhost:9200/alertssubscriptions/alertsubscription/_search?q=*
 http://localhost:15672/#/ -- mgt interface
 http://localhost:15670/ -- WebSockents info
 
+## Apache2
+
+CAPCollator makes it's events available over websockets. This is done via rabbitmq. The following stanza can be
+used to proxy the rabbitmq web_stomp plugin in front of apache for easy connectivity.
+
+      AllowEncodedSlashes On
+      <LocationMatch "/rabbitws/">
+        ProxyPass http://localhost:15670/ nocanon
+        ProxyPassReverse http://localhost:15670/
+      </LocationMatch>
+
