@@ -24,7 +24,8 @@ function initEvents(feed_id) {
   console.log("Connect to http://"+ window.location.hostname + "/rabbitws/stomp");
 
   // var ws = new SockJS('http://' + window.location.hostname + '/rabbitws/stomp');
-  var ws = new SockJS('http://' + window.location.hostname + ':15674/stomp');
+  // var ws = new SockJS('http://' + window.location.hostname + ':15674/stomp');
+  var ws = new SockJS('http://' + window.location.hostname + '/rabbitws/stomp');
   
   var client = Stomp.over(ws);
 
