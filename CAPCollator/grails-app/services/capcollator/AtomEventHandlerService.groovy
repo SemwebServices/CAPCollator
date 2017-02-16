@@ -138,7 +138,7 @@ class AtomEventHandlerService {
   }
 
   def broadcastCapEvent(json_event, headers) {
-    log.debug("broadcastCapEvent ${json_event}");
+    // log.debug("broadcastCapEvent ${json_event}");
     try {
       def result = rabbitMessagePublisher.send {
               exchange = "CAPExchange"

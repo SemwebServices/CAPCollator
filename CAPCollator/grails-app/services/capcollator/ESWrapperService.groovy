@@ -92,7 +92,7 @@ class ESWrapperService {
     result
   }
 
-  def deleteByQuery(source) {
+  def deleteByQuery(source, json_query) {
     BulkIndexByScrollResponse response =
       DeleteByQueryAction.INSTANCE.newRequestBuilder(esclient)
         .filter(QueryBuilders.wrapperQuery(json_query)) 
