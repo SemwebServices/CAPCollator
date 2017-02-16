@@ -43,3 +43,9 @@ In order to work fully, the ES mappings need to be installed. run the es5_config
 ## ES Queries
 
 http://localhost:9200/alertssubscriptions/alertsubscription/_search?q=*
+
+## RabbitMQ
+
+http://localhost:15672/#/ -- mgt interface
+http://localhost:15670/ -- WebSockents info
+

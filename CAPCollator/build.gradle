@@ -64,7 +64,7 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-api:2.7'
     compile 'org.apache.logging.log4j:log4j-core:2.7'
 
-
+    compile 'org.grails.plugins:quartz:2.0.9'
 
     compile group: 'xom', name: 'xom', version: '1.2.5'
     compile 'net.sf.json-lib:json-lib:2.4:jdk15'

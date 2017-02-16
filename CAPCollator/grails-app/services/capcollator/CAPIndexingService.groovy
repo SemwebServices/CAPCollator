@@ -31,7 +31,7 @@ class CAPIndexingService {
     log.debug("Register gorm:saveOrUpdateEvent");
 
     on("gorm:saveOrUpdate") { SaveOrUpdateEvent event ->
-      log.debug("GOT EVENT 4 $event ${event.entity} ${event.entityObject}")
+      // log.debug("GOT EVENT 4 $event ${event.entity} ${event.entityObject}")
       if ( event.entityObject instanceof Subscription ) {
         indexSub(event.entityObject)
       }
@@ -39,7 +39,7 @@ class CAPIndexingService {
   }
 
   def freshen() {
-    log.debug("freshen...");
+    // log.debug("freshen...");
   }
 
   def reindexSubscriptions() {

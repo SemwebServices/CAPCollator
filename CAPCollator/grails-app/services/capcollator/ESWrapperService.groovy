@@ -17,6 +17,9 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.QueryBuilders
 
+import org.elasticsearch.index.reindex.BulkIndexByScrollResponse
+import org.elasticsearch.index.reindex.DeleteByQueryAction 
+
 @Transactional
 class ESWrapperService {
 
@@ -87,5 +90,15 @@ class ESWrapperService {
       log.error("Error processing ${indexes} ${query_json}",e);
     }
     result
+  }
+
+  def deleteByQuery(source) {
+    BulkIndexByScrollResponse response =
+      DeleteByQueryAction.INSTANCE.newRequestBuilder(esclient)
+        .filter(QueryBuilders.wrapperQuery(json_query)) 
+        .source(source)                                  
+        .get();                                             
+
+    long deleted = response.getDeleted(); 
   }
 }

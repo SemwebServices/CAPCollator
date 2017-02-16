@@ -2,6 +2,7 @@ package capcollator
 
 import grails.transaction.Transactional
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
+import static groovy.json.JsonOutput.*
 
 @Transactional
 class AtomEventHandlerService {
@@ -41,7 +42,7 @@ class AtomEventHandlerService {
         if ( ( ( link.get('@type') != null ) && 
                ( 'application/cap+xml'.equals(link.get('@type')) ) ) ||
              ( true ) ) {
-          log.debug("  -> processing  (${link.get('@type')})");
+          log.debug("  -> processing  (link type=${link.get('@type')})");
           try {
             def ts_2 = System.currentTimeMillis();
             def cap_link = link.'@href'
@@ -81,20 +82,22 @@ class AtomEventHandlerService {
                 }
   
                 log.debug("latest_expiry is ${latest_expiry}");
+                def alert_metadata = [:]
+                alert_metadata.CCHistory=[]
+                alert_metadata.CCHistory.add(["event":"CAPCollator notified","timestamp":ts_1]);
+                alert_metadata.CCHistory.add(["event":"CAPCollator fetch alert","timestamp":ts_2]);
+                alert_metadata.CCHistory.add(["event":"CAPCollator publish CAP event","timestamp":ts_3]);
+                alert_metadata.SourceUrl = cap_link
+
+                if ( latest_expiry && latest_expiry.trim().length() > 0 )
+                  alert_metadata.Expires = latest_expiry
+
+                if ( latest_effective && latest_effective.trim().length() > 0 )
+                  alert_metadata.Effective = latest_effective
 
                 // Render the cap object as JSON - We wrap the converted message in an object so we can add some metadata about
                 // processing time - for stats / tracking the delay through the system
-                String json_text = '''{ "AlertMetadata":{
-"CCHistory":[
- { "event":"CAPCollator notified", "timestamp":'''+ts_1+''' },
- { "event":"CAPCollator fetch alert", "timestamp":'''+ts_2+''' },
- { "event":"CAPCollator publish CAP event", "timestamp":'''+ts_3+''' }
-],
-"SourceUrl":"'''+cap_link+'''",
-"Expires":"'''+latest_expiry+'''",
-"Effective":"'''+latest_effective+'''"
-}, 
-"AlertBody":'''+capcollator.Utils.XmlToJson(entry)+'}'
+                String json_text = '{ "AlertMetadata":'+toJson(alert_metadata)+',"AlertBody":'+capcollator.Utils.XmlToJson(entry)+'}'
   
                 // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
                 // Look at the various info.area elements - if the "polygon" element is null see if we can find an info.area.geocode we understand well enough to expand
@@ -135,6 +138,7 @@ class AtomEventHandlerService {
   }
 
   def broadcastCapEvent(json_event, headers) {
+    log.debug("broadcastCapEvent ${json_event}");
     try {
       def result = rabbitMessagePublisher.send {
               exchange = "CAPExchange"
