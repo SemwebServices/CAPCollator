@@ -26,6 +26,24 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
                "store":"yes" 
              }
            }
+         },
+         "AlertBody":{
+           "type":"nested",
+           "properties":{
+             "info":{
+               "type":"nested",
+               "properties":{
+                 "parameter":{
+                   "type":"nested",
+                   "properties":{
+                     "value":{
+                       "type":"text"
+                     }
+                   }
+                 }
+               }
+             }
+           }
          }
       }
    } 
