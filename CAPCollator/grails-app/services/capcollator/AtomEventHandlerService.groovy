@@ -50,6 +50,10 @@ class AtomEventHandlerService {
             log.debug("test ${cap_link}");
             java.net.URL cap_link_url = new java.net.URL(cap_link)
             java.net.URLConnection conn = cap_link_url.openConnection()
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            // conn.setAllowUserInteraction(false);         
+            // conn.setDoOutput(true);
             
             log.debug("URL Connection reports content type ${conn.getContentType()}");
 
@@ -114,6 +118,9 @@ class AtomEventHandlerService {
           catch ( Exception e ) {
             log.error("problem handling cap alert ${body} ${context} ${e.message}");
           }
+          finally {
+            log.debug("ATOM Checker Task Complete");
+          }
         }
         else {
           log.error("Unable to find CAP link in ${body}");
@@ -128,6 +135,7 @@ class AtomEventHandlerService {
       eventService.registerEvent('ATOMEntryWithoutValidCapFile',System.currentTimeMillis());
     }
   }
+  
 
   
 

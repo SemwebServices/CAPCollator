@@ -2,6 +2,7 @@ package capcollator
 
 import grails.transaction.Transactional
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
+import java.util.Iterator
 
 @Transactional
 class CapEventHandlerService {
@@ -45,7 +46,9 @@ class CapEventHandlerService {
                   def authorities = area.geocode.valueName instanceof List ? area.geocode.valueName : [ area.geocode.valueName ]
                   def symbols = area.geocode.value instanceof List ? area.geocode.value : [ area.geocode.value ]
 
-                  for (i1=authorities.iterator(), i2=symbols.iterator(); i1.hasNext() && i2.hasNext(); ) {
+                  Iterator i1=authorities.iterator()
+                  Iterator i2=symbols.iterator()
+                  for (; i1.hasNext() && i2.hasNext(); ) {
                     gazService.cache(i1.next(), i2.next(), inner_polygon_ring);
                   }
                 }
