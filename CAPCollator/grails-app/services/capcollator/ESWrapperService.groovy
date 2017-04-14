@@ -13,6 +13,8 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress
 
 import static groovy.json.JsonOutput.*
 
+// https://www.javadoc.io/doc/org.elasticsearch/elasticsearch/5.3.0
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.QueryBuilders
@@ -65,7 +67,7 @@ class ESWrapperService {
   }
 
   def get(index,typename,id) {
-    GetResponse response = client.prepareGet(index, typename, id)
+    GetResponse response = esclient.prepareGet(index, typename, id)
         .setOperationThreaded(false)
         .get();
 
