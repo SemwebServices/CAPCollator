@@ -3,6 +3,8 @@ package capcollator
 import grails.transaction.Transactional
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import java.util.Iterator
+import static groovy.json.JsonOutput.*
+
 
 @Transactional
 class CapEventHandlerService {
