@@ -68,4 +68,24 @@ curl -XPUT 'http://localhost:9200/alertssubscriptions/alertsubscription/_mapping
       }
    } 
 }'
+curl -XDELETE 'http://localhost:9200/gazetteer'
+curl -XPUT 'http://localhost:9200/gazetteer'
+curl -XPUT 'http://localhost:9200/gazetteer/gazentry/_mapping' -d ' 
+{ 
+   "gazentry":{ 
+      "properties":{ 
+         "id":{ 
+            "include_in_all":"false", 
+            "index":"not_analyzed", 
+            "type":"text", 
+            "store":"yes" 
+         }, 
+         "subshape": {
+            "type": "geo_shape",
+            "tree": "quadtree",
+            "precision": "100m"
+         }
+      }
+   } 
+}'
 

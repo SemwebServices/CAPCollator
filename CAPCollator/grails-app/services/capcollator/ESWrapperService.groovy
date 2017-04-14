@@ -64,6 +64,14 @@ class ESWrapperService {
     result
   }
 
+  def get(index,typename,id) {
+    GetResponse response = client.prepareGet(index, typename, id)
+        .setOperationThreaded(false)
+        .get();
+
+    response
+  }
+
   def update(index,typename,id,record) {
     def result=null;
     try {
