@@ -39,10 +39,11 @@ class AtomEventHandlerService {
 
         // Different feeds behave differently wrt properly setting the type attribute. 
         // Until we get to grips a little better - try and parse every link - and if we manage to parse XML, see if the root node is a cap element
-        if ( ( ( link.get('@type') != null ) && 
-               ( 'application/cap+xml'.equals(link.get('@type')) ) ) ||
-             ( true ) ) {
-          log.debug("  -> processing  (link type=${link.get('@type')})");
+        if ( ( ( body.name()?.toLowerCase() == 'feed' ) && ( link.get('@type') != null ) && ( 'application/cap+xml'.equals(link.get('@type')) ) ) ||
+             ( ( body.name()?.toLowerCase() == 'rss' ) && ( list_of_links != null ) ) ) {
+
+          log.debug("  -> processing  (feed=${body.name()} link type=${link.get('@type')})");
+
           try {
             def ts_2 = System.currentTimeMillis();
             def cap_link = link.'@href'
