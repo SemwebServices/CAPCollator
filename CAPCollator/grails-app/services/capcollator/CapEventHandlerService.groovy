@@ -2,6 +2,9 @@ package capcollator
 
 import grails.transaction.Transactional
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
+import java.util.Iterator
+import static groovy.json.JsonOutput.*
+
 
 @Transactional
 class CapEventHandlerService {
@@ -9,6 +12,7 @@ class CapEventHandlerService {
   RabbitMessagePublisher rabbitMessagePublisher
   def ESWrapperService
   def eventService
+  def gazService
 
   def process(cap_notification) {
     // log.debug("CapEventHandlerService::process ${cap_notification}");
@@ -37,6 +41,22 @@ class CapEventHandlerService {
                 // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
                 // database of alerts geo searchable
                 area.cc_poly = [ type:'polygon', coordinates:[ inner_polygon_ring ] ]
+
+                // If we got a polygon AND there was an info.area.geocode then we can look to see if we should cache that code
+                if ( area.geocode && area.geocode.value && area.geocode.valueName ) {
+                  log.debug("CAP Alert contains polygon and geocode - cache value - ${area.geocode}");
+                  def authorities = area.geocode.valueName instanceof List ? area.geocode.valueName : [ area.geocode.valueName ]
+                  def symbols = area.geocode.value instanceof List ? area.geocode.value : [ area.geocode.value ]
+
+                  Iterator i1=authorities.iterator()
+                  Iterator i2=symbols.iterator()
+                  for (; i1.hasNext() && i2.hasNext(); ) {
+                    gazService.cache(i1.next(), i2.next(), inner_polygon_ring);
+                  }
+                }
+              }
+              else if ( area.geocode ) {
+                log.debug("CAP Alert has no polygon, but does have geocode : ${area.geocode} ");
               }
             }
           }

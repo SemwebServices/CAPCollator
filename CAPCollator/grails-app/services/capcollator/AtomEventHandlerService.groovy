@@ -51,12 +51,18 @@ class AtomEventHandlerService {
             log.debug("test ${cap_link}");
             java.net.URL cap_link_url = new java.net.URL(cap_link)
             java.net.URLConnection conn = cap_link_url.openConnection()
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            // conn.setAllowUserInteraction(false);         
+            // conn.setDoOutput(true);
             
-            log.debug("URL Connection reports content type ${conn.getContentType()}");
+            def detected_content_type = conn.getContentType()
+            log.debug("URL Connection reports content type ${detected_content_type}");
 
-            if ( conn.getContentType().toLowerCase().startsWith('text/xml') ||
-                 conn.getContentType().toLowerCase().startsWith('application/octet-stream') ||   // Because of http://www.gestiondelriesgo.gov.co
-                 conn.getContentType().toLowerCase().startsWith('application/xml') ) {
+            if ( detected_content_type &&
+                 ( detected_content_type.toLowerCase().startsWith('text/xml') ||
+                   detected_content_type.toLowerCase().startsWith('application/octet-stream') ||   // Because of http://www.gestiondelriesgo.gov.co
+                   detected_content_type.toLowerCase().startsWith('application/xml') ) ) {
               def parser = new XmlSlurper()
               parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
               parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
@@ -109,11 +115,14 @@ class AtomEventHandlerService {
               }
             }
             else {
-              log.warn("${cap_link} seems not to be XML and therefore cannot be a CAP message - skipping");
+              log.warn("${cap_link} (content type ${detected_content_type}) seems not to be XML and therefore cannot be a CAP message - skipping");
             }
           }
           catch ( Exception e ) {
             log.error("problem handling cap alert ${body} ${context} ${e.message}");
+          }
+          finally {
+            log.debug("ATOM Checker Task Complete");
           }
         }
         else {
@@ -129,6 +138,7 @@ class AtomEventHandlerService {
       eventService.registerEvent('ATOMEntryWithoutValidCapFile',System.currentTimeMillis());
     }
   }
+  
 
   
 
