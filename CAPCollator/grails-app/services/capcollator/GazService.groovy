@@ -19,7 +19,7 @@ class GazService {
     result
   }
 
-  def cache(String authority, String symbol, String polygon) {
+  def cache(String authority, String symbol, Object polygon) {
     log.debug("cache(${authority},${symbol})");
     if ( resolve(authority,symbol) ) {
       log.debug("  -> Already found in cache");

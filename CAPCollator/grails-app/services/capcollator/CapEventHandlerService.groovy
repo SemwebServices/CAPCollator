@@ -51,7 +51,13 @@ class CapEventHandlerService {
                   Iterator i1=authorities.iterator()
                   Iterator i2=symbols.iterator()
                   for (; i1.hasNext() && i2.hasNext(); ) {
-                    gazService.cache(i1.next(), i2.next(), inner_polygon_ring);
+                    
+                    try {
+                      gazService.cache(i1.next(), i2.next(), inner_polygon_ring);
+                    }
+                    catch ( Exception e ) {
+                      log.error("problem trying to cache gaz entry",e);
+                    }
                   }
                 }
               }
