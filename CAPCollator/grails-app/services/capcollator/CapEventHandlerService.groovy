@@ -128,7 +128,8 @@ class CapEventHandlerService {
     def polygon_ring = []
 
     def last_pair = null
-    def cleaned_polygon_ring_string = polygon_ring_string.replaceAll('\\s+',' ');
+    // def cleaned_polygon_ring_string = polygon_ring_string.replaceAll('\\s+',' ');
+    def cleaned_polygon_ring_string = polygon_ring_string.replaceAll('\n',' ');
     def list_of_pairs = cleaned_polygon_ring_string.split(' ')
     list_of_pairs.each { coordinate_pair ->
       // geohash wants lon,lat the other way to our geojson, so flip them
