@@ -126,10 +126,8 @@ class CapEventHandlerService {
     }
   }
 
-  def geoJsonToPolygon(polygon) {
+  def geoJsonToPolygon(polygon_ring_string) {
 
-    // Some feeds wrap the outer polygon in an array, if so, extract it.
-    def polygon_ring_string = polygon instanceof List ? polygon[0] : polygon
 
     // Polygon as given is a ring list of space separated pairs - "x1,y1 x2,y2 x3,y3 x4,y4 x1,y1"
     def polygon_ring = []
