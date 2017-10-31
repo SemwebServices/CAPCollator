@@ -2,15 +2,15 @@ package capcollator
 
 import com.budjb.rabbitmq.consumer.MessageContext
 
-class ATOMEventConsumer {
+class RSSEventConsumer {
 
-  def atomEventHandlerService
+  def rssEventHandlerService
 
   static rabbitConfig = [
-    "queue": "CAPCollatorATOMQueue"
+    "queue": "CAPCollatorRSSQueue"
   ]
 
   def handleMessage(def body, MessageContext context) {
-    atomEventHandlerService.handleNotification(body,context);
+    rssEventHandlerService.handleNotification(body,context);
   }
 }
