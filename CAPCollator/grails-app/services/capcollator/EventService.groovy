@@ -19,7 +19,7 @@ class EventService {
     // We keep three counters for each event code - per minute for the last 60 mins, per hour for the last day, per day for the last 30 days
     incrementCounter(stats_cache[eventCode], 'minute', c.get(Calendar.MINUTE), 60)
     incrementCounter(stats_cache[eventCode], 'hour', c.get(Calendar.HOUR_OF_DAY), 24)
-    incrementCounter(stats_cache[eventCode], 'day', c.get(Calendar.DAY_OF_MONTH) - 1, 30)  // DAY_OF_MONTH is 1 based
+    incrementCounter(stats_cache[eventCode], 'day', c.get(Calendar.DAY_OF_MONTH) - 1, 31)  // DAY_OF_MONTH is 1 based
 
     log.debug("After registerEvent ${eventCode} ${timestamp} : ${stats_cache[eventCode]}");
   }
