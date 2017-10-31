@@ -30,9 +30,12 @@ class AtomEventHandlerService {
         list_of_links = body.link
       }
       else {
-        list_of_links = [ body.link ]
+        if ( body.link != null ) {
+          list_of_links = [ body.link ]
+        }
       }
       
+      log.debug("AtomEventHandlerService::handleNotification processing ${list_of_links.size()} elements");
 
       list_of_links.each { link ->
         log.debug("Looking in link attribute for cap ${link}");
