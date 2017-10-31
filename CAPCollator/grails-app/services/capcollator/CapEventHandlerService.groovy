@@ -68,8 +68,8 @@ class CapEventHandlerService {
                 }
               }
 
-              area.geocode.each { gc ->
-                log.debug("CAP Alert has geocode : ${geocode} ");
+              area.geocode?.each { gc ->
+                log.debug("CAP Alert has geocode : ${gc} ");
               }
             }
           }
