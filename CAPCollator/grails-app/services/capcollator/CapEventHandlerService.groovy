@@ -33,43 +33,49 @@ class CapEventHandlerService {
             def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
             list_of_area_elements.each { area ->
 
-              def list_of_polygon_elements = area.polygon instanceof List ? area.polygon : [ area.polygon ]
-
-              list_of_polygon_elements.each { poly_elem ->
-                polygons_found++
-                // We got a polygon
-                def inner_polygon_ring = geoJsonToPolygon(poly_elem)
-                matching_subscriptions.addAll(matchSubscriptions(inner_polygon_ring))
-
-                // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
-                // database of alerts geo searchable
-                area.cc_poly = [ type:'polygon', coordinates:[ inner_polygon_ring ] ]
-              }
-
-              // If we got a polygon AND there was an info.area.geocode then we can look to see if we should cache that code
-              // this is duff -- an alert can have many polygons and many geocodes, so the assumption here is wrong. 
-              if ( 1==2 ) {
-                if ( area.geocode && area.geocode.value && area.geocode.valueName ) {
-                  log.debug("CAP Alert contains polygon and geocode - cache value - ${area.geocode}");
-                  def authorities = area.geocode.valueName instanceof List ? area.geocode.valueName : [ area.geocode.valueName ]
-                  def symbols = area.geocode.value instanceof List ? area.geocode.value : [ area.geocode.value ]
+              if ( area.polygon != null ) {
   
-                  Iterator i1=authorities.iterator()
-                  Iterator i2=symbols.iterator()
-                  for (; i1.hasNext() && i2.hasNext(); ) {
-                    
-                    try {
-                      gazService.cache(i1.next(), i2.next(), inner_polygon_ring);
-                    }
-                    catch ( Exception e ) {
-                      log.error("problem trying to cache gaz entry",e);
+                def list_of_polygon_elements = area.polygon instanceof List ? area.polygon : [ area.polygon ]
+  
+                list_of_polygon_elements.each { poly_elem ->
+                  polygons_found++
+                  // We got a polygon
+                  def inner_polygon_ring = geoJsonToPolygon(poly_elem)
+                  matching_subscriptions.addAll(matchSubscriptions(inner_polygon_ring))
+  
+                  // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
+                  // database of alerts geo searchable
+                  area.cc_poly = [ type:'polygon', coordinates:[ inner_polygon_ring ] ]
+                }
+  
+                // If we got a polygon AND there was an info.area.geocode then we can look to see if we should cache that code
+                // this is duff -- an alert can have many polygons and many geocodes, so the assumption here is wrong. 
+                if ( 1==2 ) {
+                  if ( area.geocode && area.geocode.value && area.geocode.valueName ) {
+                    log.debug("CAP Alert contains polygon and geocode - cache value - ${area.geocode}");
+                    def authorities = area.geocode.valueName instanceof List ? area.geocode.valueName : [ area.geocode.valueName ]
+                    def symbols = area.geocode.value instanceof List ? area.geocode.value : [ area.geocode.value ]
+    
+                    Iterator i1=authorities.iterator()
+                    Iterator i2=symbols.iterator()
+                    for (; i1.hasNext() && i2.hasNext(); ) {
+                      
+                      try {
+                        gazService.cache(i1.next(), i2.next(), inner_polygon_ring);
+                      }
+                      catch ( Exception e ) {
+                        log.error("problem trying to cache gaz entry",e);
+                      }
                     }
                   }
                 }
+  
+                area.geocode?.each { gc ->
+                  log.debug("CAP Alert has geocode : ${gc} ");
+                }
               }
-
-              area.geocode?.each { gc ->
-                log.debug("CAP Alert has geocode : ${gc} ");
+              else {
+                log.error("No polygon elements found inside area for");
               }
             }
           }
