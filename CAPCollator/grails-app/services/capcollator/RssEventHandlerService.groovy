@@ -126,9 +126,7 @@ class RssEventHandlerService {
             log.debug("ATOM Checker Task Complete");
           }
         }
-        else {
-          log.error("Unable to find CAP link in ${body}");
-        }
+      }
     }
     catch ( Exception e ) {
       log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
