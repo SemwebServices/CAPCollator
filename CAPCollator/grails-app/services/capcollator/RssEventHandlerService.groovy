@@ -16,10 +16,6 @@ class RssEventHandlerService {
 
 
   def handleNotification(body,context) {
-    log.error("RssEventHandlerService::handleNotification not implemented");
-  }
-
-  def oldHandleNotification(body,context) {
     log.debug("RssEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
 
@@ -46,10 +42,8 @@ class RssEventHandlerService {
 
         // Different feeds behave differently wrt properly setting the type attribute. 
         // Until we get to grips a little better - try and parse every link - and if we manage to parse XML, see if the root node is a cap element
-        if ( ( ( link.get('@type') != null ) && ( 'application/cap+xml'.equals(link.get('@type')) ) ) ||
-             ( ( list_of_links != null ) ) ) {
 
-          log.debug("  -> processing link type=${link.get('@type')})");
+          log.debug("  -> processing link ${link})");
 
           try {
             def ts_2 = System.currentTimeMillis();
@@ -135,7 +129,6 @@ class RssEventHandlerService {
         else {
           log.error("Unable to find CAP link in ${body}");
         }
-      }
     }
     catch ( Exception e ) {
       log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
