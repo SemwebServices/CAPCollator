@@ -11,6 +11,7 @@ class RSSEventConsumer {
   ]
 
   def handleMessage(def body, MessageContext context) {
+    log.debug("RSSEventConsumer::handleMessage");
     rssEventHandlerService.handleNotification(body,context);
   }
 }

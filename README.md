@@ -60,3 +60,6 @@ used to proxy the rabbitmq web_stomp plugin in front of apache for easy connecti
         ProxyPassReverse http://localhost:15674/
       </LocationMatch>
 
+## Debugging
+
+The rabbit MQ mgt interface (guest/guest) on http://localhost:15672/#/ is a good place to look for messages.

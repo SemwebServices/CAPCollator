@@ -11,6 +11,7 @@ class ATOMEventConsumer {
   ]
 
   def handleMessage(def body, MessageContext context) {
+    log.debug("ATOMEventConsumer::handleMessage");
     atomEventHandlerService.handleNotification(body,context);
   }
 }
