@@ -44,11 +44,11 @@ class RssEventHandlerService {
         // Different feeds behave differently wrt properly setting the type attribute. 
         // Until we get to grips a little better - try and parse every link - and if we manage to parse XML, see if the root node is a cap element
 
-        log.debug("  -> processing link ${link})");
+        log.debug("  -> processing link ${link}");
 
         try {
           def ts_2 = System.currentTimeMillis();
-          def cap_link = link.'@href'
+          def cap_link = link.text()
 
           log.debug("test ${cap_link}");
           java.net.URL cap_link_url = new java.net.URL(cap_link)
