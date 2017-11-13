@@ -1,0 +1,45 @@
+2017-02-11 11:30:31.987 DEBUG --- [pool-4-thread-4] g.a.s.c.AtomEventHandlerService          : Cap AS JSON : {
+  "identifier": "2.49.0.0.756.0.CH.170210205202.89711190",
+  "sender": "http://www.meteoschweiz.admin.ch/web/en/danger/danger.html",
+  "sent": "2017-02-10T21:52:02+01:00",
+  "status": "Actual",
+  "msgType": "Alert",
+  "scope": "Public",
+  "info":   {
+    "language": "de-DE",
+    "category": "Met",
+    "event": "Gelbe Schnee/Eis Warnung",
+    "responseType": "Prepare",
+    "urgency": "Immediate",
+    "severity": "Moderate",
+    "certainty": "Likely",
+    "effective": "2017-02-10T09:00:00+01:00",
+    "onset": "2017-02-10T09:00:00+01:00",
+    "expires": "2017-02-11T00:00:00+01:00",
+    "senderName": "MeteoSwiss",
+    "headline": "Gelbe Schnee/Eis Warnung für Schweiz - Alto Moesano",
+    "description": "l with 5-10 cm.",
+    "instruction": "VORSICHT, glatte Straßen und Wege durch Schnee und/oder Eis sind möglich. Aktivitäten im Freien können beeinträchtigt sein.",
+    "web": "http://meteoalarm.eu/de_GE/0/0/CH304.html",
+    "parameter":     [
+            {
+        "valueName": "awareness_level",
+        "value": "2; yellow; Moderate"
+      },
+            {
+        "valueName": "awareness_type",
+        "value": "2; snow-ice"
+      }
+    ],
+    "area":     {
+      "areaDesc": "Alto Moesano",
+      "polygon": "46.493188786,9.28083706361 46.4384091652,9.28619712325 46.3874143364,9.08959202522 46.459502401,9.09482391247 46.4793015337,9.08124288443 46.4813963916,9.10930353197 46.5073882856,9.22235138043 46.493188786,9.28083706361",
+      "geocode":       {
+        "valueName": "EmmaId",
+        "value": "CH304"
+      }
+    }
+  }
+}
+2017-02-11 11:30:31.987 DEBUG --- [pool-4-thread-3] g.a.s.c.CapEventHandlerService           : CapEventHandlerService::process [identifier:2.49.0.0.756.0.CH.170210205202.89711190, info:[area:[areaDesc:Alto Moesano, geocode:[value:CH304, valueName:EmmaId], polygon:46.493188786,9.28083706361 46.4384091652,9.28619712325 46.3874143364,9.08959202522 46.459502401,9.09482391247 46.4793015337,9.08124288443 46.4813963916,9.10930353197 46.5073882856,9.22235138043 46.493188786,9.28083706361], category:Met, certainty:Likely, description:l with 5-10 cm., effective:2017-02-10T09:00:00+01:00, event:Gelbe Schnee/Eis Warnung, expires:2017-02-11T00:00:00+01:00, headline:Gelbe Schnee/Eis Warnung für Schweiz - Alto Moesano, instruction:VORSICHT, glatte Straßen und Wege durch Schnee und/oder Eis sind möglich. Aktivitäten im Freien können beeinträchtigt sein., language:de-DE, onset:2017-02-10T09:00:00+01:00, parameter:[[value:2; yellow; Moderate, valueName:awareness_level], [value:2; snow-ice, valueName:awareness_type]], responseType:Prepare, senderName:MeteoSwiss, severity:Moderate, urgency:Immediate, web:http://meteoalarm.eu/de_GE/0/0/CH304.html], msgType:Alert, scope:Public, sender:http://www.meteoschweiz.admin.ch/web/en/danger/danger.html, sent:2017-02-10T21:52:02+01:00, status:Actual]
+
