@@ -48,7 +48,7 @@ class RssEventHandlerService {
 
         try {
           def ts_2 = System.currentTimeMillis();
-          def cap_link = link.text()
+          def cap_link = link.toString()
 
           log.debug("test ${cap_link}");
           java.net.URL cap_link_url = new java.net.URL(cap_link)
