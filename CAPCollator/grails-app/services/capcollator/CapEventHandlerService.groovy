@@ -128,7 +128,12 @@ class CapEventHandlerService {
       // Drop the signature -- it's very verbose and applies to the underlying XML document. 
       // Consumers should return the source CAP if they want to validate the alert
       cap_notification.AlertBody.Signature=null
-      ESWrapperService.index('alerts','alert',cap_notification)
+      if ( cap_notification.AlertBody.identifier != null ) {
+        ESWrapperService.index('alerts', 'alert', cap_notification.AlertBody.identifier, cap_notification)
+      }
+      else {
+        ESWrapperService.index('alerts', 'alert', cap_notification)
+      }
     }
   }
 
