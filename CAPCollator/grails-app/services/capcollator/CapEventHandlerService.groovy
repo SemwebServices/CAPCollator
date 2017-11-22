@@ -129,7 +129,7 @@ class CapEventHandlerService {
       // Consumers should return the source CAP if they want to validate the alert
       cap_notification.AlertBody.Signature=null
       if ( cap_notification.AlertBody.identifier != null ) {
-        ESWrapperService.index('alerts', 'alert', cap_notification.AlertBody.identifier, cap_notification)
+        ESWrapperService.index('alerts', 'alert', "${cap_notification.AlertBody.identifier}".toString(), cap_notification)
       }
       else {
         ESWrapperService.index('alerts', 'alert', cap_notification)
