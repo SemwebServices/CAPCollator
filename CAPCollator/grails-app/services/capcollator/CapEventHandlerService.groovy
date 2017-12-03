@@ -20,6 +20,14 @@ class CapEventHandlerService {
       def cap_body = cap_notification.AlertBody
       def polygons_found=0
 
+      if ( cap_notification.AlertMetadata.tags == null ) {
+        cap_notification.AlertMetadata.tags=[]
+      } 
+
+      if ( cap_notification.AlertMetadata['warnings'] == null ) {
+        cap_notification.AlertMetadata['warnings'] = []
+      }
+
       // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
       if ( cap_body?.info ) {
         def list_of_info_elements = cap_body.info instanceof List ? cap_body.info : [ cap_body.info ]
@@ -44,8 +52,11 @@ class CapEventHandlerService {
                   def match_result = matchSubscriptions(inner_polygon_ring)
 
                   matching_subscriptions.addAll(match_result.subscriptions);
-                  if ( cap_notification.AlertMetadata['warnings'] == null ) {
-                    cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
+
+                  cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
+
+                  if ( match_result.status == 'ERROR' ) {
+                    cap_notification.AlertMetadata.tags.add('GEO_SEARCH_ERROR');
                   }
   
                   // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
@@ -90,9 +101,6 @@ class CapEventHandlerService {
 
         if ( polygons_found == 0 ) {
           eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
-          if ( cap_notification.AlertMetadata.tags == null ) {
-            cap_notification.AlertMetadata.tags=[]
-          } 
           cap_notification.AlertMetadata.tags.add('No_Polygon_Provided');
         }
 
@@ -176,7 +184,8 @@ class CapEventHandlerService {
 
     def result=[
       subscriptions:[],
-      messages:[]
+      messages:[],
+      status:'OK'
     ]
 
     String query = '''{
@@ -210,6 +219,7 @@ class CapEventHandlerService {
     }
     catch ( Exception e ) {
       result.messages.add(e.message);
+      result.status='ERROR';
     }
 
     result
