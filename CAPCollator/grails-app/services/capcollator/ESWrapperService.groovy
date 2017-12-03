@@ -91,14 +91,9 @@ class ESWrapperService {
 
   def search(String[] indexes, String query_json) {
     def result=null;
-    try {
-      org.elasticsearch.action.search.SearchRequestBuilder srb = esclient.prepareSearch(indexes)
-      srb.setQuery(QueryBuilders.wrapperQuery(query_json))
-      result = srb.get()
-    }
-    catch ( Exception e ) {
-      log.error("Error processing ${indexes} ${query_json}",e);
-    }
+    org.elasticsearch.action.search.SearchRequestBuilder srb = esclient.prepareSearch(indexes)
+    srb.setQuery(QueryBuilders.wrapperQuery(query_json))
+    result = srb.get()
     result
   }
 

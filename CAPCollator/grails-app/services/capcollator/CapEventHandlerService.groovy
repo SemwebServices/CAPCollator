@@ -41,7 +41,12 @@ class CapEventHandlerService {
                   polygons_found++
                   // We got a polygon
                   def inner_polygon_ring = geoJsonToPolygon(poly_elem)
-                  matching_subscriptions.addAll(matchSubscriptions(inner_polygon_ring))
+                  def match_result = matchSubscriptions(inner_polygon_ring)
+
+                  matching_subscriptions.addAll(match_result.subscriptions);
+                  if ( cap_notification.AlertMetadata['warnings'] == null ) {
+                    cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
+                  }
   
                   // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
                   // database of alerts geo searchable
@@ -169,7 +174,10 @@ class CapEventHandlerService {
 
   def matchSubscriptions(polygon_ring) {
 
-    def result=[]
+    def result=[
+      subscriptions:[],
+      messages:[]
+    ]
 
     String query = '''{
          "bool": {
@@ -191,12 +199,17 @@ class CapEventHandlerService {
          }'''
 
     String[] indexes_to_search = [ 'alertssubscriptions' ]
-    def matching_subs = ESWrapperService.search(indexes_to_search,query);
+    try {
+      def matching_subs = ESWrapperService.search(indexes_to_search,query);
 
-    if ( matching_subs ) {
-      matching_subs.getHits().getHits().each { matching_sub ->
-        result.add(matching_sub.sourceAsMap().shortcode)
+      if ( matching_subs ) {
+        matching_subs.getHits().getHits().each { matching_sub ->
+          result.subscriptions.add(matching_sub.sourceAsMap().shortcode)
+        }
       }
+    }
+    catch ( Exception e ) {
+      result.messages.add(e.message);
     }
 
     result
