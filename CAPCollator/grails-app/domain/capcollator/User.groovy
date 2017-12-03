@@ -22,20 +22,6 @@ class User implements Serializable {
     UserRole.findAllByUser(this)*.role
   }
 
-  def beforeInsert() {
-    encodePassword()
-  }
-
-  def beforeUpdate() {
-    if (isDirty('password')) {
-      encodePassword()
-    }
-  }
-
-  protected void encodePassword() {
-    password = springSecurityService?.passwordEncoder ? springSecurityService.encodePassword(password) : password
-  }
-
   static transients = ['springSecurityService']
 
   static constraints = {
