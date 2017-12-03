@@ -8,8 +8,27 @@ class SubscriptionsController {
 
   def index() { 
     def result=[:]
-    result.subscriptions = Subscription.executeQuery('select s from Subscription as s');
+    def qry_params = [:]
+    def base_sub_qry = 'from Subscription as s'
+
+    if ( ( params.q != null ) && ( params.q.length() > 0 ) ) {
+      base_sub_qry += ' where lower(s.subscriptionId) like :a or lower(s.subscriptionName) like :a or lower(s.subscriptionUrl) like :a'
+      qry_params.a = "%${params.q.toLowerCase()}%".toString()
+    }
+    def order_by_clause = ' order by s.id'
+
+    def select_control_params = [
+      max: params.max ?: 10,
+      offset: params.offset ?: 0
+    ]
+
+    result.totalSubscriptions = Subscription.executeQuery('select count(s) '+base_sub_qry,qry_params)[0]
+    result.subscriptions = Subscription.executeQuery('select s '+base_sub_qry+order_by_clause,qry_params,select_control_params)
+
+    log.debug("found ${result.totalSubscriptions} feeds");
+
     result
+
   }
 
   @Secured(['ROLE_ADMIN', 'IS_AUTHENTICATED_FULLY'])

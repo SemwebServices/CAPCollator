@@ -22,7 +22,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">CAPCollator</a>
+        <a class="navbar-brand" href="#">CAPCollator <g:meta name="info.app.version"/></a>
       </div>
 
       <div class="collapse navbar-collapse pull-right">
