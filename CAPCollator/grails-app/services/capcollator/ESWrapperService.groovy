@@ -29,7 +29,8 @@ class ESWrapperService {
 
   @javax.annotation.PostConstruct
   def init() {
-    log.debug("init ES wrapper service");
+    // grails 3 changed log init, so logger may not be available post construct
+    // log.debug("init ES wrapper service");
 
     Settings settings = Settings.builder().put("cluster.name", "elasticsearch").build();
     esclient = new org.elasticsearch.transport.client.PreBuiltTransportClient(settings);

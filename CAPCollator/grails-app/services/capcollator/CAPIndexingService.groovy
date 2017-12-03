@@ -19,6 +19,7 @@ import javax.annotation.*
 
 
 import org.grails.datastore.mapping.engine.event.SaveOrUpdateEvent
+import grails.events.annotation.gorm.Listener
 
 @Transactional
 class CAPIndexingService {
@@ -27,16 +28,15 @@ class CAPIndexingService {
 
   @javax.annotation.PostConstruct
   def init() {
+  }
 
-    log.debug("Register gorm:saveOrUpdateEvent");
-
-    on("gorm:saveOrUpdate") { SaveOrUpdateEvent event ->
-      // log.debug("GOT EVENT 4 $event ${event.entity} ${event.entityObject}")
-      if ( event.entityObject instanceof Subscription ) {
-        indexSub(event.entityObject)
-      }
+  @Listener
+  indexSubEventHandler(SaveOrUpdateEvent event) {
+    if ( event.entityObject instanceof Subscription ) {
+      indexSub(event.entityObject)
     }
   }
+  
 
   def freshen() {
     // log.debug("freshen...");
