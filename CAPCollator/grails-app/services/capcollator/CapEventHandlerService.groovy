@@ -253,6 +253,8 @@ class CapEventHandlerService {
 
   def matchSubscriptionCircle(centre, radius) {
 
+    log.debug("matchSubscriptionCircle(${centre},${radius})");
+
     def result=[
       subscriptions:[],
       messages:[],
@@ -270,7 +272,7 @@ class CapEventHandlerService {
                    "shape": {
                      "type": "circle",
                      "coordinates":['''+centre[1]+''','''+centre[0]+'''],
-                     "radius": '''+radius+'''
+                     "radius": "'''+radius+'''km"
                    },
                    "relation":"intersects"
                  }
@@ -278,6 +280,8 @@ class CapEventHandlerService {
              }
            }
          }'''
+
+    log.debug("Validate with\ncurl -X GET 'http://wah.semweb.co/es/alertssubscriptions/_search' -d ${query}")
 
     String[] indexes_to_search = [ 'alertssubscriptions' ]
     try {
