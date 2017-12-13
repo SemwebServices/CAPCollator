@@ -91,6 +91,9 @@ class CapEventHandlerService {
                 }
               }
               else if ( area.circle != null ) {
+
+                polygons_found++
+
                 log.debug("Area defines a circle"); // EG 2.58,-70.06 13
                 def coords_radius = area.circle.split(' ');
                 def coords = null;
@@ -111,6 +114,18 @@ class CapEventHandlerService {
 
                 if ( coords != null ) {
                   def match_result = matchSubscriptionCircle(coords,radius)
+
+                  matching_subscriptions.addAll(match_result.subscriptions);
+
+                  cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
+
+                  if ( match_result.status == 'ERROR' ) {
+                    cap_notification.AlertMetadata.tags.add('GEO_SEARCH_ERROR');
+                  }
+  
+                  // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
+                  // database of alerts geo searchable
+                  area.cc_poly = [ type:'circle', coordinates:[ coords[1], coords[0] ], radius:"${radius}km" ]
                 }
                 else {
                   log.error("Failed to parse circle area ${area.circle}");
@@ -294,6 +309,7 @@ class CapEventHandlerService {
       }
     }
     catch ( Exception e ) {
+      log.error("Problem trying to match circle::${e.message}",e);
       result.messages.add(e.message);
       result.status='ERROR';
     }
