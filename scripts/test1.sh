@@ -12,7 +12,7 @@ curl -X GET 'http://wah.semweb.co/es/alertssubscriptions/_search' -d '{
                    "shape": {
                      "type":"circle",
                      "coordinates":[-70.06,12.58],
-                     "radius": "20921km"
+                     "radius": "20km"
                    },
                    "relation":"intersects"
                  }

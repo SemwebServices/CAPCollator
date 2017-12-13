@@ -101,12 +101,12 @@ class CapEventHandlerService {
                 }
 
                 if ( coords_radius.length > 1 ) {
-                  // Got radius part - We assume the feed is giving a radius in miles, so we convert to ES meters here
-                  radius = Integer.parseInt(coords_radius[1]) * 1609.34;
+                  // Got radius part - We assume the feed is giving a radius in miles, so we convert to ES KM here
+                  radius = Integer.parseInt(coords_radius[1]) * 1.6;
                 }
                 else {
-                  log.debug("Using default radius of 10 miles");
-                  radius = 10 * 1609.34;
+                  log.debug("Using default radius of 10 KM");
+                  radius = 10
                 }
 
                 if ( coords != null ) {
