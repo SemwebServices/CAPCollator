@@ -49,7 +49,7 @@ class CapEventHandlerService {
                   polygons_found++
                   // We got a polygon
                   def inner_polygon_ring = geoJsonToPolygon(poly_elem)
-                  def match_result = matchSubscriptions(inner_polygon_ring)
+                  def match_result = matchSubscriptionPolygon(inner_polygon_ring)
 
                   matching_subscriptions.addAll(match_result.subscriptions);
 
@@ -88,6 +88,32 @@ class CapEventHandlerService {
   
                 area.geocode?.each { gc ->
                   log.debug("CAP Alert has geocode : ${gc} ");
+                }
+              }
+              else if ( area.circle != null ) {
+                log.debug("Area defines a circle"); // EG 2.58,-70.06 13
+                def coords_radius = area.circle.split(' ');
+                def coords = null;
+                def radius = null;
+
+                if ( coords_radius.length > 0 ) {
+                  coords = coords_radius[0].split(',');
+                }
+
+                if ( coords_radius.length > 1 ) {
+                  // Got radius part - We assume the feed is giving a radius in miles, so we convert to ES meters here
+                  radius = Integer.parseInt(coords_radius[1]) * 1609.34;
+                }
+                else {
+                  log.debug("Using default radius of 10 miles");
+                  radius = 10 * 1609.34;
+                }
+
+                if ( coords != null ) {
+                  def match_result = matchSubscriptionCircle(coords,radius)
+                }
+                else {
+                  log.error("Failed to parse circle area ${area.circle}");
                 }
               }
               else {
@@ -180,7 +206,7 @@ class CapEventHandlerService {
     return polygon_ring
   }
 
-  def matchSubscriptions(polygon_ring) {
+  def matchSubscriptionPolygon(polygon_ring) {
 
     def result=[
       subscriptions:[],
