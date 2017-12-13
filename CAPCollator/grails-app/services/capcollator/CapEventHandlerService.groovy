@@ -250,4 +250,50 @@ class CapEventHandlerService {
 
     result
   }
+
+  def matchSubscriptionCircle(centre, radius) {
+
+    def result=[
+      subscriptions:[],
+      messages:[],
+      status:'OK'
+    ]
+
+    String query = '''{
+         "bool": {
+           "must": {
+             "match_all": {}
+           },
+           "filter": {
+               "geo_shape": {
+                 "subshape": {
+                   "shape": {
+                     "type": "circle",
+                     "coordinates":['''+centre[1]+''','''+centre[0]+'''],
+                     "radius": '''+radius+'''
+                   },
+                   "relation":"intersects"
+                 }
+               }
+             }
+           }
+         }'''
+
+    String[] indexes_to_search = [ 'alertssubscriptions' ]
+    try {
+      def matching_subs = ESWrapperService.search(indexes_to_search,query);
+
+      if ( matching_subs ) {
+        matching_subs.getHits().getHits().each { matching_sub ->
+          result.subscriptions.add(matching_sub.sourceAsMap().shortcode)
+        }
+      }
+    }
+    catch ( Exception e ) {
+      result.messages.add(e.message);
+      result.status='ERROR';
+    }
+
+    result
+  }
 }
