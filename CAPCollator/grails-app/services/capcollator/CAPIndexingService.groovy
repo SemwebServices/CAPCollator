@@ -50,29 +50,34 @@ class CAPIndexingService {
 
   def indexSub(Subscription sub) {
     log.debug("indexSub ${sub}");
-    def es_record = [
-                    recid:sub.subscriptionId,
-                    name:sub.subscriptionName,
-                    shortcode:sub.subscriptionId,
-                    subshape:[:],
-                    subscriptionUrl:null,
-                    languageOnly:null,
-                    highPriorityOnly: null,
-                    officialOnly: null,
-                    xPathFilterId: null,
-                    xPathFilter: null,
-                    areaFilterId: null,
-                    loadSubsVersion: "1.1"
-                  ]
+    try {
+      def es_record = [
+                      recid:sub.subscriptionId,
+                      name:sub.subscriptionName,
+                      shortcode:sub.subscriptionId,
+                      subshape:[:],
+                      subscriptionUrl:null,
+                      languageOnly:null,
+                      highPriorityOnly: null,
+                      officialOnly: null,
+                      xPathFilterId: null,
+                      xPathFilter: null,
+                      areaFilterId: null,
+                      loadSubsVersion: "1.1"
+                    ]
 
-    es_record.subshape.type=sub.filterType
+      es_record.subshape.type=sub.filterType
 
-    // geometry is a string containing a geo json structure
-    es_record.subshape.coordinates=new groovy.json.JsonSlurper().parseText(sub.filterGeometry)
+      // geometry is a string containing a geo json structure
+      es_record.subshape.coordinates=new groovy.json.JsonSlurper().parseText(sub.filterGeometry)
 
-    log.debug("Send es record ${es_record.subshape.coordinates}");
+      log.debug("Send es record ${es_record.subshape.coordinates}");
 
-    ESWrapperService.index('alertssubscriptions','alertsubscription',"${sub.id}-sub".toString(),es_record);
+      ESWrapperService.index('alertssubscriptions','alertsubscription',"${sub.id}-sub".toString(),es_record);
+    }
+    catch ( Exception e ) {
+      log.warn("Problem trying to submit sub ${sub.id} for indexing: ${e.message}");
+    }
   }
 
 
