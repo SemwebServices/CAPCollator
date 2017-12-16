@@ -6,12 +6,12 @@ function initMap(map_element_id, geom_type, geom) {
 
   var bounds = new google.maps.LatLngBounds();
 
-  let map = new google.maps.Map(document.getElementById(map_element_id), {
+  var map = new google.maps.Map(document.getElementById(map_element_id), {
     // center: {lat: -34.397, lng: 150.644},
     // zoom: 8
   });
 
-  let poly = toPoly(geom_type, geom, bounds);
+  var poly = toPoly(geom_type, geom, bounds);
   poly.setMap(map);
 
   map.fitBounds(bounds);
@@ -21,14 +21,14 @@ function initMap(map_element_id, geom_type, geom) {
 
 function toPoly(geom_type, geom, bounds) {
 
-  let result=null;
+  var result=null;
 
   if ( geom_type==='polygon') {
-    let coords = [];
+    var coords = [];
 
     geom[0].forEach( function(elem) {
-      let lat=elem[1];
-      let lng=elem[0];
+      var lat=elem[1];
+      var lng=elem[0];
       bounds.extend(new google.maps.LatLng(lat,lng));
       coords.push({lat:lat, lng:lng});
     });
