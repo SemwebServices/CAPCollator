@@ -18,12 +18,23 @@ function initMap(map_element_id, alert_body) {
     list_of_areas.forEach( function(area_element) {
 
       console.log("process area %o",area_element);
+      if ( area_element.cc_polys instanceof Array ) {
+        // New style records, with a list of cc_polys
+        area_element.cc_polysforEach( function(poly) {
+          var poly = toPoly(poly.type, poly.coordinates, bounds);
+          if ( poly != null ) {
+            console.log("Got poly, add to map");
+            poly.setMap(map);
+          }
+        });
+      }
+      else {
+        var poly = toPoly(area_element.cc_poly.type, area_element.cc_poly.coordinates, bounds);
 
-      var poly = toPoly(area_element.cc_poly.type, area_element.cc_poly.coordinates, bounds);
-
-      if ( poly != null ) {
-        console.log("Got poly, add to map");
-        poly.setMap(map);
+        if ( poly != null ) {
+          console.log("Got poly, add to map");
+          poly.setMap(map);
+        }
       }
     })
   });
@@ -62,6 +73,20 @@ function toPoly(geom_type, geom, bounds) {
       fillOpacity: 0.35
     });
   }
+  else if ( geom_type==='circle' ) {
+    var center = {lat: 49.25, lng: -123.1};
+    var radius = 20;
+    result = new google.maps.Circle({
+	             strokeColor: '#FF0000',
+	             strokeOpacity: 0.8,
+	             strokeWeight: 2,
+	             fillColor: '#FF0000',
+	             fillOpacity: 0.35,
+	             center: center,
+	             radius: radius
+	           });
+  }
+
 
   return result;
 }
