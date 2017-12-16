@@ -1,8 +1,6 @@
 /* For map functions */
 
-function initMap(map_element_id, geom_type, geom) {
-
-  // console.log("initMap %o %o %o",map_element_id,geom_type,geom);
+function initMap(map_element_id, alert_body) {
 
   var bounds = new google.maps.LatLngBounds();
 
@@ -11,8 +9,25 @@ function initMap(map_element_id, geom_type, geom) {
     // zoom: 8
   });
 
-  var poly = toPoly(geom_type, geom, bounds);
-  poly.setMap(map);
+  // An alert_info consists of one or more areas, each with a type and a geometry
+  var list_of_info_elements = alert_body.info instanceof Array ? alert_body.info : [ alert_body.info ];
+
+  list_of_info_elements.forEach( function(info_element) {
+
+    var list_of_areas = info_element.area instanceof Array ? info_element.area : [ info_element.area ];
+    list_of_areas.forEach( function(area_element) {
+
+      console.log("process area %o",area_element);
+
+      var poly = toPoly(area_element.cc_poly.type, area_element.cc_poly.coordinates, bounds);
+
+      if ( poly != null ) {
+        console.log("Got poly, add to map");
+        poly.setMap(map);
+      }
+    })
+  });
+
 
   map.fitBounds(bounds);
 
@@ -21,17 +36,21 @@ function initMap(map_element_id, geom_type, geom) {
 
 function toPoly(geom_type, geom, bounds) {
 
+  console.log("toPoly(%o,%o,%o)",geom_type, geom, bounds);
+
   var result=null;
 
   if ( geom_type==='polygon') {
     var coords = [];
 
     geom[0].forEach( function(elem) {
-      var lat=elem[1];
-      var lng=elem[0];
+      var lat=parseFloat(elem[1]);
+      var lng=parseFloat(elem[0]);
       bounds.extend(new google.maps.LatLng(lat,lng));
       coords.push({lat:lat, lng:lng});
     });
+
+    console.log("Create polygon with coords %o",coords);
 
     // Construct the polygon.
     result = new google.maps.Polygon({

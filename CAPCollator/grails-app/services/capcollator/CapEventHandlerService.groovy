@@ -39,7 +39,12 @@ class CapEventHandlerService {
           log.debug("  -> Check info element");
           if ( ie.area ) {
             def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
+
             list_of_area_elements.each { area ->
+
+              if ( area.cc_polys == null ) {
+                area.cc_polys = [];
+              }
 
               if ( area.polygon != null ) {
   
@@ -61,7 +66,7 @@ class CapEventHandlerService {
   
                   // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
                   // database of alerts geo searchable
-                  area.cc_poly = [ type:'polygon', coordinates:[ inner_polygon_ring ] ]
+                  area.cc_polys.add( [ type:'polygon', coordinates:[ inner_polygon_ring ] ] );
                 }
   
                 // If we got a polygon AND there was an info.area.geocode then we can look to see if we should cache that code
@@ -125,7 +130,7 @@ class CapEventHandlerService {
   
                   // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
                   // database of alerts geo searchable
-                  area.cc_poly = [ type:'circle', coordinates:[ coords[1], coords[0] ], radius:"${radius}km" ]
+                  area.cc_polys.add(  [ type:'circle', coordinates:[ coords[1], coords[0] ], radius:"${radius}km" ] )
                 }
                 else {
                   log.error("Failed to parse circle area ${area.circle}");

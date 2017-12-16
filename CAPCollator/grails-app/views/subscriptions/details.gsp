@@ -52,8 +52,7 @@
                 <td>
                   <div class="MapWithAlert" id="map_for_${s}"
                                             data-alert-id="${alert.getId()}" 
-                                            data-alert-type="${alert.getSource().AlertBody.info.area.cc_poly.type}" 
-                                            data-alert-geometry="${alert.getSource().AlertBody.info.area.cc_poly.coordinates}"></div>
+                                            data-alert-body="${alert.getSource().AlertBody as grails.converters.JSON}"></div>
                 </td>
                 <td>
                   <g:set var="alsrc" value="${alert.getSource()}"/>
@@ -89,9 +88,7 @@
       console.log("Sub poly is %o",sub_geom);
 
       $('.MapWithAlert').each(function(i,obj) {
-        initMap(obj.id, 
-                $(obj).data("alert-type"),
-                $(obj).data("alert-geometry"));
+        initMap(obj.id, $(obj).data("alert-body"));
       });
     })(jQuery);
   }
