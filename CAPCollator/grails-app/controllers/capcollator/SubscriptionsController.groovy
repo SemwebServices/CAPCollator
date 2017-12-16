@@ -5,6 +5,7 @@ import grails.plugin.springsecurity.annotation.Secured
 class SubscriptionsController {
 
   def CAPIndexingService
+  def ESWrapperService
 
   def index() { 
     def result=[:]
@@ -42,7 +43,16 @@ class SubscriptionsController {
 
   def details() {
     def result=[:]
-    result.subscription = Subscription.get(params.id)
+    result.subscription = Subscription.findBySubscriptionId(params.id)
+    String[] indexes_to_search = [ 'alerts' ]
+    String es_query = '''{
+         "bool": {
+           "must": {
+             "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"}
+           }
+         } }'''
+
+    result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query);
     result
   }
 

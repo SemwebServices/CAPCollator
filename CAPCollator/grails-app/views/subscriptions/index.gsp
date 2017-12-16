@@ -48,8 +48,8 @@
           <tbody>
             <g:each in="${subscriptions}" var="${sub}">
               <tr>
-                <td><g:link controller="subscriptions" action="details" id="${sub.id}">${sub.id}</g:link></td>
-                <td>${sub.subscriptionId}</td>
+                <td>${sub.id}</td>
+                <td><g:link controller="subscriptions" action="details" id="${sub.subscriptionId}">${sub.subscriptionId}</g:link></td>
                 <td>${sub.subscriptionName}</td>
                 <td>${sub.subscriptionUrl}</td>
                 <td>${sub.filterType}</td>

@@ -67,6 +67,7 @@
   </div>
   
   <g:layoutBody/>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBjr-BLg_p7N3o9BMjBKtejiJagZOYUFc8"></script>
   <asset:javascript src="application.js"/>
   <asset:deferredScripts/>
 </body>
