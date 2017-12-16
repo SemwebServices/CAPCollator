@@ -8,10 +8,6 @@
 </head>
 <body>
 
-  String subscriptionUrl
-  String filterType
-  String filterGeometry
-
   <div class="container-fluid">
     <div class="row">
       <div class="container-fluid">
@@ -32,14 +28,14 @@
             </div>
             <div class="form-group">
               <label class="col-sm-2 control-label">Filter Geometry</label>
-              <div class="col-sm-10"><p class="form-control-static">${subscription.filterGeometry}</p></div>
+              <div class="col-sm-10"><p class="form-control-static" id="sub-filter-geom" data-sub-geom="${subscription.filterGeometry}" >${subscription.filterGeometry}</p></div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">Current Alert Count</label>
+              <div class="col-sm-10"><p class="form-control-static">${latestAlerts.hits.totalHits} (${latestAlerts.hits.hits.size()} shown)</p></div>
             </div>
           </div>
         </div>
-
-  <pre>
-${latestAlerts}
-  </pre>
 
       </div>
     </div>
@@ -60,10 +56,20 @@ ${latestAlerts}
                                             data-alert-geometry="${alert.getSource().AlertBody.info.area.cc_poly.coordinates}"></div>
                 </td>
                 <td>
-                  ${alert.getSource().AlertBody.info.headline}
-                </td>
-                <td>
-                  <pre>${alert}</pre>
+                  <g:set var="alsrc" value="${alert.getSource()}"/>
+                  <h3>${alsrc.AlertBody.info.headline}</h3>
+
+                  <div class="form-horizontal">
+                    <div class="form-group"> <label class="col-sm-2 control-label">Alert Identifier</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.identifier}</p></div> </div>
+                    <div class="form-group"> <label class="col-sm-2 control-label">Alert Sender</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sender}</p></div> </div>
+                    <div class="form-group"> <label class="col-sm-2 control-label">Alert Sent</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sent}</p></div> </div>
+                    <div class="form-group"> <label class="col-sm-2 control-label">Source</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertMetadata.SourceUrl}</p></div> </div>
+                    <div class="form-group"> <label class="col-sm-2 control-label">Matched Subscriptions</label> <div class="col-sm-10">
+                     <ul><g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"><li>${ms}</li></g:each></ul>
+                      </div> 
+                    </div>
+                  </div>
+
                 </td>
               </tr>
             </g:each>
@@ -78,6 +84,12 @@ ${latestAlerts}
 <asset:script type="text/javascript">
   if (typeof jQuery !== 'undefined') {
     (function($) {
+
+      let sub_geom = $('#sub-filter-geom').data("sub-geom");
+      let sub_poly = [];
+
+      console.log("Sub poly is %o",sub_geom);
+
       $('.MapWithAlert').each(function(i,obj) {
         initMap(obj.id, 
                 $(obj).data("alert-type"),

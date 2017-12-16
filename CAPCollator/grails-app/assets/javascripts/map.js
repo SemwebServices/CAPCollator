@@ -2,17 +2,28 @@
 
 function initMap(map_element_id, geom_type, geom) {
 
-  console.log("initMap %o %o %o",map_element_id,geom_type,geom);
+  // console.log("initMap %o %o %o",map_element_id,geom_type,geom);
 
   var bounds = new google.maps.LatLngBounds();
 
   let map = new google.maps.Map(document.getElementById(map_element_id), {
     // center: {lat: -34.397, lng: 150.644},
-    zoom: 8
+    // zoom: 8
   });
 
-  if ( geom_type==='polygon') {
+  let poly = toPoly(geom_type, geom, bounds);
+  poly.setMap(map);
 
+  map.fitBounds(bounds);
+
+  return map;
+}
+
+function toPoly(geom_type, geom, bounds) {
+
+  let result=null;
+
+  if ( geom_type==='polygon') {
     let coords = [];
 
     geom[0].forEach( function(elem) {
@@ -23,7 +34,7 @@ function initMap(map_element_id, geom_type, geom) {
     });
 
     // Construct the polygon.
-    var poly = new google.maps.Polygon({
+    result = new google.maps.Polygon({
       paths: coords,
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,
@@ -31,11 +42,7 @@ function initMap(map_element_id, geom_type, geom) {
       fillColor: '#FF0000',
       fillOpacity: 0.35
     });
-
-    poly.setMap(map);
   }
 
-  map.fitBounds(bounds);
-
-  return map;
+  return result;
 }

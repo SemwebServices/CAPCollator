@@ -98,6 +98,21 @@ class ESWrapperService {
     result
   }
 
+  def search(String[] indexes, String query_json, int from, int num_results, String sort_field, String sort_direction) {
+    def result=null;
+    org.elasticsearch.action.search.SearchRequestBuilder srb = esclient.prepareSearch(indexes)
+    srb.setQuery(QueryBuilders.wrapperQuery(query_json))
+    srb.setSize(num_results)
+    if ( sort_field ) {
+      srb.addSort(sort_field, ( ( sort_direction?.equalsIgnoreCase('asc') ) ? org.elasticsearch.search.sort.SortOrder.ASC : org.elasticsearch.search.sort.SortOrder.DESC ) );
+    }
+    srb.setFrom(from);
+
+    result = srb.get()
+    result
+  }
+
+
   def deleteByQuery(source, json_query) {
     BulkIndexByScrollResponse response =
       DeleteByQueryAction.INSTANCE.newRequestBuilder(esclient)

@@ -50,9 +50,11 @@ class SubscriptionsController {
            "must": {
              "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"}
            }
-         } }'''
+         } 
+       }'''
 
-    result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query);
+    // result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query);
+    result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,0,100,'AlertBody.sent','desc');
     result
   }
 
