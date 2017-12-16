@@ -79,8 +79,6 @@
     </div>
   </div>
 
-<asset:javascript src="map.js"/>
-
 <asset:script type="text/javascript">
   if (typeof jQuery !== 'undefined') {
     (function($) {
