@@ -48,14 +48,14 @@
           </thead>
           <tbody>
             <g:each in="${latestAlerts.hits.hits}" var="alert" status="s">
+              <g:set var="alsrc" value="${alert.getSource()}"/>
               <tr>
                 <td>
                   <div class="MapWithAlert" id="map_for_${s}"
                                             data-alert-id="${alert.getId()}" 
-                                            data-alert-body="${alert.getSource().AlertBody as grails.converters.JSON}"></div>
+                                            data-alert-body="${alsrc.AlertBody as grails.converters.JSON}"></div>
                 </td>
                 <td>
-                  <g:set var="alsrc" value="${alert.getSource()}"/>
                   <h3>${alsrc.AlertBody.info.headline}</h3>
 
                   <div class="form-horizontal">
@@ -64,8 +64,21 @@
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Sent</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sent}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Source</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertMetadata.SourceUrl}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Matched Subscriptions</label> <div class="col-sm-10">
-                     <ul><g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"><li>${ms}</li></g:each></ul>
-                      </div> 
+                     <ul><g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"><li>${ms}</li></g:each></ul> </div> 
+                    </div>
+                    <div class="form-group"> <label class="col-sm-2 control-label">All Geometries</label> <div class="col-sm-10">
+                      <ul>
+                      
+                        <g:set var="ifo_list" value="${alsrc.AlertBody.info instanceof List ? alsrc.AlertBody.info : [ alsrc.AlertBody.info ]}"/>
+                        <g:each in="${ifo_list}" var="ifo">
+                          <g:set var="area_list" value="${ifo.area instanceof List ? ifo.area : [ ifo.area  ]}"/>
+                          <g:each in="${area_list}" var="area">
+                            <g:each in="${area.cc_polys}" var="poly">
+                              <li>${poly.type} ${poly.coordinates} ${poly.radius?:''}</li>
+                            </g:each>
+                          </g:each>
+                        </g:each>
+                      </ul>
                     </div>
                   </div>
 

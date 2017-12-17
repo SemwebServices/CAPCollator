@@ -48,6 +48,9 @@ class CapEventHandlerService {
 
               if ( area.polygon != null ) {
   
+                if ( !cap_notification.AlertMetadata.tags.contains('AREATYPE_POLYGON') ) 
+                  cap_notification.AlertMetadata.tags.add('AREATYPE_POLYGON');
+
                 def list_of_polygon_elements = area.polygon instanceof List ? area.polygon : [ area.polygon ]
   
                 list_of_polygon_elements.each { poly_elem ->
@@ -96,6 +99,9 @@ class CapEventHandlerService {
                 }
               }
               else if ( area.circle != null ) {
+
+                if ( !cap_notification.AlertMetadata.tags.contains('AREATYPE_POLYGON') ) 
+                  cap_notification.AlertMetadata.tags.add('AREATYPE_CIRCLE');
 
                 polygons_found++
 

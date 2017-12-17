@@ -20,8 +20,8 @@ function initMap(map_element_id, alert_body) {
       console.log("process area %o",area_element);
       if ( area_element.cc_polys instanceof Array ) {
         // New style records, with a list of cc_polys
-        area_element.cc_polysforEach( function(poly) {
-          var poly = toPoly(poly.type, poly.coordinates, bounds);
+        area_element.cc_polys.forEach( function(poly) {
+          var poly = toPoly(poly.type, poly.coordinates, bounds, poly.radius);
           if ( poly != null ) {
             console.log("Got poly, add to map");
             poly.setMap(map);
@@ -29,7 +29,7 @@ function initMap(map_element_id, alert_body) {
         });
       }
       else {
-        var poly = toPoly(area_element.cc_poly.type, area_element.cc_poly.coordinates, bounds);
+        var poly = toPoly(area_element.cc_poly.type, area_element.cc_poly.coordinates, bounds, area_element.cc_poly.radius);
 
         if ( poly != null ) {
           console.log("Got poly, add to map");
@@ -45,7 +45,7 @@ function initMap(map_element_id, alert_body) {
   return map;
 }
 
-function toPoly(geom_type, geom, bounds) {
+function toPoly(geom_type, geom, bounds, rad) {
 
   console.log("toPoly(%o,%o,%o)",geom_type, geom, bounds);
 
@@ -74,7 +74,13 @@ function toPoly(geom_type, geom, bounds) {
     });
   }
   else if ( geom_type==='circle' ) {
-    var center = {lat: 49.25, lng: -123.1};
+    var lat=parseFloat(geom[1]);
+    var lng=parseFloat(geom[0]);
+    var center = {lat: lat, lng: lng};
+    var rad_km = parseInt(rad);
+    console.log("Draw circle at %o %o %o",geom,rad,rad_km);
+
+    bounds.extend(new google.maps.LatLng(lat,lng));
     var radius = 20;
     result = new google.maps.Circle({
 	             strokeColor: '#FF0000',
@@ -83,8 +89,10 @@ function toPoly(geom_type, geom, bounds) {
 	             fillColor: '#FF0000',
 	             fillOpacity: 0.35,
 	             center: center,
-	             radius: radius
+	             radius: (rad_km * 1000)
 	           });
+    // result.getBounds will give the bounds for the circle.
+    bounds.union(result.getBounds());
   }
 
 
