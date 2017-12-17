@@ -42,6 +42,10 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
                    }
                  }
                }
+             },
+	     "identifier": {
+	       "type":"string",
+	       "index":"not_analyzed"
              }
            }
          }
