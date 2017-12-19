@@ -76,7 +76,7 @@
 
                   <div class="form-horizontal">
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Identifier</label> 
-                      <div class="col-sm-10"><p class="form-control-static"><g:link controller="alert" action="index" id="${alsrc.AlertBody.identifier}">${alsrc.AlertBody.identifier}</g:link></p></div> 
+                      <div class="col-sm-10"><p class="form-control-static"><g:link controller="alert" action="details" id="${alsrc.AlertBody.identifier}">${alsrc.AlertBody.identifier}</g:link></p></div> 
                     </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Sender</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sender}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Sent</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sent}</p></div> </div>
