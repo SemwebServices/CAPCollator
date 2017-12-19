@@ -1,5 +1,5 @@
-# curl -X GET 'http://wah.semweb.co/es/alertssubscriptions/_search' -d '{
-curl -X GET 'http://localhost:9200/alertssubscriptions/_search' -d '{
+# curl -X GET 'http://localhost:9200/alertssubscriptions/_search' -d '{
+curl -X GET 'http://wah.semweb.co/es/alertssubscriptions/_search' -d '{
      "from":0,
      "size":1000,
      "query":{

@@ -39,8 +39,24 @@
 
       </div>
     </div>
+
     <div class="row">
+
       <div class="container-fluid">
+
+        <g:form controller="subscriptions" action="details" method="get" class="container">
+          <div class="input-group">
+              <input type="text" name="q" class="form-control " placeholder="Text input" value="${params.q}">
+              <span class="input-group-btn">
+                  <button type="submit" class="btn btn-search">Search</button>
+              </span>
+          </div>
+        </g:form>
+
+        <div class="pagination">
+          <g:paginate controller="subscriptions" action="details" id="${params.id}" total="${totalAlerts}" next="Next" prev="Previous" omitNext="false" omitPrev="false" />
+        </div>
+
         <table class="table table-bordered table-striped">
           <thead>
             <tr>
