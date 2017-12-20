@@ -17,22 +17,33 @@
           <div class="panel-heading">
             <h3 class="panel-title">Subscription Info</h3>
           </div>
-          <div class="panel-body form-horizontal">
-            <div class="form-group">
-              <label class="col-sm-2 control-label">URL</label>
-              <div class="col-sm-10"><p class="form-control-static">${subscription.subscriptionUrl}</p></div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label">Filter Type</label>
-              <div class="col-sm-10"><p class="form-control-static">${subscription.filterType}</p></div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label">Filter Geometry</label>
-              <div class="col-sm-10"><p class="form-control-static" id="sub-filter-geom" data-sub-geom="${subscription.filterGeometry}" >${subscription.filterGeometry}</p></div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-2 control-label">Current Alert Count</label>
-              <div class="col-sm-10"><p class="form-control-static">${latestAlerts.hits.totalHits} (${latestAlerts.hits.hits.size()} shown)</p></div>
+          <div class="panel-body form-horizontal container">
+            <div class="row">
+  
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">URL</label>
+                  <div class="col-sm-7"><p class="form-control-static"><a href="${subscription.subscriptionUrl}">${subscription.subscriptionUrl}</a></p></div>
+                </div>
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">Alert Count</label>
+                  <div class="col-sm-7"><p class="form-control-static">${latestAlerts.hits.totalHits} (${latestAlerts.hits.hits.size()} shown)</p></div>
+                </div>
+              </div>
+  
+  
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">Filter Type</label>
+                  <div class="col-sm-7"><p class="form-control-static">${subscription.filterType}</p></div>
+                </div>
+  
+                <div class="form-group">
+                  <label class="col-sm-3 control-label">Filter Geometry</label>
+                  <div class="col-sm-7"><p class="form-control-static" id="sub-filter-geom" data-sub-geom="${subscription.filterGeometry}" >${subscription.filterGeometry}</p></div>
+                </div>
+              </div>
+  
             </div>
           </div>
         </div>
