@@ -42,7 +42,8 @@
 
     <div class="row">
 
-      <div class="container-fluid">
+      <div class="container-fluid" style="vertical-align: middle; text-align:center;">
+
 
         <g:form controller="subscriptions" action="details" method="get" class="container">
           <div class="input-group">
@@ -53,9 +54,16 @@
           </div>
         </g:form>
 
-        <div class="pagination">
-          <g:paginate controller="subscriptions" action="details" id="${params.id}" total="${totalAlerts}" next="Next" prev="Previous" omitNext="false" omitPrev="false" />
+        <div>
+          Showing alerts ${(offset?:0)+1} to ${java.lang.Math.min(((offset?:0)+(max?:10)),(totalAlerts))} of ${totalAlerts}
         </div>
+
+        <div class="pagination">
+          <g:paginate controller="subscriptions" action="details" params="${[id:params.id]}" total="${totalAlerts}" next="Next" prev="Previous" omitNext="false" omitPrev="false" />
+        </div>
+
+      </div>
+      <div class="container-fluid">
 
         <table class="table table-bordered table-striped">
           <thead>
@@ -92,7 +100,7 @@
                           <g:set var="area_list" value="${ifo.area instanceof List ? ifo.area : [ ifo.area  ]}"/>
                           <g:each in="${area_list}" var="area">
                             <g:each in="${area.cc_polys}" var="poly">
-                              <li>${poly.type} ${poly.coordinates} ${poly.radius?:''}</li>
+                              <li>${poly.type}</li>
                             </g:each>
                           </g:each>
                         </g:each>

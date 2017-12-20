@@ -53,10 +53,10 @@ class SubscriptionsController {
          } 
        }'''
 
-    def max = params.max ?: 10;
-    def offset = params.offset ?: 0;
+    result.max = params.max ? Integer.parseInt(params.max) : 10;
+    result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
 
-    result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,offset,max,'AlertBody.sent','desc');
+    result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'AlertBody.sent','desc');
     result.totalAlerts = result.latestAlerts.hits.totalHits
 
     result
