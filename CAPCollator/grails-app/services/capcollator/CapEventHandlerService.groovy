@@ -98,53 +98,56 @@ class CapEventHandlerService {
                   log.debug("CAP Alert has geocode : ${gc} ");
                 }
               }
-              else if ( area.circle != null ) {
+
+              if ( area.circle != null ) {
 
                 if ( !cap_notification.AlertMetadata.tags.contains('AREATYPE_POLYGON') ) 
                   cap_notification.AlertMetadata.tags.add('AREATYPE_CIRCLE');
 
-                polygons_found++
+                def list_of_circle_elements = area.circle instanceof List ? area.circle : [ area.circle ]
 
-                log.debug("Area defines a circle"); // EG 2.58,-70.06 13
-                def coords_radius = area.circle.split(' ');
-                def coords = null;
-                def radius = null;
-
-                if ( coords_radius.length > 0 ) {
-                  coords = coords_radius[0].split(',');
-                }
-
-                if ( coords_radius.length > 1 ) {
-                  // Got radius part - We assume the feed is giving a radius in miles, so we convert to ES KM here
-                  radius = Integer.parseInt(coords_radius[1]) * 1.6;
-                }
-                else {
-                  log.debug("Using default radius of 10 KM");
-                  radius = 10
-                }
-
-                if ( coords != null ) {
-                  def match_result = matchSubscriptionCircle(coords,radius)
-
-                  matching_subscriptions.addAll(match_result.subscriptions);
-
-                  cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
-
-                  if ( match_result.status == 'ERROR' ) {
-                    cap_notification.AlertMetadata.tags.add('GEO_SEARCH_ERROR');
+                list_of_circle_elements.each { circle ->
+                  polygons_found++
+  
+                  log.debug("Area defines a circle"); // EG 2.58,-70.06 13
+                  def coords_radius = circle.split(' ');
+                  def coords = null;
+                  def radius = null;
+  
+                  if ( coords_radius.length > 0 ) {
+                    coords = coords_radius[0].split(',');
                   }
   
-                  // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
-                  // database of alerts geo searchable
-                  area.cc_polys.add(  [ type:'circle', coordinates:[ coords[1], coords[0] ], radius:"${radius}km" ] )
-                }
-                else {
-                  log.error("Failed to parse circle area ${area.circle}");
+                  if ( coords_radius.length > 1 ) {
+                    // Got radius part - We assume the feed is giving a radius in miles, so we convert to ES KM here
+                    radius = Integer.parseInt(coords_radius[1]) * 1.6;
+                  }
+                  else {
+                    log.debug("Using default radius of 10 KM");
+                    radius = 10
+                  }
+  
+                  if ( coords != null ) {
+                    def match_result = matchSubscriptionCircle(coords,radius)
+  
+                    matching_subscriptions.addAll(match_result.subscriptions);
+  
+                    cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
+  
+                    if ( match_result.status == 'ERROR' ) {
+                      cap_notification.AlertMetadata.tags.add('GEO_SEARCH_ERROR');
+                    }
+    
+                    // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
+                    // database of alerts geo searchable
+                    area.cc_polys.add(  [ type:'circle', coordinates:[ coords[1], coords[0] ], radius:"${radius}km" ] )
+                  }
+                  else {
+                    log.error("Failed to parse circle area ${circle}");
+                  }
                 }
               }
-              else {
-                log.error("No polygon elements found inside area for");
-              }
+
             }
           }
         }
