@@ -101,7 +101,7 @@
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Sent</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sent}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Source</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertMetadata.SourceUrl}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Matched Subscriptions</label> <div class="col-sm-10">
-                     <ul><g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"><li>${ms}</li></g:each></ul> </div> 
+                     <ul><g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"><li> <g:link controller="subscriptions" action="details" id="${ms}">${ms}</g:link></li></g:each></ul> </div> 
                     </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">All Geometries</label> <div class="col-sm-10">
                       <ul>
