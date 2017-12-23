@@ -56,7 +56,7 @@
       <div class="container-fluid" style="vertical-align: middle; text-align:center;">
 
 
-        <g:form controller="subscriptions" action="details" method="get" class="container">
+        <g:form controller="subscriptions" id="${params.id}" action="details" method="get" class="container">
           <div class="input-group">
               <input type="text" name="q" class="form-control " placeholder="Text input" value="${params.q}">
               <span class="input-group-btn">

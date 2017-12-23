@@ -65,8 +65,13 @@ class SubscriptionsController {
     result.max = params.max ? Integer.parseInt(params.max) : 10;
     result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
 
+    try {
     result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'AlertBody.sent','desc');
     result.totalAlerts = result.latestAlerts.hits.totalHits
+    }
+    catch ( Exception e ) {
+      log.error("Problem with query",e);
+    }
 
     result
   }
