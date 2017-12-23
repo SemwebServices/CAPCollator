@@ -44,14 +44,23 @@ class SubscriptionsController {
   def details() {
     def result=[:]
     result.subscription = Subscription.findBySubscriptionId(params.id)
+
+    def query_clause='';
+    if ( params.q ) {
+      query_clause = ',{"simple_query_string": { "query":"'+params.q+'" } }'
+    }
     String[] indexes_to_search = [ 'alerts' ]
     String es_query = '''{
          "bool": {
-           "must": {
-             "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"}
+           "must": [ {
+             "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} 
            }
+           '''+query_clause+'''
+           ]
          } 
        }'''
+
+    log.debug("Run query: ${es_query}");
 
     result.max = params.max ? Integer.parseInt(params.max) : 10;
     result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
