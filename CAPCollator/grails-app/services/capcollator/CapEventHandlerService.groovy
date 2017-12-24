@@ -14,6 +14,9 @@ class CapEventHandlerService {
   def eventService
   def gazService
 
+  /**
+   * Fired when we have detected a CAP event, to capture the event and index it in our local ES index
+   */
   def process(cap_notification) {
     // log.debug("CapEventHandlerService::process ${cap_notification}");
     try {
@@ -26,6 +29,12 @@ class CapEventHandlerService {
 
       if ( cap_notification.AlertMetadata['warnings'] == null ) {
         cap_notification.AlertMetadata['warnings'] = []
+      }
+
+      // This is a little ugly, but pull the event time up to the root of the document, so that we have something we know we
+      // can sort by without needing a nested query
+      if ( cap_notification.AlertBody.sent ) {
+        cap_notification.evtTimestamp = cap_notification.AlertBody.sent;
       }
 
       // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }

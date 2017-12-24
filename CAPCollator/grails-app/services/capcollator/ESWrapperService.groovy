@@ -104,7 +104,7 @@ class ESWrapperService {
     srb.setQuery(QueryBuilders.wrapperQuery(query_json))
     srb.setSize(num_results)
     if ( sort_field ) {
-      srb.addSort(sort_field, ( ( sort_direction?.equalsIgnoreCase('asc') ) ? org.elasticsearch.search.sort.SortOrder.ASC : org.elasticsearch.search.sort.SortOrder.DESC ) );
+      srb.addSort(sort_field, ( sort_direction?.equalsIgnoreCase('desc') ? org.elasticsearch.search.sort.SortOrder.DESC : org.elasticsearch.search.sort.SortOrder.ASC ) );
     }
     srb.setFrom(from);
 
