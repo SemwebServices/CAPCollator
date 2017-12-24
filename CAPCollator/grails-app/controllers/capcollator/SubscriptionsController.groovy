@@ -52,19 +52,20 @@ class SubscriptionsController {
     String[] indexes_to_search = [ 'alerts' ]
     String es_query = '''{
          "bool": {
-           "must": [ {
-             "nested" {
-               "path":"AlertMetadata",
-               "query": {
-                 "bool": {
-                   "must":[
-                     { "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} }
-                   ]
+           "must": [ 
+             {
+               "nested": {
+                 "path":"AlertMetadata",
+                 "query": {
+                   "bool": {
+                     "must": [
+                       { "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} }
+                     ]
+                   }
                  }
                }
              }
-           }
-           '''+query_clause+'''
+             '''+query_clause+'''
            ]
          } 
        }'''
