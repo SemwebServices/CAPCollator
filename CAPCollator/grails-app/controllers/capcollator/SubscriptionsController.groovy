@@ -53,7 +53,16 @@ class SubscriptionsController {
     String es_query = '''{
          "bool": {
            "must": [ {
-             "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} 
+             "nested" {
+               "path":"AlertMetadata",
+               "query": {
+                 "bool": {
+                   "must":[
+                     { "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} }
+                   ]
+                 }
+               }
+             }
            }
            '''+query_clause+'''
            ]
