@@ -33,8 +33,8 @@ class CapEventHandlerService {
 
       // This is a little ugly, but pull the event time up to the root of the document, so that we have something we know we
       // can sort by without needing a nested query
-      if ( cap_notification.AlertBody.sent ) {
-        cap_notification.evtTimestamp = cap_notification.AlertBody.sent;
+      if ( cap_body.sent != null ) {
+        cap_notification.evtTimestamp = cap_body.sent;
       }
 
       // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
