@@ -1,9 +1,16 @@
+# About
 
+CAPCollator is middleware that bridges the gap between the diverse set of Common Alerting Protocol (CAP) Alert Producers and systems which wish
+to consume alerts that might be applicable in a specific place. It runs on a server and harvests alerts from a configured collection of sources
+in order to maintain a comprehensive and searchable global index of all currently live CAP alerts, regardless of source.
+
+A demo system is available at [https://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
 
 ## Technology
 
 Currently implemented in Java using the groovy-on-grails framework, but runnable as a microservice using the
-production jar. An embedded database is used for feed state. Elasticsearch 5.2+ is used for geo indexing
+production jar. An embedded database is used for feed state. Elasticsearch 5.2+ is used for geo indexing, RabbitMQ is used for
+message fanout and durable delivery.
 
 ## Deployment
 
