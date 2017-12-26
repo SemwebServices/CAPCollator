@@ -121,5 +121,7 @@ class ESWrapperService {
         .get();                                             
 
     long deleted = response.getDeleted(); 
+
+    log.info("Delete by query ${json_query} removed ${deleted} entries");
   }
 }

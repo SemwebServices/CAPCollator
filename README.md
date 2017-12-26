@@ -63,3 +63,12 @@ used to proxy the rabbitmq web_stomp plugin in front of apache for easy connecti
 ## Debugging
 
 The rabbit MQ mgt interface (guest/guest) on http://localhost:15672/#/ is a good place to look for messages.
+
+## Deployment
+
+CAPCollator can track usage using google analytics. Add your GTM Code to TOMCAT_HOME/conf/Catalina/localhost/CAPCollator.xml. Example under src/main/webapp/META-INF/context.xml or as follows
+
+    <Context path="/CAPCollator" reloadable="false">
+      <Parameter name="gtmcode" value="GTM-56M9D5W" override="false"/>
+    </Context>
+

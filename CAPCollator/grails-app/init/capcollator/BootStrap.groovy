@@ -4,6 +4,7 @@ class BootStrap {
 
   def CAPIndexingService
   def grailsApplication
+  def servletContext
 
   def sysusers = [
     [
