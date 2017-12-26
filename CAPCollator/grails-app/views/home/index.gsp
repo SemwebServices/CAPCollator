@@ -2,16 +2,11 @@
 <html>
 <head>
     <meta name="layout" content="main"/>
-    <title></title>
+    <title>CAP Collator - full list of known subscriptions</title>
 
     <asset:link rel="icon" href="favicon.ico" type="image/x-ico" />
 </head>
 <body>
-  Public home
-
-  <pre>
-  ${statsCache} 
-  </pre>
 
   <g:each in="${statsCache}" var="i">
     <h1>${i.key}</h1>

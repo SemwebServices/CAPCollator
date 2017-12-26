@@ -10,8 +10,11 @@
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+
+    <meta name="description" content="CAP Collator is a tool for aggregating and indexing Common Alerting Protocol alerts into a single searchable resource that can be used to build useful emergency alerting applications. You can think of CAPCollator as middleware that sits between CAP event publishers and CAP event consumers."/>
+
     <title>
-        <g:layoutTitle default="CAP Collator"/>
+        <g:layoutTitle default="CAP Collator - Emergency Alert Aggregation Middleware"/>
     </title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
 

@@ -2,22 +2,25 @@
 <html>
 <head>
     <meta name="layout" content="main"/>
-    <title></title>
+    <title>CAP Collator: Search through all currently known subscriptions</title>
 
     <asset:link rel="icon" href="favicon.ico" type="image/x-ico" />
 </head>
 <body>
-  Subscriptions
 
   <div class="container-fluid">
     <div class="row">
-      <div class="container-fluid" style="vertical-align: middle; text-align:center;">
+      <div class="container" style="vertical-align: middle; text-align:center;">
 
-        <h1>Registered Feeds</h1>
+        <h1>Subscriptions</h1>
+
+        <p>This page provides a searchable index of all the currently known CAP subscriptions. Subscriptions are virtual feeds that collect alerts from
+           all known providers which intersect with a given geographical area. You can search using full text in the subscription definitions. Use the unfiltered feed to
+           drink from the firehose.</p>
 
         <g:form controller="subscriptions" action="index" method="get" class="container">
           <div class="input-group">
-              <input type="text" name="q" class="form-control " placeholder="Text input" value="${params.q}">
+              <input type="text" name="q" class="form-control " placeholder="Enter any keywords for your subscription, eg Sheffield" value="${params.q}">
               <span class="input-group-btn">
                   <button type="submit" class="btn btn-search">Search</button>
               </span>

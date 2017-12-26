@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="layout" content="main"/>
-    <title></title>
+    <title>About CAP Collator : Middleware for aggregating emergency alerts from many heterogeneous sources</title>
 
     <asset:link rel="icon" href="favicon.ico" type="image/x-ico" />
 </head>
@@ -15,7 +15,7 @@
   <h1>About CAPCollator</h1>
 
   <p>
-    CAPCollator is an side effect [open source project] resulting from volunteer effort
+    CAPCollator is an open source project resulting from volunteer effort
     to support the work of 
 <a href="https://www.linkedin.com/in/eliot-christian-03317497/">Eliot Christian</a>
 in improving a global network of emergency alerting systems. <a href="https://en.wikipedia.org/wiki/Common_Alerting_Protocol">CAP</a> is
@@ -52,7 +52,10 @@ in improving a global network of emergency alerting systems. <a href="https://en
 
   <p>
     CAPCollator then is an attempt to create a single unified index of current live CAP events at the lowest possible granularity (Single Events). It leverages RabbitMQ to subscribe a queue to a topic, and elasticsearch
-    as a real time indexing engine. The underlying ES data can be exposed as an API level interface for anyone wishing to build services on top of the feed. Links to demo systems follow:
+    as a real time indexing engine. In essence, CAPCollator is a middleware software solution that sits between CAP Event Producers and CAP Event Consumers. The system bridges the gap created by the fact that our
+    alert publishing systems (EG our local Police department, or the national weather service) are structurally different to our event consuming systems (EG an app running on my mobile phone that doesn't care who published the alert,
+    only that I am physically in a place that should be told about the alert).<br/>
+    The underlying ES data can be exposed as an API level interface for anyone wishing to build services on top of the feed. Links to demo systems follow:
 <ul>
   <li><a href="https://demo.semweb.co/CAPCollator">CAPCollator demo</a></li>
   <li><a href="https://demo.semweb.co/es/alerts/_search?q=sheffield">Example search of ES endpoint (Alerts)</a></li>
