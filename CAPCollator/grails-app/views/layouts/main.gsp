@@ -63,7 +63,9 @@
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav">
           <li class="${controllerName=='home' && actionName=='index' ? 'active' : ''}"><g:link controller="home" action="index">Home</g:link></li>
-          <li class="${controllerName=='alert' && actionName=='nearby' ? 'active' : ''}"><g:link controller="alert" action="nearby">Nearby</g:link></li>
+          <g:if test="${grailsApplication.config.featureNear?.equals('on')}">
+            <li class="${controllerName=='alert' && actionName=='nearby' ? 'active' : ''}"><g:link controller="alert" action="nearby">Nearby</g:link></li>
+          </g:if>
           <li class="${controllerName=='home' && actionName=='about' ? 'active' : ''}"><g:link controller="home" action="about">About</g:link></li>
           <sec:ifLoggedIn>
             <sec:ifAnyGranted roles="ROLE_ADMIN">
