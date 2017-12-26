@@ -1,0 +1,10 @@
+<!--
+
+Example context descriptor for CAPCollator. This context should be copied to $TOMCAT_HOME/conf/Catalina/localhost/CAPCollator.xml (Assuming thats the name of the deployed war)
+
+<Context path="/CAPCollator" reloadable="false">
+  <Environment name="capcollator.analytics" value="" type="java.lang.String"/>
+</Context>
+
+-->
+
