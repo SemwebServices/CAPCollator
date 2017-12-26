@@ -91,32 +91,30 @@
                                             data-alert-body="${alsrc.AlertBody as grails.converters.JSON}"></div>
                 </td>
                 <td>
-                  <h3>${alsrc.AlertBody.info.headline}</h3>
+                  <g:set var="ifo_list" value="${alsrc.AlertBody.info instanceof List ? alsrc.AlertBody.info : [ alsrc.AlertBody.info ]}"/>
+                  <g:each in="${ifo_list}" var="ifo">
+                    <h3>${ifo.headline}</h3>
+                  </g:each>
 
                   <div class="form-horizontal">
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Identifier</label> 
                       <div class="col-sm-10"><p class="form-control-static"><g:link controller="alert" action="details" id="${alsrc.AlertBody.identifier}">${alsrc.AlertBody.identifier}</g:link></p></div> 
                     </div>
+                    
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Sender</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sender}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Sent</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sent}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Source</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertMetadata.SourceUrl}</p></div> </div>
-                    <div class="form-group"> <label class="col-sm-2 control-label">Matched Subscriptions</label> <div class="col-sm-10">
-                     <ul><g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"><li> <g:link controller="subscriptions" action="details" id="${ms}">${ms}</g:link></li></g:each></ul> </div> 
+                    <div class="form-group"> <label class="col-sm-2 control-label">Matched Subscriptions</label> <div class="col-sm-10"><p class="form-control-static">
+                     <g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"> <g:link controller="subscriptions" action="details" id="${ms}">${ms}</g:link> &nbsp; </g:each> </p></div> 
                     </div>
-                    <div class="form-group"> <label class="col-sm-2 control-label">All Geometries</label> <div class="col-sm-10">
-                      <ul>
-                      
-                        <g:set var="ifo_list" value="${alsrc.AlertBody.info instanceof List ? alsrc.AlertBody.info : [ alsrc.AlertBody.info ]}"/>
-                        <g:each in="${ifo_list}" var="ifo">
-                          <g:set var="area_list" value="${ifo.area instanceof List ? ifo.area : [ ifo.area  ]}"/>
-                          <g:each in="${area_list}" var="area">
-                            <g:each in="${area.cc_polys}" var="poly">
-                              <li>${poly.type}</li>
-                            </g:each>
-                          </g:each>
-                        </g:each>
-                      </ul>
-                    </div>
+                    <g:each in="${ifo_list}" var="ifo">
+                      <div class="form-group"> <label class="col-sm-2 control-label">Information</label> <div class="col-sm-10">
+                            <div class="form-group"> <label class="col-sm-2 control-label">Language</label> <div class="col-sm-10"><p class="form-control-static">${ifo.language}</p></div> </div>
+                            <div class="form-group"> <label class="col-sm-2 control-label">Headline</label> <div class="col-sm-10"><p class="form-control-static">${ifo.headline}</p></div> </div>
+                            <div class="form-group"> <label class="col-sm-2 control-label">Description</label> <div class="col-sm-10"><p class="form-control-static">${ifo.description}</p></div> </div>
+                            <div class="form-group"> <label class="col-sm-2 control-label">Action</label> <div class="col-sm-10"><p class="form-control-static">${ifo.action}</p></div> </div>
+                      </div>
+                    </g:each>
                   </div>
 
                 </td>

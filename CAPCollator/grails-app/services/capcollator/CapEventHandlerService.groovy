@@ -128,8 +128,9 @@ class CapEventHandlerService {
                   }
   
                   if ( coords_radius.length > 1 ) {
-                    // Got radius part - We assume the feed is giving a radius in miles, so we convert to ES KM here
-                    radius = Integer.parseInt(coords_radius[1]) * 1.6;
+                    // CAP Standard determies that radius must be given in KM, so no conversion needed.
+                      // LEFT HERE FOR INFO:: THIS IS NOT THE CASE NOW Got radius part - We assume the feed is giving a radius in miles, so we convert to ES KM here // radius = Integer.parseInt(coords_radius[1]) * 1.6;
+                    radius = Float.parseFloat(coords_radius[1])
                   }
                   else {
                     log.debug("Using default radius of 10 KM");

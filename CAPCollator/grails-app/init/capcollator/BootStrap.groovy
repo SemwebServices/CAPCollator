@@ -16,7 +16,7 @@ class BootStrap {
   ]
 
   def init = { servletContext ->
-    log.debug("Starting CAPCollator."
+    log.debug("Starting CAPCollator.");
     if ( grailsApplication.config.gtmcode != null ) {
       log.debug("Using ${grailsApplication.config.gtmcode} as GTM code");
     }
