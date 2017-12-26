@@ -63,6 +63,7 @@
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav">
           <li class="${controllerName=='home' && actionName=='index' ? 'active' : ''}"><g:link controller="home" action="index">Home</g:link></li>
+          <li class="${controllerName=='alert' && actionName=='nearby' ? 'active' : ''}"><g:link controller="alert" action="nearby">Nearby</g:link></li>
           <li class="${controllerName=='home' && actionName=='about' ? 'active' : ''}"><g:link controller="home" action="about">About</g:link></li>
           <sec:ifLoggedIn>
             <sec:ifAnyGranted roles="ROLE_ADMIN">
@@ -84,7 +85,7 @@
   </div>
   
   <g:layoutBody/>
-  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBjr-BLg_p7N3o9BMjBKtejiJagZOYUFc8"></script>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=${grailsApplication.config.mapskey}"></script>
   <asset:javascript src="application.js"/>
   <asset:deferredScripts/>
 </body>

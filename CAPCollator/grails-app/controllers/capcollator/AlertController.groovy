@@ -6,6 +6,10 @@ class AlertController {
     log.debug("AlertController::index(${params})");
   }
 
+  def nearby() {
+    log.debug("AlertController::nearby(${params})");
+  }
+
   def details() { 
     log.debug("AlertController::details(${params})");
   }
