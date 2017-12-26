@@ -50,6 +50,7 @@
               url: api_base_url,
               dataType: "json",
               data: {"lat":position.coords.latitude , "lon":position.coords.longitude},
+              accept: { json: 'application/json' },
               success: function( nearby_alerts,status,jqxhr ) {
                 console.log( "got response %o",nearby_alerts );
               },
