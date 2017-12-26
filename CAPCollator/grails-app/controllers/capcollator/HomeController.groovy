@@ -25,6 +25,11 @@ class HomeController {
     result
   }
 
+  def about() {
+    def result = [:]
+    result
+  }
+
 
   @Secured(['ROLE_ADMIN', 'IS_AUTHENTICATED_FULLY'])
   def login() {

@@ -35,7 +35,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">CAPCollator <g:meta name="info.app.version"/></a>
+        <g:link controller="home" action="index" class="navbar-brand">CAPCollator <g:meta name="info.app.version"/></g:link>
       </div>
 
       <div class="collapse navbar-collapse pull-right">
@@ -60,6 +60,7 @@
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav">
           <li class="${controllerName=='home' && actionName=='index' ? 'active' : ''}"><g:link controller="home" action="index">Home</g:link></li>
+          <li class="${controllerName=='home' && actionName=='about' ? 'active' : ''}"><g:link controller="home" action="about">About</g:link></li>
           <sec:ifLoggedIn>
             <sec:ifAnyGranted roles="ROLE_ADMIN">
               <li class="dropdown">
