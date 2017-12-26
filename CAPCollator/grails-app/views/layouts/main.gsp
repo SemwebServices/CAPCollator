@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="en" class="no-js">
 <head>
+
+<g:if test="${grailsApplication.config.gtmcode}">
+  <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${grailsApplication.config.gtmcode}');</script>
+  <!-- End Google Tag Manager -->
+</g:if>
+
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <title>
@@ -13,6 +20,12 @@
     <g:layoutHead/>
 </head>
 <body>
+
+  <g:if test="${grailsApplication.config.gtmcode}">
+    <!-- Google Tag Manager (noscript) -->
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=${grailsApplication.config.gtmcode}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+  </g:if>
 
   <div class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">

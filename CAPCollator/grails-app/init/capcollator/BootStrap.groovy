@@ -3,6 +3,7 @@ package capcollator
 class BootStrap {
 
   def CAPIndexingService
+  def grailsApplication
 
   def sysusers = [
     [
@@ -15,6 +16,14 @@ class BootStrap {
   ]
 
   def init = { servletContext ->
+    log.debug("Starting CAPCollator."
+    if ( grailsApplication.config.gtmcode != null ) {
+      log.debug("Using ${grailsApplication.config.gtmcode} as GTM code");
+    }
+    else {
+      log.debug("No GTM tag found in context. Please add a context file called CAPCollator.xml to TOMCAT_HOME/conf/Catalina/localhost and set a property gtmcode. A sample file can be found in src/main/webapp/META-INF");
+    }
+
     setUpUserAccounts()
     CAPIndexingService.freshen()
   }
