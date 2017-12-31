@@ -75,7 +75,7 @@
         function(err) {
           console.log("problem %o",err);
         },
-        {timeout:10000,enableHighAccuracy:true});
+        {timeout:10000,enableHighAccuracy:true,maximumAge:(600000)});  // Max Age = 10 Mins, 60s/min, 1000ms/sec
 
         console.log("all done");
         

@@ -8,6 +8,7 @@ class AlertController {
 
   def nearby() {
     log.debug("AlertController::nearby(${params})");
+    log.debug("accept: ${request.getHeader('ACCEPT')}");
   }
 
   def details() { 

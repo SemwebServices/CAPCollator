@@ -138,7 +138,9 @@ class CapEventHandlerService {
                   }
   
                   if ( coords != null ) {
-                    def match_result = matchSubscriptionCircle(coords,radius)
+                    def lat = Float.parseFloat(coords[1]);
+                    def lon = Float.parseFloat(coords[0]);
+                    def match_result = matchSubscriptionCircle(lat,lon,radius)
   
                     matching_subscriptions.addAll(match_result.subscriptions);
   
@@ -290,9 +292,11 @@ class CapEventHandlerService {
     result
   }
 
-  def matchSubscriptionCircle(centre, radius) {
+  // def matchSubscriptionCircle(centre, radius) {
+  // "coordinates":['''+centre[1]+''','''+centre[0]+'''],
+  def matchSubscriptionCircle(float lat, float lon, float radius) {
 
-    log.debug("matchSubscriptionCircle(${centre},${radius})");
+    log.debug("matchSubscriptionCircle(${lat},${lon},${radius})");
 
     def result=[
       subscriptions:[],
@@ -300,6 +304,7 @@ class CapEventHandlerService {
       status:'OK'
     ]
 
+    // ES shape points accept Geo-point expressed as an array with the format: [ lon, lat] or a string "lat,lon"
     String query = '''{
          "bool": {
            "must": {
@@ -310,7 +315,7 @@ class CapEventHandlerService {
                  "subshape": {
                    "shape": {
                      "type": "circle",
-                     "coordinates":['''+centre[1]+''','''+centre[0]+'''],
+                     "coordinates":['''+lon+''','''+lon+'''],
                      "radius": "'''+radius+'''km"
                    },
                    "relation":"intersects"
