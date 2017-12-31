@@ -380,7 +380,7 @@ class CapEventHandlerService {
          }'''
 
     // https://stackoverflow.com/questions/28498494/elasticsearch-geo-shape-filter-no-results
-    String query = '''{
+    String query2 = '''{
          "bool": {
            "must": {
              "match_all": {}
@@ -403,6 +403,28 @@ class CapEventHandlerService {
              }
            }
          }'''
+
+    // "AlertBody.info.area.cc_polys" - no query registered
+    // cc_polys -- 
+    String query = '''{
+         "bool": {
+           "must": {
+             "match_all": {}
+           },
+           "filter": {
+             "AlertBody.info.area.cc_polys": {
+               "cc_polys": {
+                 "shape": {
+                   "type": "circle",
+                   "coordinates":['''+lon+''','''+lon+'''],
+                   "radius": "'''+radius+'''km"
+                 },
+                 "relation":"intersects"
+               }
+             }
+           }
+         }
+       }'''
 
     log.debug("Validate with\ncurl -X GET 'http://wah.semweb.co/es/alerts/_search' -d ${query}")
 
