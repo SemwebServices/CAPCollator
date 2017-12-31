@@ -345,4 +345,80 @@ class CapEventHandlerService {
 
     result
   }
+
+  def matchAlertCircle(float lat, float lon, float radius) {
+
+    def result = [messages:[]];
+    log.debug("matchAlertCircle(${lat},${lon},${radius})");
+
+    // ES shape points accept Geo-point expressed as an array with the format: [ lon, lat] or a string "lat,lon"
+    // AlertBody.info.area.cc_polys
+    String query_1 = '''{
+         "bool": {
+           "must": {
+             "match_all": {}
+           },
+           "filter": {
+               "geo_shape": {
+                 "AlertBody" : {
+                   "info":{
+                     "area":{
+                       "cc_polys": [
+                         "shape": {
+                           "type": "circle",
+                           "coordinates":['''+lon+''','''+lon+'''],
+                           "radius": "'''+radius+'''km"
+                         },
+                         "relation":"intersects"
+                       ]
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         }'''
+
+    // https://stackoverflow.com/questions/28498494/elasticsearch-geo-shape-filter-no-results
+    String query = '''{
+         "bool": {
+           "must": {
+             "match_all": {}
+           },
+           "filter": {
+             "nested" : {
+               "path" : "AlertBody.info.area",
+               "filter" :
+                 "geo_shape": {
+                   "AlertBody.info.area.cc_polys": {
+                     "shape": {
+                       "type": "circle",
+                       "coordinates":['''+lon+''','''+lon+'''],
+                       "radius": "'''+radius+'''km"
+                     }
+                   },
+                   "relation":"intersects"
+                 }
+               }
+             }
+           }
+         }'''
+
+    log.debug("Validate with\ncurl -X GET 'http://wah.semweb.co/es/alerts/_search' -d ${query}")
+
+    String[] indexes_to_search = [ 'alerts' ]
+    try {
+      result.alerts = ESWrapperService.search(indexes_to_search,query);
+      result.status='OK';
+    }
+    catch ( Exception e ) {
+      log.error("Problem trying to match circle::${e.message}",e);
+      result.messages.add(e.message);
+      result.status='ERROR';
+    }
+
+    result
+  }
+
+  
 }

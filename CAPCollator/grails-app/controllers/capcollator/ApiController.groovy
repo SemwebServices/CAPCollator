@@ -14,7 +14,7 @@ class ApiController {
     def lon = Float.parseFloat(params.lon?.toString())
 
     log.debug("Call matchSubscriptionCircle(${lat},${lon},2.0f);");
-    result.nearby = capEventHandlerService.matchSubscriptionCircle(lat,lon,2.0f);
+    result.nearby = capEventHandlerService.matchAlertCircle(lat,lon,2.0f);
 
     log.debug("Nearby result: ${result}");
 
