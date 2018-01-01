@@ -412,7 +412,7 @@ class CapEventHandlerService {
              "match_all": {}
            },
            "filter": {
-             "AlertBody.info.area.cc_polys": {
+             "geo_shape": {
                "cc_polys": {
                  "shape": {
                    "type": "circle",
