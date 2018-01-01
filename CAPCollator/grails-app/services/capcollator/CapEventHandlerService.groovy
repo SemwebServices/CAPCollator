@@ -352,60 +352,6 @@ class CapEventHandlerService {
     log.debug("matchAlertCircle(${lat},${lon},${radius})");
 
     // ES shape points accept Geo-point expressed as an array with the format: [ lon, lat] or a string "lat,lon"
-    // AlertBody.info.area.cc_polys
-    String query_1 = '''{
-         "bool": {
-           "must": {
-             "match_all": {}
-           },
-           "filter": {
-               "geo_shape": {
-                 "AlertBody" : {
-                   "info":{
-                     "area":{
-                       "cc_polys": [
-                         "shape": {
-                           "type": "circle",
-                           "coordinates":['''+lon+''','''+lon+'''],
-                           "radius": "'''+radius+'''km"
-                         },
-                         "relation":"intersects"
-                       ]
-                     }
-                   }
-                 }
-               }
-             }
-           }
-         }'''
-
-    // https://stackoverflow.com/questions/28498494/elasticsearch-geo-shape-filter-no-results
-    String query2 = '''{
-         "bool": {
-           "must": {
-             "match_all": {}
-           },
-           "filter": {
-             "nested" : {
-               "path" : "AlertBody.info.area",
-               "filter" :
-                 "geo_shape": {
-                   "AlertBody.info.area.cc_polys": {
-                     "shape": {
-                       "type": "circle",
-                       "coordinates":['''+lon+''','''+lon+'''],
-                       "radius": "'''+radius+'''km"
-                     }
-                   },
-                   "relation":"intersects"
-                 }
-               }
-             }
-           }
-         }'''
-
-    // "AlertBody.info.area.cc_polys" - no query registered
-    // cc_polys -- 
     String query = '''{
          "bool": {
            "must": {
