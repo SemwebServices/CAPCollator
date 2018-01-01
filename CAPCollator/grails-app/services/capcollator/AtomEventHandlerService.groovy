@@ -15,6 +15,7 @@ class AtomEventHandlerService {
   }
 
 
+  // This should be handing off processing to a thread pool - most likely wrapping this handler in a     task {.. }
   def handleNotification(body,context) {
     log.debug("AtomEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
