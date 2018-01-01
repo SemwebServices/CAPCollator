@@ -16,6 +16,15 @@ class AtomEventHandlerService {
   }
 
 
+  // Looks like we can influence the threadpool that sits under the default grails 3 async library
+  // with the following application.yml stanza::
+  // reactor:
+  //  dispatchers:
+  //      default: myExecutor
+  //      myExecutor:
+  //          type: threadPoolExecutor
+  //          size: 5
+  //          backlog: 2048
   // This should be handing off processing to a thread pool - most likely wrapping this handler in a     task {.. }
   // see https://async.grails.org/latest/guide/index.html
   def handleNotification(body,context) {
