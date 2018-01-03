@@ -54,8 +54,8 @@
               success: function( nearby_alerts,status,jqxhr ) {
                 console.log( "got response %o",nearby_alerts );
               },
-              error: function(data){
-                console.log("Problem fecthing data %o",data);
+              error: function(jqXHR,textStatus,errorThrown ) {
+                console.log("Problem fecthing data %o %o %o",jqXHR,textStatus,errorThrown);
               },
               type: "GET"
             });
