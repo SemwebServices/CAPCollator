@@ -13,17 +13,12 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
             "type":"text", 
             "store":"yes" 
          }, 
-         "cc_polys" : {
-           "type": "geo_shape",
-           "tree": "quadtree",
-           "precision": "100m"
-         },
          "AlertMetadata":{
-	   "type":"nested",
-	   "properties":{
-	     "MatchedSubscriptions":{
-	       "type":"string",
-	       "index":"not_analyzed"
+           "type":"nested",
+           "properties":{
+             "MatchedSubscriptions":{
+               "type":"string",
+               "index":"not_analyzed"
              }
            }
          },
@@ -40,12 +35,22 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
                        "type":"text"
                      }
                    }
+                 },
+                 "area":{
+                   "type":"nested",
+                   "properties":{
+                     "cc_polys" : {
+                       "type": "geo_shape",
+                       "tree": "quadtree",
+                       "precision": "100m"
+                     },
+                   }
                  }
                }
              },
-	     "identifier": {
-	       "type":"string",
-	       "index":"not_analyzed"
+             "identifier": {
+               "type":"string",
+               "index":"not_analyzed"
              }
            }
          }
