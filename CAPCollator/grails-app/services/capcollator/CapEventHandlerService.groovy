@@ -315,7 +315,7 @@ class CapEventHandlerService {
                  "subshape": {
                    "shape": {
                      "type": "circle",
-                     "coordinates":['''+lon+''','''+lon+'''],
+                     "coordinates":['''+lon+''','''+lat+'''],
                      "radius": "'''+radius+'''km"
                    },
                    "relation":"intersects"
@@ -362,7 +362,7 @@ class CapEventHandlerService {
                "cc_polys": {
                  "shape": {
                    "type": "circle",
-                   "coordinates":['''+lon+''','''+lon+'''],
+                   "coordinates":['''+lon+''','''+lat+'''],
                    "radius": "'''+radius+'''km"
                  },
                  "relation":"intersects"
