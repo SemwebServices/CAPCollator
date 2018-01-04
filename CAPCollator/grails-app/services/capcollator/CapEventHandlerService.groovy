@@ -359,7 +359,7 @@ class CapEventHandlerService {
            },
            "filter": {
              "geo_shape": {
-               "cc_polys": {
+               "AlertBody.info.area.cc_polys": {
                  "shape": {
                    "type": "circle",
                    "coordinates":['''+lon+''','''+lat+'''],
@@ -372,7 +372,7 @@ class CapEventHandlerService {
          }
        }'''
 
-    log.debug("Validate with\ncurl -X GET 'http://wah.semweb.co/es/alerts/_search' -d ${query}")
+    log.debug("Validate with\ncurl -X GET 'http://host-of-es/alerts/_search' -d ${query}")
 
     String[] indexes_to_search = [ 'alerts' ]
     try {
