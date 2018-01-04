@@ -43,7 +43,7 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
                        "type": "geo_shape",
                        "tree": "quadtree",
                        "precision": "100m"
-                     },
+                     }
                    }
                  }
                }
