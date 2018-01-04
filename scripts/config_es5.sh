@@ -14,7 +14,6 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
             "store":"yes" 
          }, 
          "AlertMetadata":{
-           "type":"nested",
            "properties":{
              "MatchedSubscriptions":{
                "type":"string",
@@ -23,13 +22,10 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
            }
          },
          "AlertBody":{
-           "type":"nested",
            "properties":{
              "info":{
-               "type":"nested",
                "properties":{
                  "parameter":{
-                   "type":"nested",
                    "properties":{
                      "value":{
                        "type":"text"
@@ -37,7 +33,6 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
                    }
                  },
                  "area":{
-                   "type":"nested",
                    "properties":{
                      "cc_polys" : {
                        "type": "geo_shape",

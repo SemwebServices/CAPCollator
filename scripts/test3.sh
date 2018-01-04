@@ -9,7 +9,7 @@ curl -X GET 'http://wah.semweb.co/es/alerts/_search' -d '
            },
            "filter": {
              "geo_shape": {
-               "*cc_polys": {
+               "AlertBody.info.area.cc_polys": {
                  "shape": {
                    "type": "circle",
                    "coordinates":[53.386036,-1.4702315],
