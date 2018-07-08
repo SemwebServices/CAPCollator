@@ -98,7 +98,7 @@ environments:
     development:
         dataSource:
             dbCreate: update
-            url: jdbc:postgresql://localhost:5432/capcollatordev
+            url: jdbc:postgresql://postgres:5432/capcollatordev
             username: capcollator
             password: capcollator
             driverClassName: org.postgresql.Driver
@@ -128,7 +128,7 @@ environments:
     production:
         dataSource:
             dbCreate: update
-            url: jdbc:postgresql://localhost:5432/capcollatorprod
+            url: jdbc:postgresql://postgres:5432/capcollatorprod
             username: capcollator
             password: capcollator
             driverClassName: org.postgresql.Driver
