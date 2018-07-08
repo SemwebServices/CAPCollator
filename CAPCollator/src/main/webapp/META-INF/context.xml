@@ -1,11 +1,3 @@
-<!--
-
-Example context descriptor for CAPCollator. This context should be copied to $TOMCAT_HOME/conf/Catalina/localhost/CAPCollator.xml (Assuming thats the name of the deployed war)
-
 <Context path="/CAPCollator" reloadable="false">
   <Parameter name="gtmcode" value="GTM-56M9D5W" override="false"/>
 </Context>
-
-
--->
-
