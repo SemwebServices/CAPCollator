@@ -27,6 +27,7 @@ import org.elasticsearch.index.reindex.DeleteByQueryAction
 class ESWrapperService {
 
   TransportClient esclient = null;
+  def grailsApplication
 
   String eshost
 
