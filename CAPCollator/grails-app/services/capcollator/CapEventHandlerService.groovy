@@ -138,7 +138,9 @@ class CapEventHandlerService {
                   }
   
                   if ( coords != null ) {
-                    def match_result = matchSubscriptionCircle(coords,radius)
+                    def lat = Float.parseFloat(coords[1]);
+                    def lon = Float.parseFloat(coords[0]);
+                    def match_result = matchSubscriptionCircle(lat,lon,radius)
   
                     matching_subscriptions.addAll(match_result.subscriptions);
   
@@ -290,9 +292,11 @@ class CapEventHandlerService {
     result
   }
 
-  def matchSubscriptionCircle(centre, radius) {
+  // def matchSubscriptionCircle(centre, radius) {
+  // "coordinates":['''+centre[1]+''','''+centre[0]+'''],
+  def matchSubscriptionCircle(float lat, float lon, float radius) {
 
-    log.debug("matchSubscriptionCircle(${centre},${radius})");
+    log.debug("matchSubscriptionCircle(${lat},${lon},${radius})");
 
     def result=[
       subscriptions:[],
@@ -300,6 +304,7 @@ class CapEventHandlerService {
       status:'OK'
     ]
 
+    // ES shape points accept Geo-point expressed as an array with the format: [ lon, lat] or a string "lat,lon"
     String query = '''{
          "bool": {
            "must": {
@@ -310,7 +315,7 @@ class CapEventHandlerService {
                  "subshape": {
                    "shape": {
                      "type": "circle",
-                     "coordinates":['''+centre[1]+''','''+centre[0]+'''],
+                     "coordinates":['''+lon+''','''+lat+'''],
                      "radius": "'''+radius+'''km"
                    },
                    "relation":"intersects"
@@ -340,4 +345,48 @@ class CapEventHandlerService {
 
     result
   }
+
+  def matchAlertCircle(float lat, float lon, float radius) {
+
+    def result = [messages:[]];
+    log.debug("matchAlertCircle(${lat},${lon},${radius})");
+
+    // ES shape points accept Geo-point expressed as an array with the format: [ lon, lat] or a string "lat,lon"
+    String query = '''{
+         "bool": {
+           "must": {
+             "match_all": {}
+           },
+           "filter": {
+             "geo_shape": {
+               "AlertBody.info.area.cc_polys": {
+                 "shape": {
+                   "type": "circle",
+                   "coordinates":['''+lon+''','''+lat+'''],
+                   "radius": "'''+radius+'''km"
+                 },
+                 "relation":"intersects"
+               }
+             }
+           }
+         }
+       }'''
+
+    log.debug("Validate with\ncurl -X GET 'http://host-of-es/alerts/_search' -d ${query}")
+
+    String[] indexes_to_search = [ 'alerts' ]
+    try {
+      result.alerts = ESWrapperService.search(indexes_to_search,query);
+      result.status='OK';
+    }
+    catch ( Exception e ) {
+      log.error("Problem trying to match circle::${e.message}",e);
+      result.messages.add(e.message);
+      result.status='ERROR';
+    }
+
+    result
+  }
+
+  
 }

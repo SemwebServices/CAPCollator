@@ -13,48 +13,39 @@ curl -XPUT 'http://localhost:9200/alerts/alert/_mapping' -d '
             "type":"text", 
             "store":"yes" 
          }, 
-         "areas" : {
-           "type": "nested",
-           "properties":{
-             "alertShape": {
-                "type": "geo_shape",
-                "tree": "quadtree",
-                "precision": "100m"
-             },
-             "label":{
-               "type":"text", 
-               "store":"yes" 
-             }
-           }
-         },
          "AlertMetadata":{
-	   "type":"nested",
-	   "properties":{
-	     "MatchedSubscriptions":{
-	       "type":"string",
-	       "index":"not_analyzed"
+           "properties":{
+             "MatchedSubscriptions":{
+               "type":"string",
+               "index":"not_analyzed"
              }
            }
          },
          "AlertBody":{
-           "type":"nested",
            "properties":{
              "info":{
-               "type":"nested",
                "properties":{
                  "parameter":{
-                   "type":"nested",
                    "properties":{
                      "value":{
                        "type":"text"
                      }
                    }
+                 },
+                 "area":{
+                   "properties":{
+                     "cc_polys" : {
+                       "type": "geo_shape",
+                       "tree": "quadtree",
+                       "precision": "100m"
+                     }
+                   }
                  }
                }
              },
-	     "identifier": {
-	       "type":"string",
-	       "index":"not_analyzed"
+             "identifier": {
+               "type":"string",
+               "index":"not_analyzed"
              }
            }
          }
