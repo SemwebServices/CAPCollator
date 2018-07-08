@@ -22,10 +22,15 @@ import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponse
 import org.elasticsearch.index.reindex.DeleteByQueryAction 
 
+import org.springframework.beans.factory.annotation.Value
+
 @Transactional
 class ESWrapperService {
 
   TransportClient esclient = null;
+
+  @Value('${eshost?"elasticsearch"}')
+  String eshost
 
   @javax.annotation.PostConstruct
   def init() {
@@ -34,7 +39,7 @@ class ESWrapperService {
 
     Settings settings = Settings.builder().put("cluster.name", "elasticsearch").build();
     esclient = new org.elasticsearch.transport.client.PreBuiltTransportClient(settings);
-    esclient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("localhost"), 9300));
+    esclient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(eshost), 9300));
   }
 
   def index(index,typename,id,record) {

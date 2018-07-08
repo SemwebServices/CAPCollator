@@ -156,8 +156,8 @@ rabbitmq:
     connections:
       - name: localRMQ
         host: rabbitmq
-        username: guest
-        password: guest
+        username: cap
+        password: cap
 ---
 elasticSearch:
     client:
