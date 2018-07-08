@@ -155,7 +155,7 @@ environments:
 rabbitmq:
     connections:
       - name: localRMQ
-        host: localhost
+        host: rabbitmq
         username: guest
         password: guest
 ---
@@ -163,6 +163,6 @@ elasticSearch:
     client:
         mode: 'transport'
         hosts:
-        - {host: 'localhost', port: 9300}
+        - {host: 'elasticsearch', port: 9300}
 ---
 gtmcode: none
