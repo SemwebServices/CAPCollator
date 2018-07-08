@@ -22,20 +22,20 @@ import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.index.reindex.BulkIndexByScrollResponse
 import org.elasticsearch.index.reindex.DeleteByQueryAction 
 
-import org.springframework.beans.factory.annotation.Value
 
 @Transactional
 class ESWrapperService {
 
   TransportClient esclient = null;
 
-  @Value('${eshost?"elasticsearch"}')
   String eshost
 
   @javax.annotation.PostConstruct
   def init() {
     // grails 3 changed log init, so logger may not be available post construct
     // log.debug("init ES wrapper service");
+
+    def eshost = grailsApplication.config.getProperty('eshost',String,'elasticsearch');
 
     Settings settings = Settings.builder().put("cluster.name", "elasticsearch").build();
     esclient = new org.elasticsearch.transport.client.PreBuiltTransportClient(settings);
