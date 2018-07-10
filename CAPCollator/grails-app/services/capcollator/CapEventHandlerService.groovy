@@ -18,7 +18,10 @@ class CapEventHandlerService {
    * Fired when we have detected a CAP event, to capture the event and index it in our local ES index
    */
   def process(cap_notification) {
-    // log.debug("CapEventHandlerService::process ${cap_notification}");
+
+
+    log.debug("CapEventHandlerService::process "); // ${cap_notification}");
+
     try {
       def cap_body = cap_notification.AlertBody
       def polygons_found=0
@@ -51,18 +54,24 @@ class CapEventHandlerService {
 
             list_of_area_elements.each { area ->
 
+              log.debug("Processing area...");
+
               if ( area.cc_polys == null ) {
                 area.cc_polys = [];
               }
 
               if ( area.polygon != null ) {
+
   
                 if ( !cap_notification.AlertMetadata.tags.contains('AREATYPE_POLYGON') ) 
                   cap_notification.AlertMetadata.tags.add('AREATYPE_POLYGON');
 
                 def list_of_polygon_elements = area.polygon instanceof List ? area.polygon : [ area.polygon ]
   
+                log.debug("....As polygon.. count=${list_of_polygon_elements.size()}");
+
                 list_of_polygon_elements.each { poly_elem ->
+
                   polygons_found++
                   // We got a polygon
                   def inner_polygon_ring = geoJsonToPolygon(poly_elem)
@@ -109,6 +118,8 @@ class CapEventHandlerService {
               }
 
               if ( area.circle != null ) {
+
+                log.debug("....As circle");
 
                 if ( !cap_notification.AlertMetadata.tags.contains('AREATYPE_POLYGON') ) 
                   cap_notification.AlertMetadata.tags.add('AREATYPE_CIRCLE');
@@ -162,9 +173,10 @@ class CapEventHandlerService {
 
             }
           }
+          log.debug("info element checking complete");
         }
 
-        log.debug("The following subscriptions matched : ${matching_subscriptions}");
+        log.debug("The following subscriptions matched : ${matching_subscriptions} (# polygons found:${polygons_found})");
 
         if ( polygons_found == 0 ) {
           eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
@@ -249,6 +261,8 @@ class CapEventHandlerService {
 
   def matchSubscriptionPolygon(polygon_ring) {
 
+    log.debug("matchSubscriptionPolygon(...)");
+
     def result=[
       subscriptions:[],
       messages:[],
@@ -273,6 +287,8 @@ class CapEventHandlerService {
              }
            }
          }'''
+
+    log.debug("Validate with\ncurl -X GET 'http://wah.semweb.co/es/alertssubscriptions/_search' -d ${query}")
 
     String[] indexes_to_search = [ 'alertssubscriptions' ]
     try {
