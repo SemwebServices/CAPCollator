@@ -97,6 +97,7 @@ class SubscriptionsController {
     try {
       result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
       result.totalAlerts = result.latestAlerts.hits.totalHits
+      result.rows = result.latestAlerts.hits.hits
     }
     catch ( Exception e ) {
       log.error("Problem with query",e);
