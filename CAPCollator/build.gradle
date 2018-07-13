@@ -9,6 +9,7 @@ buildscript {
         classpath "gradle.plugin.com.energizedwork:idea-gradle-plugins:1.4"
         classpath "org.grails.plugins:hibernate5:${gormVersion-".RELEASE"}"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.14.6"
+        classpath "org.grails.plugins:views-gradle:1.2.8"
     }
 }
 
@@ -20,6 +21,7 @@ apply plugin:"idea"
 apply plugin:"war"
 apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.grails-gsp"
+apply plugin:"org.grails.plugins.views-json"
 apply plugin:"asset-pipeline"
 
 def elasticsearchVersion = '2.1.1'
@@ -70,6 +72,12 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-core:2.7'
 
     compile 'org.grails.plugins:quartz:2.0.9'
+
+
+    compile "org.grails.plugins:views-json:1.2.8"
+    // Next one gives us geojson support
+    compile "org.grails.plugins:views-json-templates:1.2.8"
+    compile "org.grails.plugins:views-markup:1.2.8"
 
     compile group: 'xom', name: 'xom', version: '1.2.5'
     compile 'net.sf.json-lib:json-lib:2.4:jdk15'
