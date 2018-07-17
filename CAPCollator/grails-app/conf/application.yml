@@ -68,6 +68,7 @@ grails:
     views:
         default:
             codec: html
+            compileStatic: false
         gsp:
             encoding: UTF-8
             htmlcodec: xml
@@ -76,6 +77,12 @@ grails:
                 scriptlets: html
                 taglib: none
                 staticparts: none
+        json:
+            compileStatic: false
+        markup:
+            compileStatic: false
+            cacheTemplates: true
+            autoIndent: true
 endpoints:
     jmx:
         unique-names: true

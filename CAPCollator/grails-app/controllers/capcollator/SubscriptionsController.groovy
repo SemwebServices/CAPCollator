@@ -79,8 +79,6 @@ class SubscriptionsController {
       log.error("Problem with query",e);
     }
 
-    String viewname
-
     respond result
   }
 
@@ -106,15 +104,15 @@ class SubscriptionsController {
     result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
 
     try {
-      //result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
-      // result.totalAlerts = result.latestAlerts.hits.totalHits
-      //result.rows = result.latestAlerts.hits.hits
+      result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
+      result.totalAlerts = result.latestAlerts.hits.totalHits
+      result.rows = result.latestAlerts.hits.hits
     }
     catch ( Exception e ) {
       log.error("Problem with query",e);
     }
 
-    render result as XML
+    render(template:"rss", model:[result:result],contentType: "text/xml", encoding: "UTF-8")
   }
 
   def atom() {
@@ -139,15 +137,15 @@ class SubscriptionsController {
     result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
 
     try {
-      //result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
-      // result.totalAlerts = result.latestAlerts.hits.totalHits
-      //result.rows = result.latestAlerts.hits.hits
+      result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
+      result.totalAlerts = result.latestAlerts.hits.totalHits
+      result.rows = result.latestAlerts.hits.hits
     }
     catch ( Exception e ) {
       log.error("Problem with query",e);
     }
 
-    render result as XML
+    render(template:"atom", model:[result:result],contentType: "text/xml", encoding: "UTF-8")
   }
 
 }
