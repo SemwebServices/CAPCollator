@@ -1,8 +1,14 @@
 package capcollator
 
 import grails.plugin.springsecurity.annotation.Secured
+import grails.rest.RestfulController 
+import grails.converters.XML
 
 class SubscriptionsController {
+
+  static responseFormats = [
+        details: ['html', 'atom', 'rss']
+  ]
 
   def CAPIndexingService
   def ESWrapperService
@@ -45,37 +51,7 @@ class SubscriptionsController {
     def result=[:]
     result.subscription = Subscription.findBySubscriptionId(params.id)
 
-    def query_clause='';
-    if ( params.q ) {
-      query_clause = ',{"simple_query_string": { "query":"'+params.q+'" } }'
-    }
-    String[] indexes_to_search = [ 'alerts' ]
-    String es_query = '''{
-         "bool": {
-           "must": [ 
-             { "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} }
-             '''+query_clause+'''
-           ]
-         } 
-       }'''
-
-    result.max = params.max ? Integer.parseInt(params.max) : 10;
-    result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
-
-    try {
-      result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
-      result.totalAlerts = result.latestAlerts.hits.totalHits
-    }
-    catch ( Exception e ) {
-      log.error("Problem with query",e);
-    }
-
-    result
-  }
-
-  def rss() {
-    def result=[:]
-    result.subscription = Subscription.findBySubscriptionId(params.id)
+    log.debug("Subscriptions::details() ${params} ${response.format}")
 
     def query_clause='';
     if ( params.q ) {
@@ -103,6 +79,75 @@ class SubscriptionsController {
       log.error("Problem with query",e);
     }
 
-    respond(result:result)
+    String viewname
+
+    respond result
   }
+
+  def rss() {
+    def result=[:]
+    result.subscription = Subscription.findBySubscriptionId(params.id)
+
+    def query_clause='';
+    if ( params.q ) {
+      query_clause = ',{"simple_query_string": { "query":"'+params.q+'" } }'
+    }
+    String[] indexes_to_search = [ 'alerts' ]
+    String es_query = '''{
+         "bool": {
+           "must": [ 
+             { "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} }
+             '''+query_clause+'''
+           ]
+         } 
+       }'''
+
+    result.max = params.max ? Integer.parseInt(params.max) : 10;
+    result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
+
+    try {
+      //result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
+      // result.totalAlerts = result.latestAlerts.hits.totalHits
+      //result.rows = result.latestAlerts.hits.hits
+    }
+    catch ( Exception e ) {
+      log.error("Problem with query",e);
+    }
+
+    render result as XML
+  }
+
+  def atom() {
+    def result=[:]
+    result.subscription = Subscription.findBySubscriptionId(params.id)
+
+    def query_clause='';
+    if ( params.q ) {
+      query_clause = ',{"simple_query_string": { "query":"'+params.q+'" } }'
+    }
+    String[] indexes_to_search = [ 'alerts' ]
+    String es_query = '''{
+         "bool": {
+           "must": [ 
+             { "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} }
+             '''+query_clause+'''
+           ]
+         } 
+       }'''
+
+    result.max = params.max ? Integer.parseInt(params.max) : 10;
+    result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
+
+    try {
+      //result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
+      // result.totalAlerts = result.latestAlerts.hits.totalHits
+      //result.rows = result.latestAlerts.hits.hits
+    }
+    catch ( Exception e ) {
+      log.error("Problem with query",e);
+    }
+
+    render result as XML
+  }
+
 }
