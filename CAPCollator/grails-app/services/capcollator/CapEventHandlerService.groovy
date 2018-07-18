@@ -149,6 +149,7 @@ class CapEventHandlerService {
                   }
   
                   if ( coords != null ) {
+                    log.debug("Parse coordinates - we assume <circle> elements are composed within the circle element as lat <comma> lon <space> radius : ${circle}");
                     def lat = Float.parseFloat(coords[0]);  // -90 to +90
                     def lon = Float.parseFloat(coords[1]);  // -180 to +180
                     def match_result = matchSubscriptionCircle(lat,lon,radius)
