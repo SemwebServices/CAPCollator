@@ -1,5 +1,6 @@
 model {
     Map result
+    // view-source:https://alert-feeds.s3.amazonaws.com/unfiltered/rss.xml
 }
 xmlDeclaration()
 rss('xmlns:atom':'http://www.w3.org/2005/Atom', version='2.0') {
@@ -22,15 +23,15 @@ rss('xmlns:atom':'http://www.w3.org/2005/Atom', version='2.0') {
 
     result.rows.each { org.elasticsearch.search.internal.InternalSearchHit row ->
       item {
-        title('')
-        link()
-        description('')
+        ((Map)(row.getSource().AlertMetadata))info
+        title(row.)
+        link(((Map)(row.getSource().AlertMetadata)).SourceUrl)
+        description()
         category('Met')
-        pubDate('')
-        guid('')
-        dc:creator('')
-        dc:date('')
-        asText(row.toString())
+        pubDate()
+        guid()
+        dc:creator()
+        dc:date()
       }
     }
   }

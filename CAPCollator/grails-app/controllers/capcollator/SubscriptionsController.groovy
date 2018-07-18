@@ -106,7 +106,7 @@ class SubscriptionsController {
     try {
       result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
       result.totalAlerts = result.latestAlerts.hits.totalHits
-      result.rows = result.latestAlerts.hits.hits
+      result.rows = buildSubscriptionInfo(result.latestAlerts.hits.hits)
     }
     catch ( Exception e ) {
       log.error("Problem with query",e);
@@ -139,13 +139,29 @@ class SubscriptionsController {
     try {
       result.latestAlerts = ESWrapperService.search(indexes_to_search,es_query,result.offset,result.max,'evtTimestamp','desc');
       result.totalAlerts = result.latestAlerts.hits.totalHits
-      result.rows = result.latestAlerts.hits.hits
+      result.rows = buildSubscriptionInfo(result.latestAlerts.hits.hits)
     }
     catch ( Exception e ) {
       log.error("Problem with query",e);
     }
 
     render(template:"atom", model:[result:result],contentType: "text/xml", encoding: "UTF-8")
+  }
+
+  private Map buildSubscriptionInfo(rows) {
+    def result = []
+    rows.each { row ->
+      def new_entry = [:]
+      new_entry.identifier = row.AlertBody.identifier
+      new_entry.url = row.AlertBody.sourceUrl
+      def info_elements = row.AlertBody.info instanceof List ? row.AlertBody.info : [ row.AlertBody.info ]
+
+      info_elements.each {
+      }
+
+      result.add(new_entry);
+    }
+    result
   }
 
 }
