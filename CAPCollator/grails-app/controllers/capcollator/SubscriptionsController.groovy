@@ -148,15 +148,24 @@ class SubscriptionsController {
     render(template:"atom", model:[result:result],contentType: "text/xml", encoding: "UTF-8")
   }
 
-  private Map buildSubscriptionInfo(rows) {
-    def result = []
-    rows.each { row ->
-      def new_entry = [:]
-      new_entry.identifier = row.AlertBody.identifier
-      new_entry.url = row.AlertBody.sourceUrl
-      def info_elements = row.AlertBody.info instanceof List ? row.AlertBody.info : [ row.AlertBody.info ]
+  private List buildSubscriptionInfo(rows) {
+    List result = []
+    rows.each { org.elasticsearch.search.internal.InternalSearchHit row ->
+      Map<String, Object> src = row.getSource()
+      List new_entry = []
+      new_entry.add([property: 'identifier', value:src.AlertBody.identifier])
+      new_entry.add([property: 'url', value:src.AlertBody.sourceUrl])
 
-      info_elements.each {
+      def info_elements = src.AlertBody.info instanceof List ? src.AlertBody.info : [ src.AlertBody.info ]
+
+      info_elements.each { info ->
+        new_entry.add([ property: 'description', lang:info.language, value:info.description ])
+        new_entry.add([ property: 'title', lang:info.language, value:info.headline ])
+        new_entry.add([ property: 'category', lang:info.language, value:info.category ])
+        new_entry.add([ property: 'link', lang:info.language, value:info.category ])
+        new_entry.add([ property: 'instruction', lang:info.language, value:info.instruction ])
+        new_entry.add([ property: 'creator', lang:info.language, value:info.senderName ])
+        new_entry.add([ property: 'date', lang:info.language, value:info.effective ])
       }
 
       result.add(new_entry);

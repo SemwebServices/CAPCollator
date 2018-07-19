@@ -1,5 +1,6 @@
 model {
     Map result
+    // view-source:https://alert-feeds.s3.amazonaws.com/unfiltered/rss.xml
 }
 xmlDeclaration()
 rss('xmlns:atom':'http://www.w3.org/2005/Atom', version='2.0') {
@@ -20,17 +21,11 @@ rss('xmlns:atom':'http://www.w3.org/2005/Atom', version='2.0') {
     offset(result?.offset)
     totalAlerts(result?.totalAlerts)
 
-    result.rows.each { org.elasticsearch.search.internal.InternalSearchHit row ->
+    result.rows.each { List row_data ->
       item {
-        title('')
-        link("${((Map)(row.getSource().AlertMetadata)).SourceUrl}")
-        description('')
-        category('Met')
-        pubDate('')
-        guid('')
-        dc:creator('')
-        dc:date('')
-        asText(row.getSource() as grails.converters.JSON)
+        row_data.each { Map item_properties ->
+          info(item_properties.toString())
+        }
       }
     }
   }

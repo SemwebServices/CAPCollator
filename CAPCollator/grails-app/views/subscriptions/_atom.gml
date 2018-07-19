@@ -21,17 +21,11 @@ rss('xmlns:atom':'http://www.w3.org/2005/Atom', version='2.0') {
     offset(result?.offset)
     totalAlerts(result?.totalAlerts)
 
-    result.rows.each { org.elasticsearch.search.internal.InternalSearchHit row ->
+    result.rows.each { List row_data ->
       item {
-        ((Map)(row.getSource().AlertMetadata))info
-        title(row.)
-        link(((Map)(row.getSource().AlertMetadata)).SourceUrl)
-        description()
-        category('Met')
-        pubDate()
-        guid()
-        dc:creator()
-        dc:date()
+        row_data.each { item_properties ->
+          info(item_properties.toString())
+        }
       }
     }
   }
