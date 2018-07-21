@@ -112,7 +112,7 @@ class SubscriptionsController {
       log.error("Problem with query",e);
     }
 
-    render(template:"/subscriptions/rss", model:[result:result],contentType: "text/xml", encoding: "UTF-8")
+    render(template:'/subscriptions/rss', model:[result:result],contentType: "text/xml", encoding: "UTF-8",  contextPath: '/')
   }
 
   def atom() {
@@ -145,7 +145,7 @@ class SubscriptionsController {
       log.error("Problem with query",e);
     }
 
-    render(template:"/subscriptions/atom", model:[result:result],contentType: "text/xml", encoding: "UTF-8")
+    render(template:'/subscriptions/atom', model:[result:result],contentType: "text/xml", encoding: "UTF-8", contextPath: '/')
   }
 
   private List buildSubscriptionInfo(rows) {
