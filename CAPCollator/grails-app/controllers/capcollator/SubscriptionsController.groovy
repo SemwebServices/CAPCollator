@@ -154,7 +154,7 @@ class SubscriptionsController {
       Map<String, Object> src = row.getSource()
       Map new_entry = [:]
       new_entry.identifier=src.AlertBody.identifier
-      new_entry.url=src.AlertMetadata.sourceUrl
+      new_entry.url=src.AlertMetadata.SourceUrl
 
       def info_elements = src.AlertBody.info instanceof List ? src.AlertBody.info : [ src.AlertBody.info ]
 
