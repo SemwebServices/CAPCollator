@@ -1,6 +1,0 @@
-model {
-  Map result
-}
-json {
-  test 'hello'
-}
