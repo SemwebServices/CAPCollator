@@ -21,11 +21,12 @@ rss('xmlns:atom':'http://www.w3.org/2005/Atom', version='2.0') {
     offset(result?.offset)
     totalAlerts(result?.totalAlerts)
 
-    result.rows.each { List row_data ->
+    result.rows.each { Map row_data ->
       item {
-        row_data.each { item_properties ->
-          info(item_properties.toString())
-        }
+        identifier(row_data.identifier)
+        title(row_data.title)
+        description(row_data.description)
+        url(row_data.url)
       }
     }
   }

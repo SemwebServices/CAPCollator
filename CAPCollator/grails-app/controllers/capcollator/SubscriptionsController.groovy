@@ -152,20 +152,23 @@ class SubscriptionsController {
     List result = []
     rows.each { org.elasticsearch.search.internal.InternalSearchHit row ->
       Map<String, Object> src = row.getSource()
-      List new_entry = []
-      new_entry.add([property: 'identifier', value:src.AlertBody.identifier])
-      new_entry.add([property: 'url', value:src.AlertBody.sourceUrl])
+      Map new_entry = [:]
+      new_entry.identifier=src.AlertBody.identifier
+      new_entry.url=src.AlertMetadata.sourceUrl
 
       def info_elements = src.AlertBody.info instanceof List ? src.AlertBody.info : [ src.AlertBody.info ]
 
+      def first_description = null;
+      def first_title = null;
+
       info_elements.each { info ->
-        new_entry.add([ property: 'description', lang:info.language, value:info.description ])
-        new_entry.add([ property: 'title', lang:info.language, value:info.headline ])
-        new_entry.add([ property: 'category', lang:info.language, value:info.category ])
-        new_entry.add([ property: 'link', lang:info.language, value:info.category ])
-        new_entry.add([ property: 'instruction', lang:info.language, value:info.instruction ])
-        new_entry.add([ property: 'creator', lang:info.language, value:info.senderName ])
-        new_entry.add([ property: 'date', lang:info.language, value:info.effective ])
+        if ( ( first_description == null ) && ( info.description != null ) )
+          first_description = info.description;
+        if ( ( first_title == null ) && ( info.headline != null ) )
+          first_title = info.headline;
+
+        new_entry.title=first_title
+        new_entry.description=first_description
       }
 
       result.add(new_entry);
