@@ -289,7 +289,6 @@ class CapEventHandlerService {
            }
          }'''
 
-    log.debug("Validate with\ncurl -X GET 'http://wah.semweb.co/es/alertssubscriptions/_search' -d ${query}")
 
     String[] indexes_to_search = [ 'alertssubscriptions' ]
     try {
@@ -302,8 +301,9 @@ class CapEventHandlerService {
       }
     }
     catch ( Exception e ) {
-      result.messages.add(e.message);
+      result.messages.add(e.message+'\n'+query);
       result.status='ERROR';
+      log.error("SEARCH ERROR:: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -d ${query}")
     }
 
     result
@@ -342,7 +342,6 @@ class CapEventHandlerService {
            }
          }'''
 
-    log.debug("Validate with\ncurl -X GET 'http://wah.semweb.co/es/alertssubscriptions/_search' -d ${query}")
 
     String[] indexes_to_search = [ 'alertssubscriptions' ]
     try {
@@ -355,9 +354,10 @@ class CapEventHandlerService {
       }
     }
     catch ( Exception e ) {
+      result.messages.add(e.message+'\n'+query);
       log.error("Problem trying to match circle::${e.message}",e);
-      result.messages.add(e.message);
       result.status='ERROR';
+      log.error("matchSubscriptionCircle ERROR: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -d ${query}")
     }
 
     result
