@@ -18,6 +18,6 @@ class EventCleanupJob {
 
     log.debug("Expire alerts where expire less than or equal ${now}");
     
-    ESWrapperService.deleteByQuery('alerts','{ "range" : { "AlertMetadata.expires" : { "lte" : "'+now+'" } } }');
+    ESWrapperService.deleteByQuery('alerts','{ "range" : { "AlertMetadata.Expires" : { "lte" : "'+now+'" } } }');
   }
 }
