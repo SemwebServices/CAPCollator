@@ -67,6 +67,7 @@ class SubscriptionsController {
          } 
        }'''
 
+    result.baseurl = grailsApplication.config.SystemBaseURL
     result.max = params.max ? Integer.parseInt(params.max) : 10;
     result.offset = params.offset ? Integer.parseInt(params.offset) : 0;
 
