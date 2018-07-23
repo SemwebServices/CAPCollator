@@ -23,7 +23,7 @@ class Subscription {
   static constraints = {
              subscriptionId blank: false, nullable: false, unique: true
            subscriptionName blank: false, nullable: false
-    subscriptionDescription blank: false, nullable: false
+    subscriptionDescription blank: false, nullable: true
             subscriptionUrl blank: true, nullable: false
                  filterType blank:true, nullable:true
              filterGeometry blank:true, nullable:true
