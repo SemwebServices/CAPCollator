@@ -12,6 +12,8 @@ class AlertController {
   }
 
   def details() { 
+    def result = [id:params.id]
     log.debug("AlertController::details(${params})");
+    respond result
   }
 }

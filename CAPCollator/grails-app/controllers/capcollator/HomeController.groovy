@@ -36,4 +36,8 @@ class HomeController {
     redirect(controller:'subscriptions', action:'index');
   }
 
+  def explorer1() {
+    def result=[:]
+    result
+  }
 }

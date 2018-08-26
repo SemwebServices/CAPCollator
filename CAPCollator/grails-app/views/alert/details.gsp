@@ -11,7 +11,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="container-fluid">
-        Alert detail...
+        Alert detail... ${params} ${id}
       </div>
     </div>
   </div>

@@ -11,6 +11,7 @@ class Subscription {
 
   String subscriptionId
   String subscriptionName
+  String subscriptionDescription
   String subscriptionUrl
   String filterType
   String filterGeometry
@@ -20,20 +21,22 @@ class Subscription {
   static transients = []
 
   static constraints = {
-      subscriptionId blank: false, nullable: false, unique: true
-    subscriptionName blank: false, nullable: false
-     subscriptionUrl blank: true, nullable: false
-          filterType blank:true, nullable:true
-      filterGeometry blank:true, nullable:true
-               notes blank:true, nullable:true
+             subscriptionId blank: false, nullable: false, unique: true
+           subscriptionName blank: false, nullable: false
+    subscriptionDescription blank: false, nullable: true
+            subscriptionUrl blank: true, nullable: false
+                 filterType blank:true, nullable:true
+             filterGeometry blank:true, nullable:true
+                      notes blank:true, nullable:true
   }
 
   static mapping = {
     table 'cc_sub'
-    subscriptionId column: 'sub_txt_id'
-    subscriptionName column: 'sub_name'
-    subscriptionUrl column: 'sub_url'
-    filterGeometry column: 'sub_filter_geom', type:'text'
+             subscriptionId column: 'sub_txt_id'
+           subscriptionName column: 'sub_name'
+    subscriptionDescription column: 'sub_desc'
+            subscriptionUrl column: 'sub_url'
+             filterGeometry column: 'sub_filter_geom', type:'text'
   }
 
 }
