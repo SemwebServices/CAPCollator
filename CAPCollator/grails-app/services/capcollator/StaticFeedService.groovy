@@ -4,6 +4,7 @@ import grails.transaction.Transactional
 import groovy.xml.MarkupBuilder
 import java.io.File
 import java.io.FileWriter
+import groovy.xml.XmlUtil
 
 @Transactional
 class StaticFeedService {
@@ -19,8 +20,13 @@ class StaticFeedService {
       if ( ! sub_dir.exists() ) {
         log.debug("Setting up new static sub DIR ${full_path}");
         sub_dir.mkdirs()
-        createStarterFeed(full_path, sub_name);
       }
+
+      File rss_file = new File(full_path+'/rss.xml')
+      if ( ! rss_file.exists() )
+        createStarterFeed(full_path, sub_name);
+
+      addItem(full_path, body)
     }
     else {
       log.error("Unexpected number of routing key components:: ${key_components}");
@@ -49,9 +55,13 @@ class StaticFeedService {
     //     </image>
     //   </channel>
     // </rss>
+
+    def entityNs = [
+        'xmlns:atom': "http://www.w3.org/2005/Atom"
+    ]
     def fileWriter = new FileWriter(path+'/rss.xml');
     def rssBuilder = new MarkupBuilder(fileWriter)
-    rssBuilder.rss {
+    rssBuilder.'atom:rss'(entityNs,version:"2.0") {
       channel {
         'atom:link'('John')
         'atom:link'('John')
@@ -73,4 +83,32 @@ class StaticFeedService {
     fileWriter.close();
   }
 
+
+  private void addItem(String path, node) {
+    def xml = new XmlSlurper().parse(path+'/rss.xml')
+
+    //Edit File e.g. append an element called foo with attribute bar
+    xml.channel.appendNode {
+       item {
+         title(bar: "bar value")
+       }
+    }
+
+    //Save File
+    def writer = new FileWriter(path+'/rss.xml')
+
+    // Append new element
+
+    // then sort in date order desc
+    // rootNode.children().sort(true) {it.attribute('name')}
+
+    //Option 1: Write XML all on one line
+    // def builder = new StreamingMarkupBuilder()
+    // writer << builder.bind {
+    //   mkp.yield xml
+    // }
+
+    //Option 2: Pretty print XML
+    XmlUtil.serialize(xml, writer)
+  }
 }

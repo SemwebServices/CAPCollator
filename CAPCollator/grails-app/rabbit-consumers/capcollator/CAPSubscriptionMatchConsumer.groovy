@@ -13,7 +13,7 @@ class CAPSubscriptionMatchConsumer {
   ]
 
   def handleMessage(def body, MessageContext context) {
-    log.debug("CAPSubscriptionMatchConsumer::handleMessage(${body},${context})");
+    // log.debug("CAPSubscriptionMatchConsumer::handleMessage(${body},${context})");
     // log.debug(context.properties?.toString());
     // log.debug(context.envelope?.toString());
     log.debug(context.envelope.routingKey);
