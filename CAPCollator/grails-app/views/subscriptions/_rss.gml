@@ -1,14 +1,21 @@
+import capcollator.Subscription
+
+
 model {
     Map result
     // view-source:https://alert-feeds.s3.amazonaws.com/unfiltered/rss.xml
 }
+
 xmlDeclaration()
+
+Subscription sub = (Subscription) (result.subscription);
+
 rss('xmlns:atom':'http://www.w3.org/2005/Atom', version='2.0') {
   channel {
     atom:link(rel:'self', href:'')
     atom:link(rel:'alternate', title="RSS", href:'', type:'application/rss+xml')
-    title(result.subscription.subscriptionName)
-    description(result.subscription.subscriptionDescription)
+    title(sub.subscriptionName)
+    description(sub.subscriptionDescription)
     language('en')
     copyright('publi domain')
     image {

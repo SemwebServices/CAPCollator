@@ -4,7 +4,8 @@ import com.budjb.rabbitmq.consumer.MessageContext
 
 class CAPSubscriptionMatchConsumer {
 
-  def capEventHandlerService
+  def grailsApplication
+  def staticFeedService
 
   static rabbitConfig = [
     "exchange": "CAPExchange",
@@ -18,6 +19,7 @@ class CAPSubscriptionMatchConsumer {
       log.debug("Static feed dir configured to be ${grailsApplication.config.staticFeedsDir}");
       
       // Check for feed directory
+      staticFeedService.update(body, context);
     }
   }
 }
