@@ -11,19 +11,16 @@ class StaticFeedService {
   def grailsApplication
 
   def update(routingKey, body, context) {
-    log.debug("staticFeedService.update(${routingKey},${body},${context}) -${grailsApplication.config.staticFeedsDir}");
     String[] key_components = routingKey.split('\\.');
     if ( key_components.length == 2 ) {
       String sub_name = key_components[1]
       String full_path = grailsApplication.config.staticFeedsDir+'/'+sub_name;
       File sub_dir = new File(full_path)
-      if ( ! sub_dir.exists ) {
+      if ( ! sub_dir.exists() ) {
         log.debug("Setting up new static sub DIR ${full_path}");
         sub_dir.mkdirs()
         createStarterFeed(full_path, sub_name);
       }
-
-      
     }
     else {
       log.error("Unexpected number of routing key components:: ${key_components}");
