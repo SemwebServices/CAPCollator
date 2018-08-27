@@ -14,12 +14,14 @@ class CAPSubscriptionMatchConsumer {
 
   def handleMessage(def body, MessageContext context) {
     log.debug("CAPSubscriptionMatchConsumer::handleMessage(${body},${context})");
+    // log.debug(context.properties?.toString());
+    // log.debug(context.envelope?.toString());
+    log.debug(context.envelope.routingKey);
     // If we have a static feeds DIR configured, log alerts in that file.
-    if ( grailsApplication.config.staticFeedsDir != null ) {
-      log.debug("Static feed dir configured to be ${grailsApplication.config.staticFeedsDir}");
-      
+    if ( ( grailsApplication.config.staticFeedsDir != null ) &&
+         ( context.envelope.routingKey != null ) ) {
       // Check for feed directory
-      staticFeedService.update(body, context);
+      staticFeedService.update(context.envelope.routingKey, body, context);
     }
   }
 }

@@ -174,3 +174,5 @@ gtmcode: none
 mapskey: AIzaSyDyYCM55ePE6oJSvl4jN62j5GQ6UdTuENA
 
 SystemBaseURL: 'http://demo.semweb.co/CAPCollator'
+
+staticFeedsDir: /tmp/cap

@@ -152,7 +152,7 @@ class RssEventHandlerService {
               routingKey = 'CAPAlert.'+(headers['feed-id'])
               body = json_event
       }
-      log.debug("Result of Rabbit RPC publish: ${result}");
+      log.debug("Result of Rabbit RPC publish: ${result} (Routing key was CAPAlert.${headers['feed-id']})");
     }
     catch ( Exception e ) {
       log.error("Problem trying to publish to rabbit",e);

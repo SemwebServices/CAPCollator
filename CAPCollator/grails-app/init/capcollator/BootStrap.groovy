@@ -25,6 +25,10 @@ class BootStrap {
       log.debug("No GTM tag found in context. Please add a context file called CAPCollator.xml to TOMCAT_HOME/conf/Catalina/localhost and set a property gtmcode. A sample file can be found in src/main/webapp/META-INF");
     }
 
+    if ( grailsApplication.config.staticFeedsDir ) {
+      log.debug("Static feeds are configured - ${grailsApplication.config.staticFeedsDir}");
+    }
+
     setUpUserAccounts()
     CAPIndexingService.freshen()
   }
