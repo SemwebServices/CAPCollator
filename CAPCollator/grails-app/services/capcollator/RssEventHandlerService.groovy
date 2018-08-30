@@ -66,9 +66,16 @@ class RssEventHandlerService {
                  detected_content_type.toLowerCase().startsWith('application/xml') ) ) {
 
             def parser = new XmlSlurper()
+
+            byte[] alert_bytes = conn.getInputStream().getBytes();
+
             parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
             parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-            def parsed_cap = parser.parse(conn.getInputStream())
+            // def parsed_cap = parser.parse(conn.getInputStream())
+
+            def parsed_cap = parser.parse(new ByteArrayInputStream(alert_bytes));
+            String alert_uuid = java.util.UUID.randomUUID().toString()
+            alertCacheService.put(alert_uuid,alert_bytes);
   
             if ( parsed_cap.identifier ) {
               num_cap_files_found++
@@ -91,6 +98,7 @@ class RssEventHandlerService {
               alert_metadata.CCHistory.add(["event":"CAPCollator fetch alert","timestamp":ts_2]);
               alert_metadata.CCHistory.add(["event":"CAPCollator publish CAP event","timestamp":ts_3]);
               alert_metadata.SourceUrl = cap_link
+              alert_metadata.capCollatorUUID = alert_uuid;
 
               if ( latest_expiry && latest_expiry.trim().length() > 0 )
                 alert_metadata.Expires = latest_expiry
