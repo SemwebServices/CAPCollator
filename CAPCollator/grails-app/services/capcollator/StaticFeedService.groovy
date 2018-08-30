@@ -56,12 +56,9 @@ class StaticFeedService {
     //   </channel>
     // </rss>
 
-    def entityNs = [
-        'xmlns:atom': "http://www.w3.org/2005/Atom"
-    ]
     def fileWriter = new FileWriter(path+'/rss.xml');
     def rssBuilder = new MarkupBuilder(fileWriter)
-    rssBuilder.'atom:rss'(entityNs,version:"2.0") {
+    rssBuilder.'atom:rss'('xmlns:atom':'http://www.w3.org/2005/Atom',version:"2.0") {
       channel {
         'atom:link'('John')
         'atom:link'('John')
