@@ -9,6 +9,7 @@ class RssEventHandlerService {
 
   RabbitMessagePublisher rabbitMessagePublisher
   def eventService
+  def alertCacheService
 
   def process(cap_url) {
     log.debug("RssEventHandlerService::process ${cap_url}");
