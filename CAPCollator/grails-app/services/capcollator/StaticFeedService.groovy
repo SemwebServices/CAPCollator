@@ -83,7 +83,7 @@ class StaticFeedService {
 
   private void addItem(String path, node) {
     log.debug("addItem(${path},${node})");
-    log.debug(node?.alert_metadata?.capCollatorUUID)
+    log.debug(node?.AlertMetadata?.capCollatorUUID)
 
     def xml = new XmlSlurper().parse(path+'/rss.xml')
 
