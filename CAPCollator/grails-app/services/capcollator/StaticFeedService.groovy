@@ -5,11 +5,15 @@ import groovy.xml.MarkupBuilder
 import java.io.File
 import java.io.FileWriter
 import groovy.xml.XmlUtil
+import java.text.SimpleDateFormat
+import java.util.Calendar
+
 
 @Transactional
 class StaticFeedService {
 
   def grailsApplication
+  def alertCacheService
 
   def update(routingKey, body, context) {
     String[] key_components = routingKey.split('\\.');
@@ -26,7 +30,7 @@ class StaticFeedService {
       if ( ! rss_file.exists() )
         createStarterFeed(full_path, sub_name);
 
-      addItem(full_path, body)
+      addItem(full_path, body, sub_name)
     }
     else {
       log.error("Unexpected number of routing key components:: ${key_components}");
@@ -58,10 +62,10 @@ class StaticFeedService {
 
     def fileWriter = new FileWriter(path+'/rss.xml');
     def rssBuilder = new MarkupBuilder(fileWriter)
-    rssBuilder.'atom:rss'('xmlns:atom':'http://www.w3.org/2005/Atom',version:"2.0") {
+    rssBuilder.'atom:rss'('xmlns:atom':'http://www.w3.org/2005/Atom','xmlns:dc':'http://purl.org/dc/elements/1.1/', version:"2.0") {
       channel {
-        'atom:link'(rel:'self',href:"https://s3-eu-west-1.amazonaws.com/alert-feeds/${subname}/rss.xml", type:"application/rss+xml")
-        'atom:link'(rel:'alternate',title:'RSS',href:"https://s3-eu-west-1.amazonaws.com/alert-feeds/${subname}/rss.xml", type:"application/rss+xml")
+        'atom:link'(rel:'self',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
+        'atom:link'(rel:'alternate',title:'RSS',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
         title("Latest Valid CAP alerts received, ${subname}")
         link("https://s3-eu-west-1.amazonaws.com/alert-feeds/${subname}")
         description("This feed lists the most recent valid CAP alerts uploaded to the Filtered Alert Hub.")
@@ -81,62 +85,107 @@ class StaticFeedService {
   }
 
 
-  private void addItem(String path, node) {
+  private void addItem(String path, node, subname) {
+
     // log.debug("addItem(${path},${node})");
-    log.debug("capCollatorUUID: ${node?.AlertMetadata?.capCollatorUUID}")
+    if ( node?.AlertMetadata?.capCollatorUUID ) {
+      log.debug("capCollatorUUID: ${node.AlertMetadata.capCollatorUUID}")
+      def source_alert = alertCacheService.get(node.AlertMetadata.capCollatorUUID);
 
-    def xml = new XmlSlurper().parse(path+'/rss.xml')
+      String static_alert_file = writeAlertFile(path, node, source_alert);
+  
+      log.debug("Parse existing RSS at ${path}/rss.xml");
+      def xml = new XmlSlurper().parse(path+'/rss.xml')
+  
+      //Edit File e.g. append an element called foo with attribute bar
+  
+      // <item>
+      //   <title>Official weather warning: warning of wind gusts</title>
+      //   <link>https://alert-hub.s3.amazonaws.com/de-dwd-en/2018/08/26/15/03/2018-08-26-15-03-23-418.xml</link>
+      //   <description>There is a risk of wind gusts (level 1 of 4).
+      //                    Max. gusts: &lt; 60 km/h; Wind direction: south then south-west</description>
+      //   <category>Met</category>
+      //   <pubDate>Sun, 26 Aug 2018 14:51:00 </pubDate>
+      //   <guid isPermaLink="false">2.49.0.1.276.0.DWD.PVW.1535295060000.a89248a8-6521-4fda-b3e7-1a28a05e8f13.ENG</guid>
+      //   <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">CAP@dwd.de (DWD / Nationales Warnzentrum Offenbach)</dc:creator>
+      //   <dc:date xmlns:dc="http://purl.org/dc/elements/1.1/">2018-08-26T14:51:00</dc:date>
+      // </item>
+  
+      // node.AlertBody.identifier
+      // node.AlertBody.sender
+      // node.AlertBody.sent
+      // node.AlertBody.status
+      // node.AlertBody.info [
+      //              language, category, description, senderName,....
+      // ]
 
+      def info = getFirstInfoSection(node);
 
-    //Edit File e.g. append an element called foo with attribute bar
+      xml.channel.appendNode {
+         item {
+           title(info?.headline ?: info?.description );
+           originalLink(node?.AlertMetadata?.SourceUrl)
+           link("${grailsApplication.config.staticFeedsBaseUrl}/${static_alert_file}".toString())
+           description(info?.description)
+           category('Met')
+           pubDate(node?.AlertBody?.sent)
+           guid(node?.AlertBody?.identifier)
+           //'dc:creator'('creator')
+           //'dc:date'('date')
+         }
+      }
+  
+      //Save File
+      def writer = new FileWriter(path+'/rss.xml')
+  
+      // Append new element
+  
+      // then sort in date order desc
+      // rootNode.children().sort(true) {it.attribute('name')}
+  
+      //Option 1: Write XML all on one line
+      // def builder = new StreamingMarkupBuilder()
+      // writer << builder.bind {
+      //   mkp.yield xml
+      // }
+  
+      //Option 2: Pretty print XML
+      XmlUtil.serialize(xml, writer)
+    }
+  }
 
-    // <item>
-    //   <title>Official weather warning: warning of wind gusts</title>
-    //   <link>https://alert-hub.s3.amazonaws.com/de-dwd-en/2018/08/26/15/03/2018-08-26-15-03-23-418.xml</link>
-    //   <description>There is a risk of wind gusts (level 1 of 4).
-    //                    Max. gusts: &lt; 60 km/h; Wind direction: south then south-west</description>
-    //   <category>Met</category>
-    //   <pubDate>Sun, 26 Aug 2018 14:51:00 </pubDate>
-    //   <guid isPermaLink="false">2.49.0.1.276.0.DWD.PVW.1535295060000.a89248a8-6521-4fda-b3e7-1a28a05e8f13.ENG</guid>
-    //   <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">CAP@dwd.de (DWD / Nationales Warnzentrum Offenbach)</dc:creator>
-    //   <dc:date xmlns:dc="http://purl.org/dc/elements/1.1/">2018-08-26T14:51:00</dc:date>
-    // </item>
+  private Map getFirstInfoSection(node) {
+    Map result = null;
+    if ( node.AlertBody.info instanceof List ) 
+      result = node.AlertBody.info.get(0);
+    else
+      result = node.AlertBody.info
 
-    // node.AlertBody.identifier
-    // node.AlertBody.sender
-    // node.AlertBody.sent
-    // node.AlertBody.status
-    // node.AlertBody.info [
-    //              language, category, description, senderName,....
-    // ]
-    xml.channel.appendNode {
-       item {
-         title(bar: "bar value")
-         link(node?.AlertMetadata?.SourceUrl)
-         description('descrip')
-         category('Met')
-         pubDate('pubdate')
-         guid(node?.AlertBody?.identifier)
-         'dc:creator'('creator')
-         'dc:date'('date')
-       }
+    return result
+  }
+
+  private String writeAlertFile(path, node, content) {
+    // https://alert-hub.s3.amazonaws.com/us-epa-aq-en/2018/09/07/12/28/2018-09-07-12-28-41-693.xml
+    // log.debug("writeAlertNode ${new String(content)}");
+    def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
+    def alert_date = sdf.parse(node?.AlertBody?.sent);
+    def cal = Calendar.getInstance()
+    cal.setTime(alert_date);
+    // def alert_path = "${cal.get(Calendar.YEAR)}/${cal.get(Calendar.MONTH)}/${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.HOUR_OF_DAY)}}/${cal.get(Calendar.MINUTE)}"
+    def alert_path = path+sprintf('/%02d/%02d/%02d/%02d/%02d/',[cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)]);
+    log.debug("Write to ${alert_path}")
+
+    File alert_path_dir = new File(alert_path)
+    if ( ! alert_path_dir.exists() ) {
+      log.debug("Setting up new static sub DIR ${alert_path_dir}");
+      alert_path_dir.mkdirs()
     }
 
-    //Save File
-    def writer = new FileWriter(path+'/rss.xml')
+    String full_alert_path = alert_path+((node?.AlertBody?.sent).replaceAll(':','-'))+'.xml'
+    File new_alert_file = new File(full_alert_path)
 
-    // Append new element
+    new_alert_file << content
 
-    // then sort in date order desc
-    // rootNode.children().sort(true) {it.attribute('name')}
-
-    //Option 1: Write XML all on one line
-    // def builder = new StreamingMarkupBuilder()
-    // writer << builder.bind {
-    //   mkp.yield xml
-    // }
-
-    //Option 2: Pretty print XML
-    XmlUtil.serialize(xml, writer)
+    return full_alert_path
   }
 }

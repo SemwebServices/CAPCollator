@@ -176,3 +176,4 @@ mapskey: AIzaSyDyYCM55ePE6oJSvl4jN62j5GQ6UdTuENA
 SystemBaseURL: 'http://demo.semweb.co/CAPCollator'
 
 staticFeedsDir: /tmp/cap
+staticFeedsBaseUrl: 'https://s3-eu-west-1.amazonaws.com/alert-feeds'
