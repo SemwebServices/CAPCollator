@@ -56,12 +56,9 @@ class StaticFeedService {
     //   </channel>
     // </rss>
 
-    def entityNs = [
-        'xmlns:atom': 'http://www.w3.org/2005/Atom'
-    ]
     def fileWriter = new FileWriter(path+'/rss.xml');
     def rssBuilder = new MarkupBuilder(fileWriter)
-    rssBuilder.'rss'(entityNs,xmlns:'http://www.w3.org/2005/Atom',version:"2.0") {
+    rssBuilder.'atom:rss'('xmlns:atom':'http://www.w3.org/2005/Atom',version:"2.0") {
       channel {
         'atom:link'(rel:'self',href:"https://s3-eu-west-1.amazonaws.com/alert-feeds/${subname}/rss.xml", type:"application/rss+xml")
         'atom:link'(rel:'alternate',title:'RSS',href:"https://s3-eu-west-1.amazonaws.com/alert-feeds/${subname}/rss.xml", type:"application/rss+xml")
@@ -85,7 +82,11 @@ class StaticFeedService {
 
 
   private void addItem(String path, node) {
+    // log.debug("addItem(${path},${node})");
+    log.debug("capCollatorUUID: ${node?.AlertMetadata?.capCollatorUUID}")
+
     def xml = new XmlSlurper().parse(path+'/rss.xml')
+
 
     //Edit File e.g. append an element called foo with attribute bar
 
