@@ -125,7 +125,7 @@ class StaticFeedService {
          item {
            title(info?.headline ?: info?.description );
            originalLink(node?.AlertMetadata?.SourceUrl)
-           link("${grailsApplication.config.staticFeedsBaseUrl}/${static_alert_file}".toString())
+           link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}/${static_alert_file}".toString())
            description(info?.description)
            category('Met')
            pubDate(node?.AlertBody?.sent)
@@ -133,6 +133,10 @@ class StaticFeedService {
            //'dc:creator'('creator')
            //'dc:date'('date')
          }
+      }
+
+      xml.channel.item.sort { a,b ->
+        a.pubDate.text() > b.pubDate.text()
       }
   
       //Save File
@@ -172,17 +176,17 @@ class StaticFeedService {
     def cal = Calendar.getInstance()
     cal.setTime(alert_date);
     // def alert_path = "${cal.get(Calendar.YEAR)}/${cal.get(Calendar.MONTH)}/${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.HOUR_OF_DAY)}}/${cal.get(Calendar.MINUTE)}"
-    def alert_path = path+sprintf('/%02d/%02d/%02d/%02d/%02d/',[cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)]);
-    log.debug("Write to ${alert_path}")
+    def alert_path = sprintf('/%02d/%02d/%02d/%02d/%02d/',[cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)]);
+    log.debug("Write to ${path}${alert_path}")
 
-    File alert_path_dir = new File(alert_path)
+    File alert_path_dir = new File(path+alert_path)
     if ( ! alert_path_dir.exists() ) {
       log.debug("Setting up new static sub DIR ${alert_path_dir}");
       alert_path_dir.mkdirs()
     }
 
     String full_alert_path = alert_path+((node?.AlertBody?.sent).replaceAll(':','-'))+'.xml'
-    File new_alert_file = new File(full_alert_path)
+    File new_alert_file = new File(path+full_alert_path)
 
     new_alert_file << content
 
