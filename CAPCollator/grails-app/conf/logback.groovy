@@ -24,13 +24,6 @@ appender('STDOUT', ConsoleAppender) {
 
 root(WARN, ['STDOUT'])
 
-logger ('grails.app.init', DEBUG)
-logger ('grails.app.controllers', DEBUG)
-logger ('grails.app.domains', DEBUG)
-logger ('grails.app.jobs', DEBUG)
-logger ('grails.app.services', DEBUG)
-logger ('capcollator', DEBUG)
-logger ('grails.gorm.multitenancy.Tenants', DEBUG)
 
 def targetDir = BuildSettings.TARGET_DIR
 if (Environment.isDevelopmentMode() && targetDir != null) {
@@ -42,6 +35,13 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
         }
     }
     logger("StackTrace", ERROR, ['FULL_STACKTRACE'], false)
+    logger ('grails.app.init', DEBUG)
+    logger ('grails.app.controllers', DEBUG)
+    logger ('grails.app.domains', DEBUG)
+    logger ('grails.app.jobs', DEBUG)
+    logger ('grails.app.services', DEBUG)
+    logger ('capcollator', DEBUG)
+    logger ('grails.gorm.multitenancy.Tenants', DEBUG)
     root(ERROR, ['STDOUT', 'FULL_STACKTRACE'])
 }
 else {

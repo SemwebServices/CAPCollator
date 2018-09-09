@@ -83,6 +83,9 @@ class AdminController {
       catch ( Exception e ) {
         log.error("problem processing subscription list",e);
       }
+      finally {
+        reindex();
+      }
     }
 
     result

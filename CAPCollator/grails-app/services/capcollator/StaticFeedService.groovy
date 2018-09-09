@@ -7,6 +7,7 @@ import java.io.FileWriter
 import groovy.xml.XmlUtil
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import groovy.util.XmlParser
 
 
 @Transactional
@@ -103,7 +104,8 @@ class StaticFeedService {
       String static_alert_file = writeAlertFile(path, node, source_alert);
   
       log.debug("Parse existing RSS at ${path}/rss.xml");
-      def xml = new XmlSlurper().parse(path+'/rss.xml')
+      // def xml = new XmlSlurper().parse(path+'/rss.xml')
+      def xml = new XmlParser().parse(new File(path+'/rss.xml'))
   
       //Edit File e.g. append an element called foo with attribute bar
   
@@ -130,22 +132,18 @@ class StaticFeedService {
       log.debug("Get first info section");
       def info = getFirstInfoSection(node);
 
-      xml.channel.appendNode {
-         item {
-           title(info?.headline ?: info?.description );
-           originalLink(node?.AlertMetadata?.SourceUrl)
-           link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}/${static_alert_file}".toString())
-           description(info?.description)
-           category('Met')
-           pubDate(node?.AlertBody?.sent)
-           guid(node?.AlertBody?.identifier)
-           //'dc:creator'('creator')
-           //'dc:date'('date')
-         }
-      }
 
-      xml.channel.item.sort { a,b ->
-        b.pubDate.text().compareTo(a.pubDate.text())
+      def new_item_node = xml.channel[0].appendNode( 'item' );
+      new_item_node.appendNode( 'title', info?.headline ?: info?.description );
+      new_item_node.appendNode( 'originalLink', node?.AlertMetadata?.SourceUrl);
+      new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${subname}/${static_alert_file}".toString());
+      new_item_node.appendNode( 'description', info?.description);
+      new_item_node.appendNode( 'pubDate', node?.AlertBody?.sent);
+      //      //'dc:creator'('creator')
+      //      //'dc:date'('date')
+
+      xml.channel[0].value = xml.channel[0].item.sort { a,b ->
+        ( b.pubDate?.text() ?: 'zzz' ).compareTo( ( a.pubDate?.text() ?: 'zzz' ) )
       }
   
       //Save File
