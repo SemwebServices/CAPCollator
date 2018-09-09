@@ -145,7 +145,7 @@ class StaticFeedService {
       }
 
       xml.channel.item.sort { a,b ->
-        a.pubDate.text().compareTo(b.pubDate.text())
+        b.pubDate.text().compareTo(a.pubDate.text())
       }
   
       //Save File
