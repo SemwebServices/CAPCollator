@@ -25,10 +25,18 @@ class StaticFeedService {
         log.debug("Setting up new static sub DIR ${full_path}");
         sub_dir.mkdirs()
       }
+      else {
+        log.debug("${full_path} already present");
+      }
 
       File rss_file = new File(full_path+'/rss.xml')
-      if ( ! rss_file.exists() )
+      if ( ! rss_file.exists() ) {
+        log.debug("Create starter feed - ${full_path}/rss.xml");
         createStarterFeed(full_path, sub_name);
+      }
+      else {
+        log.debug("${full_path}/rss.xml present");
+      }
 
       addItem(full_path, body, sub_name)
     }
@@ -119,6 +127,7 @@ class StaticFeedService {
       //              language, category, description, senderName,....
       // ]
 
+      log.debug("Get first info section");
       def info = getFirstInfoSection(node);
 
       xml.channel.appendNode {
