@@ -162,6 +162,8 @@ class StaticFeedService {
   
       //Option 2: Pretty print XML
       XmlUtil.serialize(xml, writer)
+      writer.flush()
+      writer.close()
     }
   }
 
