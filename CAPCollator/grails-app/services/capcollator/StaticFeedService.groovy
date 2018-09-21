@@ -164,7 +164,13 @@ class StaticFeedService {
       }
 
       // Limit to 100 items
+      def origianl_list = xml.channel.item
       xml.channel.item = xml.channel.item.take(100)
+
+      def removed_elements = origianl_list.removeAll(xml.channel.item)
+      removed_elements.each { re ->
+        log.debug("Remove: ${re?.link}");
+      }
   
       //Save File
       def writer = new FileWriter(path+'/rss.xml')
