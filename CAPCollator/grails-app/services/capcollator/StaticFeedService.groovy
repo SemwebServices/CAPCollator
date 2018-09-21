@@ -62,10 +62,14 @@ class StaticFeedService {
 
     def fileWriter = new FileWriter(path+'/rss.xml');
     def rssBuilder = new MarkupBuilder(fileWriter)
-    rssBuilder.'atom:rss'('xmlns:atom':'http://www.w3.org/2005/Atom','xmlns:dc':'http://purl.org/dc/elements/1.1/', version:"2.0") {
+    rssBuilder.'rss'('xmlns':'http://www.w3.org/2005/Atom',
+                     'xmlns:rss':'http://www.rssboard.org/rss-specification',
+                     'xmlns:atom':'http://www.w3.org/2005/Atom',
+                     'xmlns:dc':'http://purl.org/dc/elements/1.1/', 
+                     version:"2.0") {
       channel {
-        'atom:link'(rel:'self',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
-        'atom:link'(rel:'alternate',title:'RSS',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
+        'link'(rel:'self',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
+        'link'(rel:'alternate',title:'RSS',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
         title("Latest Valid CAP alerts received, ${subname}")
         link("https://s3-eu-west-1.amazonaws.com/alert-feeds/${subname}")
         description("This feed lists the most recent valid CAP alerts uploaded to the Filtered Alert Hub.")
@@ -125,7 +129,7 @@ class StaticFeedService {
          item {
            title(info?.headline ?: info?.description );
            originalLink(node?.AlertMetadata?.SourceUrl)
-           link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}/${static_alert_file}".toString())
+           link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}${static_alert_file}".toString())
            description(info?.description)
            category('Met')
            pubDate(node?.AlertBody?.sent)
@@ -138,6 +142,9 @@ class StaticFeedService {
       xml.channel.item.sort { a,b ->
         b.pubDate.text().compareTo(a.pubDate.text())
       }
+
+      // Limit to 100 items
+      xml.channel.item = xml.channel.item.take(100)
   
       //Save File
       def writer = new FileWriter(path+'/rss.xml')
@@ -176,7 +183,7 @@ class StaticFeedService {
     def cal = Calendar.getInstance()
     cal.setTime(alert_date);
     // def alert_path = "${cal.get(Calendar.YEAR)}/${cal.get(Calendar.MONTH)}/${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.HOUR_OF_DAY)}}/${cal.get(Calendar.MINUTE)}"
-    def alert_path = sprintf('/%02d/%02d/%02d/%02d/%02d/',[cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)]);
+    def alert_path = sprintf('%02d/%02d/%02d/%02d/%02d/',[cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)]);
     log.debug("Write to ${path}${alert_path}")
 
     File alert_path_dir = new File(path+alert_path)
