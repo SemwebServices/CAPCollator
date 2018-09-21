@@ -136,20 +136,6 @@ class StaticFeedService {
       log.debug("Get first info section");
       def info = getFirstInfoSection(node);
 
-      xml.channel.appendNode {
-         item {
-           title(info?.headline ?: info?.description );
-           originalLink(node?.AlertMetadata?.SourceUrl)
-           link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}${static_alert_file}".toString())
-           description(info?.description)
-           category('Met')
-           pubDate(node?.AlertBody?.sent)
-           guid(node?.AlertBody?.identifier)
-           //'dc:creator'('creator')
-           //'dc:date'('date')
-         }
-      }
-
       def new_item_node = xml.channel[0].appendNode( 'item' );
       new_item_node.appendNode( 'title', info?.headline ?: info?.description );
       new_item_node.appendNode( 'originalLink', node?.AlertMetadata?.SourceUrl);
