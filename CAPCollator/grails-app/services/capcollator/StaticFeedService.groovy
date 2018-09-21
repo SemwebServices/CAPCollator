@@ -84,8 +84,8 @@ class StaticFeedService {
         description("This feed lists the most recent valid CAP alerts uploaded to the Filtered Alert Hub.")
         language("en");
         copyright("public domain");
-        pubDate("Sun, 26 Aug 2018 21:23:20 GMT");
-        lastBuildDate("Wed, 4 Jan 2017 11:31:34 GMT");
+        // pubDate("Sun, 26 Aug 2018 21:23:20 GMT");
+        // lastBuildDate("Wed, 4 Jan 2017 11:31:34 GMT");
         docs("http://blogs.law.harvard.edu/tech/rss");
         image {
           title("Latest Valid CAP alerts received, ${subname}");
