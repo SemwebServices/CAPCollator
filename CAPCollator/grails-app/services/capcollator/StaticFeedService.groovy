@@ -136,7 +136,6 @@ class StaticFeedService {
       new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${subname}${static_alert_file}".toString());
       new_item_node.appendNode( 'description', info?.description);
       new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
-      new_item_node.appendNode( 'guid', node.AlertMetadata.capCollatorUUID);
       //      //'dc:creator'('creator')
       //      //'dc:date'('date')
 
