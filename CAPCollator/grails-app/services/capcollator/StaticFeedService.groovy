@@ -74,7 +74,7 @@ class StaticFeedService {
     def fileWriter = new FileWriter(path+'/rss.xml');
     def rssBuilder = new MarkupBuilder(fileWriter)
 
-    def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
+    def sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
     def pub_date_str = sdf.format(new Date());
 
     rssBuilder.'rss'(// 'xmlns':'http://www.w3.org/2005/Atom', -- The namespace for the document is not ATON
@@ -83,8 +83,8 @@ class StaticFeedService {
                      'xmlns:dc':'http://purl.org/dc/elements/1.1/', 
                      version:"2.0") {
       channel {
-        'link'(rel:'self',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
-        'link'(rel:'alternate',title:'RSS',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
+        'atom:link'(rel:'self',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
+        'atom:link'(rel:'alternate',title:'RSS',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
         title("Latest Valid CAP alerts received, ${subname}")
         link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}")
         description("This feed lists the most recent valid CAP alerts uploaded to the Filtered Alert Hub.")
@@ -136,6 +136,7 @@ class StaticFeedService {
       new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${subname}${static_alert_file}".toString());
       new_item_node.appendNode( 'description', info?.description);
       new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
+      new_item_node.appendNode( 'guid', node.AlertMetadata.capCollatorUUID);
       //      //'dc:creator'('creator')
       //      //'dc:date'('date')
 
