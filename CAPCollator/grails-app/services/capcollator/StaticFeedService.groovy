@@ -8,7 +8,7 @@ import groovy.xml.XmlUtil
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import groovy.util.XmlParser
-
+import java.util.TimeZone
 
 @Transactional
 class StaticFeedService {
@@ -203,11 +203,19 @@ class StaticFeedService {
   private String writeAlertFile(path, node, content) {
     // https://alert-hub.s3.amazonaws.com/us-epa-aq-en/2018/09/07/12/28/2018-09-07-12-28-41-693.xml
     // log.debug("writeAlertNode ${new String(content)}");
+    TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
     def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
+
+    def output_filename_sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-S.z')
+    output_filename_sdf.setTimeZone(timeZone_utc);
+
     def alert_date = sdf.parse(node?.AlertBody?.sent);
-    def cal = Calendar.getInstance()
+
+    def cal = Calendar.getInstance(timeZone_utc)
     cal.setTime(alert_date);
+
     // def alert_path = "${cal.get(Calendar.YEAR)}/${cal.get(Calendar.MONTH)}/${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.HOUR_OF_DAY)}}/${cal.get(Calendar.MINUTE)}"
+
     def alert_path = sprintf('/%02d/%02d/%02d/%02d/%02d/',[cal.get(Calendar.YEAR),cal.get(Calendar.MONTH)+1,cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)]);
     log.debug("Write to ${path}${alert_path}")
 
@@ -217,7 +225,8 @@ class StaticFeedService {
       alert_path_dir.mkdirs()
     }
 
-    String full_alert_path = alert_path+((node?.AlertBody?.sent).replaceAll(':','-'))+'.xml'
+    String output_filename = output_filename_sdf.format(alert_date)
+    String full_alert_path = alert_path+output_filename+'.xml'
     File new_alert_file = new File(path+full_alert_path)
 
     new_alert_file << content
