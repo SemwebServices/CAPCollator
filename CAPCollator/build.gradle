@@ -13,7 +13,7 @@ buildscript {
     }
 }
 
-version "1.0.8.1"
+version "1.0.9"
 group "capcollator"
 
 apply plugin:"eclipse"
