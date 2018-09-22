@@ -15,6 +15,8 @@ class StaticFeedService {
 
   def grailsApplication
   def alertCacheService
+  public static int MAX_FEED_ENTRIES = 100;
+
 
   def update(routingKey, body, context) {
     String[] key_components = routingKey.split('\\.');
@@ -145,9 +147,26 @@ class StaticFeedService {
       //      //'dc:creator'('creator')
       //      //'dc:date'('date')
 
-      xml.channel[0].value = xml.channel[0].item.sort { a,b ->
-        ( b.pubDate?.text() ?: 'zzz' ).compareTo( ( a.pubDate?.text() ?: 'zzz' ) )
+      // xml.channel[0].value = xml.channel[0].children().sort { a,b ->
+
+      // The true asks the sort to mutate the source list. Source elements without a pubDate element high - so the none item
+      // entries float to the top of the list
+      xml.channel[0].children().sort(true) { a,b ->
+        ( b.pubDate?.text() ?: 'aaa'+(b.name().toString() ) ).compareTo( ( a.pubDate?.text() ?: 'aaa'+(a.name().toString() ) ) )
       }
+
+      log.debug("Trim rss feed. Size before: ${xml.channel[0].children().size()}");
+      int ctr = MAX_FEED_ENTRIES;
+      xml.channel[0] = xml.channel[0].item.each { n ->
+        if ( ctr > 0 ) {
+          ctr--;
+        }
+        else {
+          log.debug("remove...");
+          n.replaceNode{}
+        }
+      }
+      log.debug("Trim rss feed. Size after: ${xml.channel[0].children().size()}");
 
       // Limit to 100 items
       // def origianl_list = xml.channel[0].item
