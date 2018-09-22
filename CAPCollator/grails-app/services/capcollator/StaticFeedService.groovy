@@ -73,7 +73,7 @@ class StaticFeedService {
 
     def fileWriter = new FileWriter(path+'/rss.xml');
     def rssBuilder = new MarkupBuilder(fileWriter)
-    rssBuilder.'rss'('xmlns':'http://www.w3.org/2005/Atom',
+    rssBuilder.'rss'(// 'xmlns':'http://www.w3.org/2005/Atom', -- The namespace for the document is not ATON
                      'xmlns:rss':'http://www.rssboard.org/rss-specification',
                      'xmlns:atom':'http://www.w3.org/2005/Atom',
                      'xmlns:dc':'http://purl.org/dc/elements/1.1/', 
