@@ -112,6 +112,7 @@ class AtomEventHandlerService {
     
                   log.debug("latest_expiry is ${latest_expiry}");
                   def alert_metadata = [:]
+                  alert_metadata.createdAt=System.currentTimeMillis()
                   alert_metadata.CCHistory=[]
                   alert_metadata.CCHistory.add(["event":"CAPCollator notified","timestamp":ts_1]);
                   alert_metadata.CCHistory.add(["event":"CAPCollator fetch alert","timestamp":ts_2]);
