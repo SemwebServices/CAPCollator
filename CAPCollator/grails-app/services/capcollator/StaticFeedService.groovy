@@ -111,7 +111,9 @@ class StaticFeedService {
       log.debug("capCollatorUUID: ${node.AlertMetadata.capCollatorUUID}")
       def source_alert = alertCacheService.get(node.AlertMetadata.capCollatorUUID);
 
-      String static_alert_file = writeAlertFile(path, node, source_alert);
+      Long alert_created_systime = node.AlertMetadata.createdAt
+
+      String static_alert_file = writeAlertFile(path, node, source_alert, alert_created_systime);
   
       log.debug("Parse existing RSS at ${path}/rss.xml");
       // def xml = new XmlSlurper().parse(path+'/rss.xml')
@@ -200,7 +202,8 @@ class StaticFeedService {
     return result
   }
 
-  private String writeAlertFile(path, node, content) {
+  private String writeAlertFile(path, node, content, alert_time) {
+
     // https://alert-hub.s3.amazonaws.com/us-epa-aq-en/2018/09/07/12/28/2018-09-07-12-28-41-693.xml
     // log.debug("writeAlertNode ${new String(content)}");
     TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
@@ -209,7 +212,8 @@ class StaticFeedService {
     def output_filename_sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-S.z')
     output_filename_sdf.setTimeZone(timeZone_utc);
 
-    def alert_date = sdf.parse(node?.AlertBody?.sent);
+    // def alert_date = sdf.parse(node?.AlertBody?.sent);
+    def alert_date = sdf.parse(new Date(alert_time));
 
     def cal = Calendar.getInstance(timeZone_utc)
     cal.setTime(alert_date);
