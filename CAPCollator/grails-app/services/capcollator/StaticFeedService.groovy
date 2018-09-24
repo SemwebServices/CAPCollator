@@ -209,11 +209,11 @@ class StaticFeedService {
     TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
     def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
 
-    def output_filename_sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-S.z')
+    def output_filename_sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z')
     output_filename_sdf.setTimeZone(timeZone_utc);
 
     // def alert_date = sdf.parse(node?.AlertBody?.sent);
-    def alert_date = sdf.parse(new Date(alert_time));
+    def alert_date = new Date(alert_time)
 
     def cal = Calendar.getInstance(timeZone_utc)
     cal.setTime(alert_date);
