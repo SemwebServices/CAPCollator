@@ -70,6 +70,7 @@ class AtomEventHandlerService {
               java.net.URLConnection conn = cap_link_url.openConnection()
               conn.setConnectTimeout(5000);
               conn.setReadTimeout(5000);
+              conn.connect();
               // conn.setAllowUserInteraction(false);         
               // conn.setDoOutput(true);
               
