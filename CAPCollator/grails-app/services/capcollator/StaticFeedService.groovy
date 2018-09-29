@@ -257,13 +257,15 @@ class StaticFeedService {
 
     String output_filename = uuid+'_'+output_filename_sdf.format(alert_date)
 
-    String full_alert_filename = alert_path+output_filename + '_' + duplicate_protection +'.xml'
+    String full_alert_filename = alert_path+output_filename + '_0.xml'
 
     File new_alert_file = new File(path+full_alert_filename)
     while ( new_alert_file.exists() ) {
       full_alert_filename = alert_path+output_filename + '_' + (++duplicate_protection) +'.xml'
-      new_alert_file = new File(path+full_alert_path)
+      new_alert_file = new File(path+full_alert_filename)
     }
+
+    log.debug("Writing alert xml to ${path+full_alert_filename}");
 
     new_alert_file << content
 
