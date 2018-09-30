@@ -2,12 +2,16 @@ package capcollator;
 
 import org.codehaus.groovy.runtime.memoize.*;
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import java.util.HashMap;
 
 public class AlertCacheService {
 
   // private LRUCache alert_cache = new LRUCache(250)
-  private LRUMap alert_cache = new LRUMap(500)
+  // private LRUMap alert_cache = new LRUMap(500)
+
+  // Store entries for up to 5 minutes
+  private PassiveExpiringMap alert_cache = new LRUMap(1000*60*5)
 
   public void put(String k,byte[] v) {
     log.debug("AlertCacheService::Put ${k}[${v?.length}] (${alert_cache.size()})");
