@@ -51,5 +51,5 @@ else {
     logger ('grails.app.services', WARN)
     logger ('grails.app.controllers', WARN)
     logger ('capcollator', INFO)
-    root(INFO, ['STDOUT'])
+    root(WARN, ['STDOUT'])
 }
