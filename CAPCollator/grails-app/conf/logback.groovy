@@ -42,6 +42,7 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     logger ('grails.app.services', DEBUG)
     logger ('capcollator', DEBUG)
     logger ('grails.gorm.multitenancy.Tenants', DEBUG)
+    logger ('capcollator.AlertCacheService', DEBUG)
     root(ERROR, ['STDOUT', 'FULL_STACKTRACE'])
 }
 else {
@@ -51,5 +52,6 @@ else {
     logger ('grails.app.services', WARN)
     logger ('grails.app.controllers', WARN)
     logger ('capcollator', INFO)
+    logger ('capcollator.AlertCacheService', DEBUG)
     root(WARN, ['STDOUT'])
 }
