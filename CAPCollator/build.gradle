@@ -82,6 +82,7 @@ dependencies {
 
     compile group: 'xom', name: 'xom', version: '1.2.5'
     compile 'net.sf.json-lib:json-lib:2.4:jdk15'
+    compile 'org.apache.commons:commons-collections4:4.2'
 
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails.plugins:geb"

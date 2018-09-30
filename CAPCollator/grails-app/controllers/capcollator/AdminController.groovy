@@ -23,6 +23,7 @@ class AdminController {
   @Secured(['ROLE_ADMIN', 'IS_AUTHENTICATED_FULLY'])
   def syncSubList() {
     def result = [:]
+    result.counter=0;
     if (params.subUrl) {
       log.debug("Attempting to parse list of subs from \"${params.subUrl}\"");
       try {
@@ -77,6 +78,11 @@ class AdminController {
                           filterType:filter_type,
                           filterGeometry:filter_geometry).save(flush:true, failOnError:true);
             }
+          }
+
+          result.counter++
+          if ( result.counter % 25 == 0 ) {
+            log.info("AdminController::syncSubList - processed ${result.counter} items so far");
           }
         }
       }

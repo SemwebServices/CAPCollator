@@ -88,52 +88,58 @@ class AtomEventHandlerService {
 
                 // def parsed_cap = parser.parse(conn.getInputStream())
                 byte[] alert_bytes = conn.getInputStream().getBytes();
-                def parsed_cap = parser.parse(new ByteArrayInputStream(alert_bytes));
-                String alert_uuid = java.util.UUID.randomUUID().toString()
-                alertCacheService.put(alert_uuid,alert_bytes);
+                if ( alert_bytes ) {
+                  def parsed_cap = parser.parse(new ByteArrayInputStream(alert_bytes));
+                  String alert_uuid = java.util.UUID.randomUUID().toString()
     
-                //                      .declareNamespace(
-                //                                        xmlschema:"http://www.w3.org/2001/XMLSchema",
-                //                                        cap11:"urn:oasis:names:tc:emergency:cap:1.1",
-                //                                        cap12:"urn:oasis:names:tc:emergency:cap:1.2")
+                  //                      .declareNamespace(
+                  //                                        xmlschema:"http://www.w3.org/2001/XMLSchema",
+                  //                                        cap11:"urn:oasis:names:tc:emergency:cap:1.1",
+                  //                                        cap12:"urn:oasis:names:tc:emergency:cap:1.2")
             
-                if ( parsed_cap.identifier ) {
-                  num_cap_files_found++
-                  def ts_3 = System.currentTimeMillis();
-                  log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
+                  if ( parsed_cap.identifier?.text().length() > 0 ) {
+                    num_cap_files_found++
+                    def ts_3 = System.currentTimeMillis();
+                    log.debug("Managed to parse link [${alert_bytes.length} bytes], looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
     
-                  def entry = domNodeToString(parsed_cap)
+                    def entry = domNodeToString(parsed_cap)
   
-                  def latest_expiry = null;
-                  def latest_effective = null;
-                  parsed_cap.info.each { info_element ->
-                    latest_expiry = info_element.expires?.text()
-                    latest_effective = info_element.effective?.text()
+                    def latest_expiry = null;
+                    def latest_effective = null;
+                    parsed_cap.info.each { info_element ->
+                      latest_expiry = info_element.expires?.text()
+                      latest_effective = info_element.effective?.text()
+                    }
+    
+                    log.debug("latest_expiry is ${latest_expiry}");
+                    def alert_metadata = [:]
+                    alert_metadata.createdAt=System.currentTimeMillis()
+                    alert_metadata.CCHistory=[]
+                    alert_metadata.CCHistory.add(["event":"CAPCollator notified","timestamp":ts_1]);
+                    alert_metadata.CCHistory.add(["event":"CAPCollator fetch alert","timestamp":ts_2]);
+                    alert_metadata.CCHistory.add(["event":"CAPCollator publish CAP event","timestamp":ts_3]);
+                    alert_metadata.SourceUrl = cap_link
+                    alert_metadata.capCollatorUUID = alert_uuid;
+
+                    alertCacheService.put(alert_uuid,alert_bytes);
+  
+                    if ( latest_expiry && latest_expiry.trim().length() > 0 )
+                      alert_metadata.Expires = latest_expiry
+  
+                    if ( latest_effective && latest_effective.trim().length() > 0 )
+                      alert_metadata.Effective = latest_effective
+  
+                    // Render the cap object as JSON - We wrap the converted message in an object so we can add some metadata about
+                    // processing time - for stats / tracking the delay through the system
+                    String json_text = '{ "AlertMetadata":'+toJson(alert_metadata)+',"AlertBody":'+capcollator.Utils.XmlToJson(entry)+'}'
+    
+                    // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
+                    // Look at the various info.area elements - if the "polygon" element is null see if we can find an info.area.geocode we understand well enough to expand
+                    broadcastCapEvent(json_text, context.properties.headers)
                   }
-    
-                  log.debug("latest_expiry is ${latest_expiry}");
-                  def alert_metadata = [:]
-                  alert_metadata.createdAt=System.currentTimeMillis()
-                  alert_metadata.CCHistory=[]
-                  alert_metadata.CCHistory.add(["event":"CAPCollator notified","timestamp":ts_1]);
-                  alert_metadata.CCHistory.add(["event":"CAPCollator fetch alert","timestamp":ts_2]);
-                  alert_metadata.CCHistory.add(["event":"CAPCollator publish CAP event","timestamp":ts_3]);
-                  alert_metadata.SourceUrl = cap_link
-                  alert_metadata.capCollatorUUID = alert_uuid;
-  
-                  if ( latest_expiry && latest_expiry.trim().length() > 0 )
-                    alert_metadata.Expires = latest_expiry
-  
-                  if ( latest_effective && latest_effective.trim().length() > 0 )
-                    alert_metadata.Effective = latest_effective
-  
-                  // Render the cap object as JSON - We wrap the converted message in an object so we can add some metadata about
-                  // processing time - for stats / tracking the delay through the system
-                  String json_text = '{ "AlertMetadata":'+toJson(alert_metadata)+',"AlertBody":'+capcollator.Utils.XmlToJson(entry)+'}'
-    
-                  // http://www.nws.noaa.gov/geodata/ tells us how to understand geocode elements
-                  // Look at the various info.area elements - if the "polygon" element is null see if we can find an info.area.geocode we understand well enough to expand
-                  broadcastCapEvent(json_text, context.properties.headers)
+                  else {
+                    log.error("Failed to retrieve any bytes from ${cap_link}. Cannot process");
+                  }
                 }
                 else {
                   log.warn("No valid CAP from ${cap_link} -- consider improving rules for handling this");
@@ -151,7 +157,7 @@ class AtomEventHandlerService {
             }
           }
           else {
-            log.error("Unable to find CAP link in ${body}");
+            log.error("Unable to find CAP link in ${body} OR other error parsing XML");
           }
         }
       }

@@ -113,102 +113,112 @@ class StaticFeedService {
       log.debug("capCollatorUUID: ${node.AlertMetadata.capCollatorUUID}")
       def source_alert = alertCacheService.get(node.AlertMetadata.capCollatorUUID);
 
-      Long alert_created_systime = node.AlertMetadata.createdAt
-
-      String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime);
+      if ( source_alert ) {
   
-      log.debug("Parse existing RSS at ${path}/rss.xml");
-      // def xml = new XmlSlurper().parse(path+'/rss.xml')
-      groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
-      xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
-      xml_parser.startPrefixMapping('','');
-      groovy.util.Node xml = xml_parser.parse(new File(path+'/rss.xml'))
+        Long alert_created_systime = node.AlertMetadata.createdAt
   
-      //Edit File e.g. append an element called foo with attribute bar
+        String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime);
+    
+        log.debug("Parse existing RSS at ${path}/rss.xml");
+        // def xml = new XmlSlurper().parse(path+'/rss.xml')
+        groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
+        xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
+        xml_parser.startPrefixMapping('','');
+        groovy.util.Node xml = xml_parser.parse(new File(path+'/rss.xml'))
+    
+        //Edit File e.g. append an element called foo with attribute bar
+    
+        log.debug("Get first info section");
+        def info = getFirstInfoSection(node);
   
-      log.debug("Get first info section");
-      def info = getFirstInfoSection(node);
-
-      def formatted_pub_date = null;
-      def formatted_pub_date_2 = null;
-
-      try {
-        formatted_pub_date_2 = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date(alert_created_systime));
-        def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
-        def alert_date = sdf.parse(node?.AlertBody?.sent);
-        formatted_pub_date = new SimpleDateFormat('EEE, dd MMM yyyy HH:mm:ss Z').format(alert_date);
-      }
-      catch ( Exception e ) {
-      }
-
-      def atomns = new groovy.xml.Namespace('http://www.w3.org/2005/Atom','atom')
-
-      def new_item_node = xml.channel[0].appendNode( 'item' );
-      new_item_node.appendNode( 'title', info?.headline ?: info?.description );
-      new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${subname}${static_alert_file}".toString());
-      new_item_node.appendNode( 'description', info?.description);
-      new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
-      new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
-      //      //'dc:creator'('creator')
-      //      //'dc:date'('date')
-
-      // The true asks the sort to mutate the source list. Source elements without a pubDate element high - so the none item
-      // entries float to the top of the list
-      xml.channel[0].children().sort(true) { a,b ->
-        ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
-      }
-
-      log.debug("Trim rss feed. Size before: ${xml.channel[0].children().size()}");
-      int ctr = MAX_FEED_ENTRIES;
-      xml.channel[0] = xml.channel[0].item.each { n ->
-        if ( ctr > 0 ) {
-          ctr--;
+        def formatted_pub_date = null;
+        def formatted_pub_date_2 = null;
+        def formatted_write_date = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date());
+  
+        try {
+          formatted_pub_date_2 = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSSZ').format(new Date(alert_created_systime));
+          def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
+          def alert_date = sdf.parse(node?.AlertBody?.sent);
+          formatted_pub_date = new SimpleDateFormat('EEE, dd MMM yyyy HH:mm:ss Z').format(alert_date);
         }
-        else {
-          log.debug("remove...");
-          n.replaceNode{}
+        catch ( Exception e ) {
         }
+  
+        def atomns = new groovy.xml.Namespace('http://www.w3.org/2005/Atom','atom')
+        def ccns = new groovy.xml.Namespace('http://demo.semweb.co/CapCollator','capcol');
+  
+        def new_item_node = xml.channel[0].appendNode( 'item' );
+        new_item_node.appendNode( 'title', info?.headline ?: info?.description );
+        new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${subname}${static_alert_file}".toString());
+        new_item_node.appendNode( 'description', info?.description);
+        new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
+        new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
+        new_item_node.appendNode( ccns.'dateWritten', formatted_write_date )
+  
+        //      //'dc:creator'('creator')
+        //      //'dc:date'('date')
+  
+        // The true asks the sort to mutate the source list. Source elements without a pubDate element high - so the none item
+        // entries float to the top of the list
+        xml.channel[0].children().sort(true) { a,b ->
+          ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
+        }
+  
+        log.debug("Trim rss feed. Size before: ${xml.channel[0].children().size()}");
+        int ctr = MAX_FEED_ENTRIES;
+        xml.channel[0] = xml.channel[0].item.each { n ->
+          if ( ctr > 0 ) {
+            ctr--;
+          }
+          else {
+            log.debug("remove...");
+            n.replaceNode{}
+          }
+        }
+        log.debug("Trim rss feed. Size after: ${xml.channel[0].children().size()}");
+  
+        // Limit to 100 items
+        // def origianl_list = xml.channel[0].item
+        // xml.channel.item = xml.channel[0].item.take(100)
+  
+        // def removed_elements = origianl_list.removeAll(xml.channel.item)
+        // removed_elements.each { re ->
+        //   log.debug("Remove: ${re?.link}");
+        // }
+    
+        //Save File
+        java.io.Writer writer = new FileWriter(path+'/rss.xml')
+    
+        // Append new element
+    
+        // then sort in date order desc
+        // rootNode.children().sort(true) {it.attribute('name')}
+    
+        //Option 1: Write XML all on one line
+        // def builder = new StreamingMarkupBuilder()
+        // writer << builder.bind {
+        //   mkp.yield xml
+        // }
+    
+        //Option 2: Pretty print XML
+        // StreamingMarkupBuilder outputBuilder = new StreamingMarkupBuilder()
+        // groovy.lang.Writable w = outputBuilder.bind {
+        //   mkp.declareNamespace('atom':'http://www.w3.org/2005/Atom')
+        //   mkp.declareNamespace('dc':'http://purl.org/dc/elements/1.1/')
+        //   mkp.declareNamespace('admin':'http://webns.net/mvcb/')
+        //   mkp.declareNamespace('content':'http://purl.org/rss/1.0/modules/content/')
+        //   mkp.declareNamespace('rdf':'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+        //   mkp.yield xml
+        // }
+        // XmlUtil.serialize(w, writer)
+  
+        XmlUtil.serialize(xml, writer)
+        writer.flush()
+        writer.close()
       }
-      log.debug("Trim rss feed. Size after: ${xml.channel[0].children().size()}");
-
-      // Limit to 100 items
-      // def origianl_list = xml.channel[0].item
-      // xml.channel.item = xml.channel[0].item.take(100)
-
-      // def removed_elements = origianl_list.removeAll(xml.channel.item)
-      // removed_elements.each { re ->
-      //   log.debug("Remove: ${re?.link}");
-      // }
-  
-      //Save File
-      java.io.Writer writer = new FileWriter(path+'/rss.xml')
-  
-      // Append new element
-  
-      // then sort in date order desc
-      // rootNode.children().sort(true) {it.attribute('name')}
-  
-      //Option 1: Write XML all on one line
-      // def builder = new StreamingMarkupBuilder()
-      // writer << builder.bind {
-      //   mkp.yield xml
-      // }
-  
-      //Option 2: Pretty print XML
-      // StreamingMarkupBuilder outputBuilder = new StreamingMarkupBuilder()
-      // groovy.lang.Writable w = outputBuilder.bind {
-      //   mkp.declareNamespace('atom':'http://www.w3.org/2005/Atom')
-      //   mkp.declareNamespace('dc':'http://purl.org/dc/elements/1.1/')
-      //   mkp.declareNamespace('admin':'http://webns.net/mvcb/')
-      //   mkp.declareNamespace('content':'http://purl.org/rss/1.0/modules/content/')
-      //   mkp.declareNamespace('rdf':'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-      //   mkp.yield xml
-      // }
-      // XmlUtil.serialize(w, writer)
-
-      XmlUtil.serialize(xml, writer)
-      writer.flush()
-      writer.close()
+      else {
+        log.error("unable to retrieve alert cache entry for id ${node.AlertMetadata.capCollatorUUID}");
+      }
     }
     else {
       log.warn("Missing alert uuid");
@@ -264,7 +274,7 @@ class StaticFeedService {
       new_alert_file = new File(path+full_alert_filename)
     }
 
-    log.debug("Writing alert xml to ${new_alert_file}");
+    log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
 
     new_alert_file << content
 
