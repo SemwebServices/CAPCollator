@@ -45,8 +45,8 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     root(ERROR, ['STDOUT', 'FULL_STACKTRACE'])
 }
 else {
-    logger ('grails.app.init', WARN)
-    logger ('capcollator', WARN)
+    logger ('grails.app.init', INFO)
+    logger ('capcollator', INFO)
     logger ('grails.app.domains', WARN)
     logger ('grails.app.jobs', WARN)
     logger ('grails.app.services', WARN)
