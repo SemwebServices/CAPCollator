@@ -10,8 +10,8 @@ public class AlertCacheService {
   // private LRUCache alert_cache = new LRUCache(250)
   // private LRUMap alert_cache = new LRUMap(500)
 
-  // Store entries for up to 5 minutes
-  private Map alert_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*5))
+  // Store entries for up to 15 minutes
+  private Map alert_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*15))
 
   public void put(String k,byte[] v) {
     log.debug("AlertCacheService::Put ${k}[${v?.length}] (${alert_cache.size()})");
