@@ -46,11 +46,10 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
 }
 else {
     logger ('grails.app.init', INFO)
-    logger ('capcollator', INFO)
     logger ('grails.app.domains', WARN)
     logger ('grails.app.jobs', WARN)
     logger ('grails.app.services', WARN)
     logger ('grails.app.controllers', WARN)
-    logger ('capcollator', WARN)
-    root(WARN, ['STDOUT'])
+    logger ('capcollator', INFO)
+    root(INFO, ['STDOUT'])
 }
