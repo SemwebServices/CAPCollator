@@ -102,7 +102,14 @@
                     </div>
                     
                     <div class="form-group"> <label class="col-sm-2 control-label">Alert Sender</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sender}</p></div> </div>
-                    <div class="form-group"> <label class="col-sm-2 control-label">Alert Sent</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sent}</p></div> </div>
+                    <div class="form-group"> <label class="col-sm-2 control-label">Times:</label> <div class="col-sm-10">
+                        <table class="table table-striped">
+                          <tr><th>Date on alert</th><td>${alsrc.AlertBody.sent}</td></tr>
+                          <g:each in="${alsrc.AlertMetadata.CCHistory}" var="he">
+                            <tr><th>${he.event}</th><td><g:formatDate format="yyyy-MM-dd HH:mm:ss.SSS z" date="${new Date(he.timestamp)}" timeZone="UTC"/></td></tr>
+                          </g:each>
+                        </table>
+                     </div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Source</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertMetadata.SourceUrl}</p></div> </div>
                     <div class="form-group"> <label class="col-sm-2 control-label">Matched Subscriptions</label> <div class="col-sm-10"><p class="form-control-static">
                      <g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"> <g:link controller="subscriptions" action="details" id="${ms}">${ms}</g:link> &nbsp; </g:each> </p></div> 
