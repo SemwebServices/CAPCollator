@@ -52,6 +52,6 @@ else {
     logger ('grails.app.services', WARN)
     logger ('grails.app.controllers', WARN)
     logger ('capcollator', INFO)
-    logger ('capcollator.AlertCacheService', DEBUG)
+    logger ('capcollator.AlertCacheService', WARN)
     root(WARN, ['STDOUT'])
 }
