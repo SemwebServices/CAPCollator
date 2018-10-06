@@ -31,7 +31,7 @@ class StaticFeedService {
     try {
       if ( grailsApplication.config.awsBucketName ) {
         log.info("Configure AWS S3 to mirror feeds using bucket ${grailsApplication.config.awsBucketName}");
-        s3 = AmazonS3ClientBuilder.defaultClient();
+        s3 = AmazonS3ClientBuilder.standard();
         log.info("S3 configured");
       }
       else {
@@ -84,7 +84,7 @@ class StaticFeedService {
     try {
       if ( s3 ) {
         // Strip off any prefix we are using locally, to leave the raw path
-        String s3_key = path.replaceAll(grailsApplication.config.staticFeedsDir,'');
+        String s3_key = path.replaceAll((grailsApplication.config.staticFeedsDir+'/'),'');
 
         log.debug("S3 mirror ${path} in bucket ${grailsApplication.config.awsBucketName} - key name will be ${s3_key}");
 
