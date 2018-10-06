@@ -31,7 +31,7 @@ class StaticFeedService {
     try {
       if ( grailsApplication.config.awsBucketName ) {
         log.info("Configure AWS S3 to mirror feeds using bucket ${grailsApplication.config.awsBucketName}");
-        s3 = AmazonS3ClientBuilder.standard();
+        s3 = AmazonS3ClientBuilder.defaultClient();
         log.info("S3 configured");
       }
       else {
