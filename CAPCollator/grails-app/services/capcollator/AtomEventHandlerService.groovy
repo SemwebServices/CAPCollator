@@ -81,6 +81,9 @@ class AtomEventHandlerService {
                    ( detected_content_type.toLowerCase().startsWith('text/xml') ||
                      detected_content_type.toLowerCase().startsWith('application/octet-stream') ||   // Because of http://www.gestiondelriesgo.gov.co
                      detected_content_type.toLowerCase().startsWith('application/xml') ) ) {
+
+                def fetch_completed = System.currentTimeMillis();
+
                 def parser = new XmlSlurper()
                 parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
                 parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
@@ -100,7 +103,7 @@ class AtomEventHandlerService {
                   if ( parsed_cap.identifier?.text().length() > 0 ) {
                     num_cap_files_found++
                     def ts_3 = System.currentTimeMillis();
-                    log.debug("Managed to parse link [${alert_bytes.length} bytes], looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
+                    log.debug("Managed to parse link [${alert_bytes.length} bytes], looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\" timeToFetchAndParse:${ts_3-ts_2}");
     
                     def entry = domNodeToString(parsed_cap)
   
@@ -115,9 +118,10 @@ class AtomEventHandlerService {
                     def alert_metadata = [:]
                     alert_metadata.createdAt=System.currentTimeMillis()
                     alert_metadata.CCHistory=[]
-                    alert_metadata.CCHistory.add(["event":"CAPCollator notified","timestamp":ts_1]);
-                    alert_metadata.CCHistory.add(["event":"CAPCollator fetch alert","timestamp":ts_2]);
-                    alert_metadata.CCHistory.add(["event":"CAPCollator publish CAP event","timestamp":ts_3]);
+                    alert_metadata.CCHistory.add(["event":"CC-notified","timestamp":ts_1]);
+                    alert_metadata.CCHistory.add(["event":"CC-HTTP Get completed","timestamp":fetch_completed]);
+                    alert_metadata.CCHistory.add(["event":"CC-parse complete","timestamp":ts_3]);
+                    alert_metadata.CCHistory.add(["event":"CC-emit CAP event","timestamp":System.currentTimeMillis()]);
                     alert_metadata.SourceUrl = cap_link
                     alert_metadata.capCollatorUUID = alert_uuid;
 

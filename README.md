@@ -56,6 +56,9 @@ http://localhost:9200/alertssubscriptions/alertsubscription/_search?q=*
 http://localhost:15672/#/ -- mgt interface
 http://localhost:15670/ -- WebSockents info
 
+To try and get an idea of rabbit throughput, visit the mgt interface on port 15672 and log in as the cap admin user - using the dev setup this is cap/cap
+
+
 ## Apache2
 
 CAPCollator makes it's events available over websockets. This is done via rabbitmq. The following stanza can be

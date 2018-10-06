@@ -10,6 +10,9 @@ import java.util.Calendar
 import groovy.util.XmlParser
 import java.util.TimeZone
 import groovy.xml.StreamingMarkupBuilder 
+import org.apache.commons.collections4.map.PassiveExpiringMap;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 @Transactional
 class StaticFeedService {
@@ -18,6 +21,32 @@ class StaticFeedService {
   def alertCacheService
   public static int MAX_FEED_ENTRIES = 100;
 
+  // Needs setup in ~/.aws/confing and ~/.aws/credentials
+
+  AmazonS3 s3 = null; // AmazonS3ClientBuilder.defaultClient();
+
+  @javax.annotation.PostConstruct
+  def init () {
+    log.debug("StaticFeedService::init");
+    try {
+      if ( grailsApplication.config.awsBucketName ) {
+        log.debug("Configure AWS S3 to mirror feeds using bucket ${grailsApplication.config.awsBucketName}");
+        s3 = AmazonS3ClientBuilder.defaultClient();
+        log.debug("S3 configured");
+      }
+      else {
+        log.debug("No awsBucketName configured - local feeds will not be mirrored on S3");
+      }
+    }
+    catch ( com.amazonaws.AmazonServiceException ase) {
+      log.error("Problem with AWS mirror setup",ase);
+    }
+  }
+
+
+  // Hold a cache of rss feeds so that we can avoid repeatedly parsing the same file,
+  // particularly when processing multiple files
+  private Map rss_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*30))
 
   def update(routingKey, body, context) {
     String[] key_components = routingKey.split('\\.');
@@ -46,6 +75,24 @@ class StaticFeedService {
     }
     else {
       log.error("Unexpected number of routing key components:: ${key_components}");
+    }
+  }
+
+
+  // IF therw are S3 credentals configured, push the alert there also
+  private pushToS3(String path) {
+    try {
+      if ( s3 ) {
+        // Strip off any prefix we are using locally, to leave the raw path
+        String s3_key = path.replaceAll(grailsApplication.config.staticFeedsDir,'');
+
+        log.debug("S3 mirror ${path} in bucket ${grailsApplication.config.awsBucketName} - key name will be ${s3_key}");
+
+        s3.putObject(grailsApplication.config.awsBucketName, s3_key, new File(path));
+      }
+    }
+    catch ( com.amazonaws.AmazonServiceException ase) {
+      log.error("Problem with AWS mirror",ase);
     }
   }
 
@@ -103,8 +150,43 @@ class StaticFeedService {
       }
     }
     fileWriter.close();
+
+    pushToS3(path+'/rss.xml');
   }
 
+  private groovy.util.Node getExistingRss(String path) {
+
+    groovy.util.Node result = null;
+
+    result = rss_cache.get(path);
+ 
+    if ( result == null ) {
+      log.debug("Parse existing RSS at ${path}/rss.xml and cache");
+      groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
+      xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
+      xml_parser.startPrefixMapping('','');
+      result = xml_parser.parse(new File(path+'/rss.xml'))
+      rss_cache.put(path, result);
+    }
+    else {
+      log.debug("RSS Feed retrieved from cache, no need to parse");
+      // Re-put the XML so that we reset the expiration time... Making this a kind of LRU expiring cache
+      rss_cache.put(path, result);
+    }
+
+    result
+  }
+
+  // This method should defer writing briefly in case other alerts come in, so we can write them all at once.
+  private void writeRss(String path, groovy.util.Node xml) {
+    //Save File
+    java.io.Writer writer = new FileWriter(path+'/rss.xml')
+    XmlUtil.serialize(xml, writer)
+    writer.flush()
+    writer.close()
+
+    pushToS3(path+'/rss.xml');
+  }
 
   private void addItem(String path, node, subname) {
 
@@ -119,15 +201,10 @@ class StaticFeedService {
   
         String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime);
     
-        log.debug("Parse existing RSS at ${path}/rss.xml");
-        // def xml = new XmlSlurper().parse(path+'/rss.xml')
-        groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
-        xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
-        xml_parser.startPrefixMapping('','');
-        groovy.util.Node xml = xml_parser.parse(new File(path+'/rss.xml'))
-    
+
+        groovy.util.Node xml = getExistingRss(path);
+
         //Edit File e.g. append an element called foo with attribute bar
-    
         log.debug("Get first info section");
         def info = getFirstInfoSection(node);
   
@@ -177,44 +254,7 @@ class StaticFeedService {
         }
         log.debug("Trim rss feed. Size after: ${xml.channel[0].children().size()}");
   
-        // Limit to 100 items
-        // def origianl_list = xml.channel[0].item
-        // xml.channel.item = xml.channel[0].item.take(100)
-  
-        // def removed_elements = origianl_list.removeAll(xml.channel.item)
-        // removed_elements.each { re ->
-        //   log.debug("Remove: ${re?.link}");
-        // }
-    
-        //Save File
-        java.io.Writer writer = new FileWriter(path+'/rss.xml')
-    
-        // Append new element
-    
-        // then sort in date order desc
-        // rootNode.children().sort(true) {it.attribute('name')}
-    
-        //Option 1: Write XML all on one line
-        // def builder = new StreamingMarkupBuilder()
-        // writer << builder.bind {
-        //   mkp.yield xml
-        // }
-    
-        //Option 2: Pretty print XML
-        // StreamingMarkupBuilder outputBuilder = new StreamingMarkupBuilder()
-        // groovy.lang.Writable w = outputBuilder.bind {
-        //   mkp.declareNamespace('atom':'http://www.w3.org/2005/Atom')
-        //   mkp.declareNamespace('dc':'http://purl.org/dc/elements/1.1/')
-        //   mkp.declareNamespace('admin':'http://webns.net/mvcb/')
-        //   mkp.declareNamespace('content':'http://purl.org/rss/1.0/modules/content/')
-        //   mkp.declareNamespace('rdf':'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
-        //   mkp.yield xml
-        // }
-        // XmlUtil.serialize(w, writer)
-  
-        XmlUtil.serialize(xml, writer)
-        writer.flush()
-        writer.close()
+        writeRss(path, xml);
       }
       else {
         log.error("unable to retrieve alert cache entry for id ${node.AlertMetadata.capCollatorUUID}");
@@ -277,6 +317,8 @@ class StaticFeedService {
     log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
 
     new_alert_file << content
+
+    pushToS3(path+full_alert_filename);
 
     return full_alert_filename
   }

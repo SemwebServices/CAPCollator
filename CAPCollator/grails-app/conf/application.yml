@@ -177,3 +177,4 @@ SystemBaseURL: 'http://demo.semweb.co/CAPCollator'
 
 staticFeedsDir: /tmp/cap
 staticFeedsBaseUrl: 'https://s3-eu-west-1.amazonaws.com/alert-feeds'
+awsBucketName: 'cap-alerts'

@@ -13,7 +13,7 @@ buildscript {
     }
 }
 
-version "1.0.10"
+version "1.0.11"
 group "capcollator"
 
 apply plugin:"eclipse"
@@ -83,6 +83,9 @@ dependencies {
     compile group: 'xom', name: 'xom', version: '1.2.5'
     compile 'net.sf.json-lib:json-lib:2.4:jdk15'
     compile 'org.apache.commons:commons-collections4:4.2'
+
+    compile 'com.amazonaws:aws-java-sdk-bom:1.11.422'
+    compile 'com.amazonaws:aws-java-sdk-s3:1.11.422'
 
     testCompile "org.grails:grails-plugin-testing"
     testCompile "org.grails.plugins:geb"
