@@ -299,7 +299,8 @@ class StaticFeedService {
 
     int duplicate_protection = 0
 
-    File alert_path_dir = new File(path+alert_path)
+    String prefix = generatePrefix()
+    File alert_path_dir = new File(path+alert_path+prefix);
     if ( ! alert_path_dir.exists() ) {
       log.debug("Setting up new static sub DIR ${alert_path_dir}");
       alert_path_dir.mkdirs()
@@ -307,10 +308,11 @@ class StaticFeedService {
 
     String output_filename = uuid+'_'+output_filename_sdf.format(alert_date)
 
-    String full_alert_filename = alert_path+output_filename + '_0.xml'
+    String full_alert_filename = alert_path+prefix+output_filename + '_0.xml'
+
     File new_alert_file = new File(path+full_alert_filename)
     while ( new_alert_file.exists() ) {
-      full_alert_filename = alert_path+output_filename + '_' + (++duplicate_protection) +'.xml'
+      full_alert_filename = alert_path+prefix+output_filename + '_' + (++duplicate_protection) +'.xml'
       new_alert_file = new File(path+full_alert_filename)
     }
 
@@ -321,5 +323,11 @@ class StaticFeedService {
     pushToS3(path+full_alert_filename);
 
     return full_alert_filename
+  }
+
+  private String generatePrefix() {
+    def rnd = new Random();
+    String result = ''+ ( ( rnd.nextInt(26) + ('a' as char) ) as char ) + ( ( rnd.nextInt(26) + ('a' as char) ) as char ) + '/'
+    result;
   }
 }
