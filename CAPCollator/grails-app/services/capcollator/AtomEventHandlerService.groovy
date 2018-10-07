@@ -118,11 +118,12 @@ class AtomEventHandlerService {
                     def alert_metadata = [:]
                     alert_metadata.createdAt=System.currentTimeMillis()
                     alert_metadata.CCHistory=[]
-                    alert_metadata.CCHistory.add(["event":"CC-notified","timestamp":ts_1]);
+                    alert_metadata.CCHistory.add(["event":"CC-ATOM-notified","timestamp":ts_1]);
                     alert_metadata.CCHistory.add(["event":"CC-HTTP Get completed","timestamp":fetch_completed]);
                     alert_metadata.CCHistory.add(["event":"CC-parse complete","timestamp":ts_3]);
                     alert_metadata.CCHistory.add(["event":"CC-emit CAP event","timestamp":System.currentTimeMillis()]);
                     alert_metadata.SourceUrl = cap_link
+                    alert_metadata.sourceFeed = context.properties.headers['feed-code']
                     alert_metadata.capCollatorUUID = alert_uuid;
 
                     alertCacheService.put(alert_uuid,alert_bytes);

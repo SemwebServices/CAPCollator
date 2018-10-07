@@ -67,6 +67,8 @@ class RssEventHandlerService {
 
             def parser = new XmlSlurper()
 
+            def fetch_completed = System.currentTimeMillis();
+
             byte[] alert_bytes = conn.getInputStream().getBytes();
 
             parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
@@ -94,11 +96,16 @@ class RssEventHandlerService {
               def alert_metadata = [:]
               alert_metadata.createdAt=System.currentTimeMillis()
               alert_metadata.CCHistory=[]
-              alert_metadata.CCHistory.add(["event":"CAPCollator notified","timestamp":ts_1]);
-              alert_metadata.CCHistory.add(["event":"CAPCollator fetch alert","timestamp":ts_2]);
-              alert_metadata.CCHistory.add(["event":"CAPCollator publish CAP event","timestamp":ts_3]);
+
+              alert_metadata.CCHistory.add(["event":"CC-RSS-notified","timestamp":ts_1]);
+              alert_metadata.CCHistory.add(["event":"CC-HTTP Get completed","timestamp":fetch_completed]);
+              alert_metadata.CCHistory.add(["event":"CC-parse complete","timestamp":ts_3]);
+              alert_metadata.CCHistory.add(["event":"CC-emit CAP event","timestamp":System.currentTimeMillis()]);
+
               alert_metadata.SourceUrl = cap_link
               alert_metadata.capCollatorUUID = alert_uuid;
+              alert_metadata.sourceFeed = context.properties.headers['feed-code']
+
               alertCacheService.put(alert_uuid,alert_bytes);
 
               if ( latest_expiry && latest_expiry.trim().length() > 0 )
