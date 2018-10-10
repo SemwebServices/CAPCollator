@@ -104,7 +104,7 @@ class RssEventHandlerService {
 
               alert_metadata.SourceUrl = cap_link
               alert_metadata.capCollatorUUID = alert_uuid;
-              alert_metadata.sourceFeed = context.properties.headers['feed-code']
+              alert_metadata.sourceFeed = new String(context.properties.headers['feed-code'])
 
               alertCacheService.put(alert_uuid,alert_bytes);
 

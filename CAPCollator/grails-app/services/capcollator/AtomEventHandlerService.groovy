@@ -123,7 +123,7 @@ class AtomEventHandlerService {
                     alert_metadata.CCHistory.add(["event":"CC-parse complete","timestamp":ts_3]);
                     alert_metadata.CCHistory.add(["event":"CC-emit CAP event","timestamp":System.currentTimeMillis()]);
                     alert_metadata.SourceUrl = cap_link
-                    alert_metadata.sourceFeed = context.properties.headers['feed-code']
+                    alert_metadata.sourceFeed = new String(context.properties.headers['feed-code'].getBytes())
                     alert_metadata.capCollatorUUID = alert_uuid;
 
                     alertCacheService.put(alert_uuid,alert_bytes);

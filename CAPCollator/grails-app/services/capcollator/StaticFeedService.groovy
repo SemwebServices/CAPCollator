@@ -19,7 +19,7 @@ class StaticFeedService {
 
   def grailsApplication
   def alertCacheService
-  public static int MAX_FEED_ENTRIES = 100;
+  public static int MAX_FEED_ENTRIES = 250;
 
   // Needs setup in ~/.aws/confing and ~/.aws/credentials
 
@@ -48,6 +48,11 @@ class StaticFeedService {
   // particularly when processing multiple files
   private Map rss_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*30))
 
+  /**
+   * @param routingKey - Subscription matching
+   * @param body - JSON for alert
+   * @param context
+   */
   def update(routingKey, body, context) {
     String[] key_components = routingKey.split('\\.');
     if ( key_components.length == 2 ) {
@@ -199,7 +204,8 @@ class StaticFeedService {
   
         Long alert_created_systime = node.AlertMetadata.createdAt
   
-        String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime);
+        String source_feed_id = node.AlertMetadata.sourceFeed;
+        String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime, source_feed_id);
     
 
         groovy.util.Node xml = getExistingRss(path);
@@ -231,6 +237,7 @@ class StaticFeedService {
         new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
         new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
         new_item_node.appendNode( ccns.'dateWritten', formatted_write_date )
+        new_item_node.appendNode( ccns.'sourceFeed', node?.AlertMetadata.sourceFeed )
   
         //      //'dc:creator'('creator')
         //      //'dc:date'('date')
@@ -275,7 +282,7 @@ class StaticFeedService {
     return result
   }
 
-  private String writeAlertFile(uuid, path, node, content, alert_time) {
+  private String writeAlertFile(uuid, path, node, content, alert_time, sourcefeed_id) {
 
     // https://alert-hub.s3.amazonaws.com/us-epa-aq-en/2018/09/07/12/28/2018-09-07-12-28-41-693.xml
     // log.debug("writeAlertNode ${new String(content)}");
@@ -306,7 +313,7 @@ class StaticFeedService {
       alert_path_dir.mkdirs()
     }
 
-    String output_filename = uuid+'_'+output_filename_sdf.format(alert_date)
+    String output_filename = sourcefeed_id+'_'+output_filename_sdf.format(alert_date)
 
     String full_alert_filename = alert_path+prefix+output_filename + '_0.xml'
 
