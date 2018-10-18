@@ -12,6 +12,8 @@ class AtomEventHandlerService {
   def eventService
   def alertCacheService
 
+  private static long LONG_ALERT_THRESHOLD = 2000;
+
   def process(cap_url) {
     log.debug("AtomEventHandlerService::process ${cap_url}");
   }
@@ -121,7 +123,13 @@ class AtomEventHandlerService {
                     alert_metadata.CCHistory.add(["event":"CC-ATOM-notified","timestamp":ts_1]);
                     alert_metadata.CCHistory.add(["event":"CC-HTTP Get completed","timestamp":fetch_completed]);
                     alert_metadata.CCHistory.add(["event":"CC-parse complete","timestamp":ts_3]);
-                    alert_metadata.CCHistory.add(["event":"CC-emit CAP event","timestamp":System.currentTimeMillis()]);
+                    alert_metadata.CCHistory.add(["event":"CC-emit CAP event","timestamp":alert_metadata.createdAt]);
+
+                    def elapsed = alert_metadata.createdAt - ts_1;
+                    if ( elapsed > LONG_ALERT_THRESHOLD ) {
+                      log.info("Alert processing exceeded LONG_ALERT_THRESHOLD(${elapsed}) ${cap_link_url}");
+                    }
+
                     alert_metadata.SourceUrl = cap_link
                     alert_metadata.sourceFeed = new String(context.properties.headers['feed-code'].getBytes())
                     alert_metadata.capCollatorUUID = alert_uuid;
