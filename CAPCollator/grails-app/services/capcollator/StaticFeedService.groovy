@@ -13,6 +13,8 @@ import groovy.xml.StreamingMarkupBuilder
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 @Transactional
 class StaticFeedService {
@@ -21,9 +23,16 @@ class StaticFeedService {
   def alertCacheService
   public static int MAX_FEED_ENTRIES = 500;
 
-  // Needs setup in ~/.aws/confing and ~/.aws/credentials
+  // Hold a cache of rss feeds so that we can avoid repeatedly parsing the same file,
+  // particularly when processing multiple files
+  private Map rss_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*40))
 
-  AmazonS3 s3 = null; // AmazonS3ClientBuilder.defaultClient();
+  private List<String> feed_write_queue = Collections.synchronizedList(new ArrayList<String>());
+
+  ExecutorService executor = Executors.newSingleThreadExecutor()
+
+  // Needs setup in ~/.aws/confing and ~/.aws/credentials
+  AmazonS3 s3 = null;
 
   @javax.annotation.PostConstruct
   def init () {
@@ -37,16 +46,16 @@ class StaticFeedService {
       else {
         log.info("No awsBucketName configured - local feeds will not be mirrored on S3");
       }
+
+      executor.execute {
+        watchRssQueue();
+      }
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
       log.error("Problem with AWS mirror setup",ase);
     }
   }
 
-
-  // Hold a cache of rss feeds so that we can avoid repeatedly parsing the same file,
-  // particularly when processing multiple files
-  private Map rss_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*30))
 
   /**
    * @param routingKey - Subscription matching
@@ -183,14 +192,44 @@ class StaticFeedService {
   }
 
   // This method should defer writing briefly in case other alerts come in, so we can write them all at once.
-  private void writeRss(String path, groovy.util.Node xml) {
-    //Save File
-    java.io.Writer writer = new FileWriter(path+'/rss.xml')
-    XmlUtil.serialize(xml, writer)
-    writer.flush()
-    writer.close()
+  private void enqueueRss(String path) {
+    log.debug("enqueueRss(${path})");
+    synchronized(feed_write_queue) {
+      if ( feed_write_queue.contains(path) ) {
+        // Already queued
+      }
+      else {
+        feed_write_queue.add(path);
+        log.debug("Add ${path} to feed_write_queue. Current size is ${feed_write_queue.size()} notify all");
+        feed_write_queue.notifyAll();
+      }
+    }
+  }
 
-    pushToS3(path+'/rss.xml');
+  private watchRssQueue() {
+    log.debug("watchRssQueue()");
+    while(true) {
+      String path_to_write = null;
+      synchronized(feed_write_queue) {
+        log.debug("watchRssQueue() waiting");
+        feed_write_queue.wait();
+        if ( feed_write_queue.size() > 0 ) {
+          path_to_write = feed_write_queue.remove(0)
+        }
+      }
+
+      if ( path_to_write != null ) {
+        log.debug("watchRssQueue() process ${path_to_write}");
+        java.io.Writer writer = new FileWriter(path_to_write+'/rss.xml')
+        XmlUtil.serialize(rss_cache.get(path_to_write), writer)
+        writer.flush()
+        writer.close()
+        pushToS3(path_to_write+'/rss.xml');
+      }
+      else {
+        log.debug("watchRssQueue awake, but no file to write");
+      }
+    }
   }
 
   private void addItem(String path, node, subname) {
@@ -261,7 +300,11 @@ class StaticFeedService {
         }
         log.debug("Trim rss feed. Size after: ${xml.channel[0].children().size()}");
   
-        writeRss(path, xml);
+        // Update the cache with the latest XML (enqueueRss will refer back to the cache)
+        rss_cache.put(path, xml)
+
+        // Write the file
+        enqueueRss(path);
       }
       else {
         log.error("unable to retrieve alert cache entry for id ${node.AlertMetadata.capCollatorUUID}");
