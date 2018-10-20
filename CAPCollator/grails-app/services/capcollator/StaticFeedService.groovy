@@ -19,7 +19,7 @@ class StaticFeedService {
 
   def grailsApplication
   def alertCacheService
-  public static int MAX_FEED_ENTRIES = 250;
+  public static int MAX_FEED_ENTRIES = 500;
 
   // Needs setup in ~/.aws/confing and ~/.aws/credentials
 
