@@ -48,6 +48,9 @@ class CapEventHandlerService {
         def matching_subscriptions = new java.util.HashSet()
 
         list_of_info_elements.each { ie ->
+
+          long query_phase_start_time = System.currentTimeMillis();
+
           log.debug("  -> Check info element");
           if ( ie.area ) {
             def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
@@ -174,7 +177,7 @@ class CapEventHandlerService {
 
             }
           }
-          log.debug("info element checking complete");
+          log.info("info element checking complete. QueryPhase elapsed: ${System.currentTimeMillis() - query_phase_start_time}");
         }
 
         log.debug("The following subscriptions matched : ${matching_subscriptions} (# polygons found:${polygons_found})");
@@ -184,6 +187,7 @@ class CapEventHandlerService {
           cap_notification.AlertMetadata.tags.add('No_Polygon_Provided');
         }
 
+        cap_notification.AlertMetadata.CCHistory.add(['event':'CC-spatial-processing-complete','timestamp':System.currentTimeMillis()]);
         publishAlert(cap_notification, matching_subscriptions);
 
         // Index the CAP event

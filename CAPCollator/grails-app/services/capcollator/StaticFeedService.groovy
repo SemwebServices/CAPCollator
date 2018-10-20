@@ -217,7 +217,7 @@ class StaticFeedService {
         def formatted_pub_date = null;
         def formatted_pub_date_2 = null;
         def formatted_write_date = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date());
-  
+
         try {
           formatted_pub_date_2 = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ').format(new Date(alert_created_systime));
           def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
