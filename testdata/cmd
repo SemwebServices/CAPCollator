@@ -1,0 +1,1 @@
+jq ".subscriptions[].subscription.xPathFilter" ./json

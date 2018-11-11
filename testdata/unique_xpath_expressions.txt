@@ -1,0 +1,4 @@
+"//cap:status='Actual' and //cap:scope='Public'"
+"//cap:status='Actual' and //cap:scope='Public' and not(//cap:event='Kuling')"
+"//cap:status= 'Test' and //cap:scope= 'Public' and //cap:language[starts-with(text(), 'en')]"
+"none"
