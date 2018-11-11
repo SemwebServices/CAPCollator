@@ -1,13 +1,11 @@
 package capcollator
 
 import grails.transaction.Transactional
-import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import static groovy.json.JsonOutput.*
 
 @Transactional
 class RssEventHandlerService {
 
-  RabbitMessagePublisher rabbitMessagePublisher
   def capUrlHandlerService
 
   def handleNotification(body,context) {

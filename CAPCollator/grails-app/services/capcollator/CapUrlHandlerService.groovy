@@ -28,6 +28,7 @@ class CapUrlHandlerService {
     log.debug("${context.properties.headers}");
 
     def ts_1 = System.currentTimeMillis();
+    def cap_link = link.toString()
 
     try {
 
@@ -42,7 +43,6 @@ class CapUrlHandlerService {
 
         try {
           def ts_2 = System.currentTimeMillis();
-          def cap_link = link.toString()
 
           log.debug("test ${cap_link}");
           java.net.URL cap_link_url = new java.net.URL(cap_link)
@@ -131,14 +131,14 @@ class CapUrlHandlerService {
           }
         }
         catch ( Exception e ) {
-          log.error("problem handling cap alert ${body} ${context} ${e.message}");
+          log.error("problem handling cap alert ${cap_link} ${context} ${e.message}");
         }
         finally {
           log.debug("CAP URL Checker Task Complete");
         }
     }
     catch ( Exception e ) {
-      log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
+      log.error("problem handling cap alert ${cap_link} ${context} ${e.message}",e);
     }
 
   }
