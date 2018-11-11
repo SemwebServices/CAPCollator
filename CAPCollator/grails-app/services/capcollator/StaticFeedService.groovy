@@ -391,7 +391,7 @@ class StaticFeedService {
 
     log.debug("writeAlertXML(...,${sourcefeed_id},${alert_time})")
 
-    String path = grailsApplication.config.staticFeedsDir+'/'+sourcefeed_id;
+    String path = grailsApplication.config.staticFeedsDir+'/'
 
     // Arrange for a UTC timestamp to be used as the filename
     TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
@@ -405,7 +405,7 @@ class StaticFeedService {
 
     // Generate a prefix so we distribute the buckets evenly
     String prefix = generatePrefix()
-    def alert_path = '/'
+    def alert_path = sourcefeed_id+'/'
     File alert_path_dir = new File(path+alert_path+prefix);
     if ( ! alert_path_dir.exists() ) {
       log.debug("Setting up new static sub DIR ${alert_path_dir}");
