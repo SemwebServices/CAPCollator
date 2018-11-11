@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutorService;
 class StaticFeedService {
 
   def grailsApplication
-  def alertCacheService
   public static int MAX_FEED_ENTRIES = 500;
 
   // Hold a cache of rss feeds so that we can avoid repeatedly parsing the same file,
@@ -67,6 +66,8 @@ class StaticFeedService {
     if ( key_components.length == 2 ) {
       String sub_name = key_components[1]
       String full_path = grailsApplication.config.staticFeedsDir+'/'+sub_name;
+      String cached_alert_file = body.AlertMetadata.cached_alert_xml
+
       File sub_dir = new File(full_path)
       if ( ! sub_dir.exists() ) {
         log.debug("Setting up new static sub DIR ${full_path}");
@@ -85,7 +86,7 @@ class StaticFeedService {
         log.debug("${full_path}/rss.xml present");
       }
 
-      addItem(full_path, body, sub_name)
+      addItem(full_path, body, sub_name, cached_alert_file)
     }
     else {
       log.error("Unexpected number of routing key components:: ${key_components}");
@@ -244,20 +245,16 @@ class StaticFeedService {
     }
   }
 
-  private void addItem(String path, node, subname) {
+  private void addItem(String path, node, subname, cached_alert_file) {
 
     // log.debug("addItem(${path},${node})");
     if ( node?.AlertMetadata?.capCollatorUUID ) {
       log.debug("capCollatorUUID: ${node.AlertMetadata.capCollatorUUID}")
-      def source_alert = alertCacheService.get(node.AlertMetadata.capCollatorUUID);
-
-      if ( source_alert ) {
   
         Long alert_created_systime = node.AlertMetadata.createdAt
   
         String source_feed_id = node.AlertMetadata.sourceFeed;
-        String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime, source_feed_id);
-    
+        // String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime, source_feed_id);
 
         groovy.util.Node xml = getExistingRss(path);
 
@@ -285,7 +282,7 @@ class StaticFeedService {
     
           def new_item_node = xml.channel[0].appendNode( 'item' );
           new_item_node.appendNode( 'title', info?.headline ?: info?.description );
-          new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${subname}${static_alert_file}".toString());
+          new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${cached_alert_file}".toString());
           new_item_node.appendNode( 'description', info?.description);
           new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
           new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
@@ -321,10 +318,6 @@ class StaticFeedService {
 
         // Write the file
         enqueueRss(path);
-      }
-      else {
-        log.error("unable to retrieve alert cache entry for id ${node.AlertMetadata.capCollatorUUID}");
-      }
     }
     else {
       log.warn("Missing alert uuid");
@@ -357,9 +350,6 @@ class StaticFeedService {
     def cal = Calendar.getInstance(timeZone_utc)
     cal.setTime(alert_date);
 
-    // def alert_path = "${cal.get(Calendar.YEAR)}/${cal.get(Calendar.MONTH)}/${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.HOUR_OF_DAY)}}/${cal.get(Calendar.MINUTE)}"
-
-    // def alert_path = sprintf('/%02d/%02d/%02d/%02d/%02d/',[cal.get(Calendar.YEAR),cal.get(Calendar.MONTH)+1,cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR_OF_DAY),cal.get(Calendar.MINUTE)]);
     def alert_path = '/'
     log.debug("Write to ${path}${alert_path}")
 
@@ -373,7 +363,6 @@ class StaticFeedService {
     }
 
     String output_filename = sourcefeed_id+'_'+output_filename_sdf.format(alert_date)
-
     String full_alert_filename = alert_path+prefix+output_filename + '_0.xml'
 
     File new_alert_file = new File(path+full_alert_filename)
@@ -395,5 +384,53 @@ class StaticFeedService {
     def rnd = new Random();
     String result = ''+ ( ( rnd.nextInt(26) + ('a' as char) ) as char ) + ( ( rnd.nextInt(26) + ('a' as char) ) as char ) + '/'
     result;
+  }
+
+  // Cache the source alert XML in the local filesystem
+  public String writeAlertXML(byte[] content, String sourcefeed_id, Date alert_time) {
+
+    log.debug("writeAlertXML(...,${sourcefeed_id},${alert_time})")
+
+    String path = grailsApplication.config.staticFeedsDir+'/'+sourcefeed_id;
+
+    // Arrange for a UTC timestamp to be used as the filename
+    TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
+    def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
+
+    def output_filename_sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z')
+    output_filename_sdf.setTimeZone(timeZone_utc);
+
+    def cal = Calendar.getInstance(timeZone_utc)
+    cal.setTime(alert_time);
+
+    // Generate a prefix so we distribute the buckets evenly
+    String prefix = generatePrefix()
+    def alert_path = '/'
+    File alert_path_dir = new File(path+alert_path+prefix);
+    if ( ! alert_path_dir.exists() ) {
+      log.debug("Setting up new static sub DIR ${alert_path_dir}");
+      alert_path_dir.mkdirs()
+    }
+
+    // Prefpare a postfix suffixe to protect from duplicate times - _0 _1 _2 etc
+    int duplicate_protection = 0
+
+    // Work out our starter filename
+    String output_filename = sourcefeed_id+'_'+output_filename_sdf.format(alert_time)
+    String full_alert_filename = alert_path+prefix+output_filename + '_0.xml'
+
+    File new_alert_file = new File(path+full_alert_filename)
+    while ( new_alert_file.exists() ) {
+      full_alert_filename = alert_path+prefix+output_filename + '_' + (++duplicate_protection) +'.xml'
+      new_alert_file = new File(path+full_alert_filename)
+    }
+
+    log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
+
+    new_alert_file << content
+
+    pushToS3(path+full_alert_filename);
+
+    return full_alert_filename
   }
 }

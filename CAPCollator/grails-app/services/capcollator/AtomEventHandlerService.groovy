@@ -10,7 +10,9 @@ class AtomEventHandlerService {
 
   RabbitMessagePublisher rabbitMessagePublisher
   def eventService
-  def alertCacheService
+  def capUrlHandlerService
+  def staticFeedService
+  // def alertCacheService
 
   private static long LONG_ALERT_THRESHOLD = 2000;
 
@@ -40,7 +42,11 @@ class AtomEventHandlerService {
       int num_cap_files_found = 0;
   
       try {
+
         def list_of_links = null
+
+        String source_feed = context.properties.headers['feed-code'];
+
         // Json will be different if we have just 1 body.link - so wrap if needed
         if ( body.link instanceof List ) {
           list_of_links = body.link
@@ -93,7 +99,11 @@ class AtomEventHandlerService {
 
                 // def parsed_cap = parser.parse(conn.getInputStream())
                 byte[] alert_bytes = conn.getInputStream().getBytes();
+
                 if ( alert_bytes ) {
+
+                  String cached_alert_xml = staticFeedService.writeAlertXML(alert_bytes, source_feed, new Date(ts_2))
+
                   def parsed_cap = parser.parse(new ByteArrayInputStream(alert_bytes));
                   String alert_uuid = java.util.UUID.randomUUID().toString()
     
@@ -130,11 +140,12 @@ class AtomEventHandlerService {
                       log.info("Alert processing exceeded LONG_ALERT_THRESHOLD(${elapsed}) ${cap_link_url}");
                     }
 
-                    alert_metadata.SourceUrl = cap_link
-                    alert_metadata.sourceFeed = new String(context.properties.headers['feed-code'].getBytes())
+                    alert_metadata.SourceUrl = cap_link;
+                    alert_metadata.sourceFeed = source_feed;
                     alert_metadata.capCollatorUUID = alert_uuid;
+                    alert_metadata.cached_alert_xml = cached_alert_xml;
 
-                    alertCacheService.put(alert_uuid,alert_bytes);
+                    // alertCacheService.put(alert_uuid,alert_bytes);
   
                     if ( latest_expiry && latest_expiry.trim().length() > 0 )
                       alert_metadata.Expires = latest_expiry
