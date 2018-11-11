@@ -204,18 +204,26 @@ class CapEventHandlerService {
   def publishAlert(cap_notification, matching_subscriptions) {
     log.debug("Publishing CAPSubMatch. notifications");
     matching_subscriptions.each { sub_id ->
+
+      // Apply other subscription filters
       try {
-        log.debug("Publishing CAPSubMatch.${sub_id} notification");
-        def result = rabbitMessagePublisher.send {
-              exchange = "CAPExchange"
-              routingKey = 'CAPSubMatch.'+sub_id
-              body = cap_notification
+        if ( criteriaMet(sub_id, cap_notification) ) {
+          log.debug("Publishing CAPSubMatch.${sub_id} notification");
+          def result = rabbitMessagePublisher.send {
+                exchange = "CAPExchange"
+                routingKey = 'CAPSubMatch.'+sub_id
+                body = cap_notification
+          }
         }
       }
       catch ( Exception e ) {
         log.error("Problem trying to publish to rabbit",e);
       }
     }
+  }
+
+  private boolean criteriaMet(String sub_id, Map cap_notification) {
+    return true;
   }
 
   def indexAlert(cap_notification, matching_subscriptions) {
