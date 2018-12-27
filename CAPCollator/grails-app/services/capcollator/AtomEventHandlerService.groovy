@@ -47,7 +47,13 @@ class AtomEventHandlerService {
                ( ( list_of_links != null ) ) ) {
   
             log.debug("  -> processing link type=${link.get('@type')})");
-            capUrlHandlerService.handleNotification(link, context)
+            String url = link.get('@href');
+            if ( url ) {
+              capUrlHandlerService.handleNotification(url, context)
+            }
+            else {
+              log.error("No url for link ${link}");
+            }
           }
           else {
             log.error("Unable to find CAP link in ${body} OR other error parsing XML");
