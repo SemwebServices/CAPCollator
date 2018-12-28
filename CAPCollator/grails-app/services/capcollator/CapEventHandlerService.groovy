@@ -18,6 +18,14 @@ class CapEventHandlerService {
    * Fired when we have detected a CAP event, to capture the event and index it in our local ES index
    */
   def process(cap_notification) {
+    // break out this call here as this needs to be convered into an executor pool, this handler is
+    // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
+    // vertices can slow down processing
+    internalProcess(cap_notification)
+  }
+
+
+  def internalProcess(cap_notification) {
 
 
     log.debug("CapEventHandlerService::process "); // ${cap_notification}");

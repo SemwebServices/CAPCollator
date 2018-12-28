@@ -16,7 +16,7 @@ class CapUrlHandlerService {
   def staticFeedService
 
   private static final long LONG_ALERT_THRESHOLD = 2000;
-  private static final int MAX_RETRIES = 10;
+  private static final int MAX_RETRIES = 3;
 
   def process(cap_url) {
     log.debug("RssEventHandlerService::process ${cap_url}");
@@ -140,6 +140,8 @@ class CapUrlHandlerService {
       }
       catch ( Exception e ) {
         log.error("problem handling cap alert ${cap_link} ${context} ${e.message}");
+        // sleep for .5s before retry
+        Thread.sleep(500)
         retries++;
       }
       finally {
