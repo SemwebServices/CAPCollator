@@ -21,7 +21,9 @@ class CapEventHandlerService {
     // break out this call here as this needs to be convered into an executor pool, this handler is
     // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
     // vertices can slow down processing
-    internalProcess(cap_notification)
+    runAsync {
+      internalProcess(cap_notification)
+    }
   }
 
 
