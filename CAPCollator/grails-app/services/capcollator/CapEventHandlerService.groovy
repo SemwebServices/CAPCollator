@@ -5,7 +5,6 @@ import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import java.util.Iterator
 import static groovy.json.JsonOutput.*
 
-
 @Transactional
 class CapEventHandlerService {
 
@@ -13,6 +12,7 @@ class CapEventHandlerService {
   def ESWrapperService
   def eventService
   def gazService
+  def executorService
 
   /**
    * Fired when we have detected a CAP event, to capture the event and index it in our local ES index
@@ -21,9 +21,9 @@ class CapEventHandlerService {
     // break out this call here as this needs to be convered into an executor pool, this handler is
     // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
     // vertices can slow down processing
-    runAsync {
+    // executorService.submit({
       internalProcess(cap_notification)
-    }
+    // } as java.lang.Runnable )
   }
 
 

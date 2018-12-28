@@ -75,8 +75,6 @@ dependencies {
     compile 'org.grails.plugins:quartz:2.0.9'
     compile "org.grails.plugins:grails-executor:0.4"
 
-
-
     compile "org.grails.plugins:views-json:1.2.8"
     // Next one gives us geojson support
     compile "org.grails.plugins:views-json-templates:1.2.8"
