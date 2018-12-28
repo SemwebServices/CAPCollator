@@ -91,6 +91,7 @@ class StaticFeedService {
     else {
       log.error("Unexpected number of routing key components:: ${key_components}");
     }
+    log.debug("StaticFeedService::update complete");
   }
 
 
@@ -194,7 +195,7 @@ class StaticFeedService {
 
   // This method should defer writing briefly in case other alerts come in, so we can write them all at once.
   private void enqueueRss(String path) {
-    log.debug("enqueueRss(${path})");
+    log.debug("enqueueRss(${path}) wait for lock on feed_write_queue");
     synchronized(feed_write_queue) {
       if ( feed_write_queue.contains(path) ) {
         // Already queued
@@ -205,6 +206,7 @@ class StaticFeedService {
         feed_write_queue.notifyAll();
       }
     }
+    log.debug("enqueueRss(${path}) complete");
   }
 
   private watchRssQueue() {
