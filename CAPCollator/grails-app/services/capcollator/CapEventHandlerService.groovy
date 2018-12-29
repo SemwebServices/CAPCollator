@@ -401,8 +401,32 @@ class CapEventHandlerService {
   }
 
   private boolean passNonSpatialFilter(Map subscription, Map cap_notification) {
+    boolean result = true;
+
     log.debug("checking non-spatial filter settings for ${subscription.shortcode}");
-    return true;
+    log.debug("Testing ${subscription.languageOnly}");
+    if ( subscription.languageOnly ) {
+      log.debug("Check for language...${subscription.languageOnly}");
+    }
+
+    log.debug("Testing ${subscription.highPriorityOnly}");
+    if ( subscription.highPriorityOnly ) {
+      log.debug("Filter high priority only ${true}");
+    }
+
+    log.debug("Testing ${subscription.officialOnly}");
+    if ( subscription.officialOnly ) {
+      log.debug("Filter official priority only");
+    }
+
+    log.debug("Testing ${subscription.xPathFilterId}");
+    if ( subscription.xPathFilterId ) {
+      log.debug("Apply xpath filter ${PathFilterId}")
+    }
+
+    log.debug("passNonSpatialFilter returns ${result}");
+
+    return result;
   }
 
   def matchAlertCircle(float lat, float lon, float radius) {
