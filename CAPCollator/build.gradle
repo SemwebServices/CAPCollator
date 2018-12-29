@@ -25,9 +25,6 @@ apply plugin:"org.grails.plugins.views-json"
 apply plugin: "org.grails.plugins.views-markup"
 apply plugin:"asset-pipeline"
 
-def elasticsearchVersion = '2.1.1'
-ext['elasticsearch.version'] = elasticsearchVersion
-
 repositories {
     mavenLocal()
     maven { url "https://repo.grails.org/grails/core" }
@@ -65,8 +62,8 @@ dependencies {
     runtime "com.h2database:h2"
     runtime 'org.postgresql:postgresql:9.4.1212'
     compile 'org.grails.plugins:rabbitmq-native:3.3.2'
-    compile 'org.elasticsearch:elasticsearch:5.1.1'
-    compile 'org.elasticsearch.client:transport:5.1.1'
+    compile 'org.elasticsearch:elasticsearch:5.6.14'
+    compile 'org.elasticsearch.client:transport:5.6.14'
 
     // log4j deps for es5 above
     compile 'org.apache.logging.log4j:log4j-api:2.7'

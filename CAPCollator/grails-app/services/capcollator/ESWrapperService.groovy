@@ -19,8 +19,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.index.query.QueryBuilders
 
-import org.elasticsearch.index.reindex.BulkIndexByScrollResponse
 import org.elasticsearch.index.reindex.DeleteByQueryAction 
+import org.elasticsearch.index.reindex.BulkByScrollResponse
 
 
 @Transactional
@@ -120,7 +120,7 @@ class ESWrapperService {
 
 
   def deleteByQuery(source, json_query) {
-    BulkIndexByScrollResponse response =
+    BulkByScrollResponse response =
       DeleteByQueryAction.INSTANCE.newRequestBuilder(esclient)
         .filter(QueryBuilders.wrapperQuery(json_query)) 
         .source(source)                                  

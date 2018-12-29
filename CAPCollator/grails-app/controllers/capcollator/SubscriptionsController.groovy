@@ -151,7 +151,7 @@ class SubscriptionsController {
 
   private List buildSubscriptionInfo(rows) {
     List result = []
-    rows.each { org.elasticsearch.search.internal.InternalSearchHit row ->
+    rows.each { row ->
       Map<String, Object> src = row.getSource()
       Map new_entry = [:]
       new_entry.identifier=src.AlertBody.identifier
