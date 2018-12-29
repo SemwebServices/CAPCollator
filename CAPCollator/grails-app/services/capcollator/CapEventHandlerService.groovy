@@ -92,7 +92,7 @@ class CapEventHandlerService {
                   polygons_found++
                   // We got a polygon
                   def inner_polygon_ring = geoJsonToPolygon(poly_elem)
-                  def match_result = matchSubscriptionPolygon(inner_polygon_ring)
+                  def match_result = matchSubscriptionPolygon(inner_polygon_ring, cap_notification)
 
                   matching_subscriptions.addAll(match_result.subscriptions);
 
@@ -169,7 +169,7 @@ class CapEventHandlerService {
                     log.debug("Parse coordinates - we assume <circle> elements are composed within the circle element as lat <comma> lon <space> radius : ${circle}");
                     def lat = Float.parseFloat(coords[0]);  // -90 to +90
                     def lon = Float.parseFloat(coords[1]);  // -180 to +180
-                    def match_result = matchSubscriptionCircle(lat,lon,radius)
+                    def match_result = matchSubscriptionCircle(lat,lon,radius,cap_notification)
   
                     matching_subscriptions.addAll(match_result.subscriptions);
   
@@ -286,7 +286,12 @@ class CapEventHandlerService {
     return polygon_ring
   }
 
-  def matchSubscriptionPolygon(polygon_ring) {
+
+  /**
+   * Find all subscriptions which overlap with the supplied polygon ring
+   * having obtained the list, check non-spatial filter properties
+   */
+  def matchSubscriptionPolygon(polygon_ring, Map cap_notification) {
 
     log.debug("matchSubscriptionPolygon(...)");
 
@@ -322,7 +327,10 @@ class CapEventHandlerService {
 
       if ( matching_subs ) {
         matching_subs.getHits().getHits().each { matching_sub ->
-          result.subscriptions.add(matching_sub.sourceAsMap().shortcode)
+          Map sub_as_map = matching_sub.sourceAsMap();
+          if ( passNonSpatialFilter(sub_as_map, cap_notification) ) {
+            result.subscriptions.add(sub_as_map.shortcode)
+          }
         }
       }
     }
@@ -337,7 +345,7 @@ class CapEventHandlerService {
 
   // def matchSubscriptionCircle(centre, radius) {
   // "coordinates":['''+centre[1]+''','''+centre[0]+'''],
-  def matchSubscriptionCircle(float lat, float lon, float radius) {
+  def matchSubscriptionCircle(float lat, float lon, float radius, Map cap_notification) {
 
     log.debug("matchSubscriptionCircle(${lat},${lon},${radius})");
 
@@ -375,7 +383,10 @@ class CapEventHandlerService {
 
       if ( matching_subs ) {
         matching_subs.getHits().getHits().each { matching_sub ->
-          result.subscriptions.add(matching_sub.sourceAsMap().shortcode)
+          Map sub_as_map = matching_sub.sourceAsMap();
+          if ( passNonSpatialFilter(sub_as_map, cap_notification) ) {
+            result.subscriptions.add(sub_as_map.shortcode)
+          }
         }
       }
     }
@@ -387,6 +398,11 @@ class CapEventHandlerService {
     }
 
     result
+  }
+
+  private boolean passNonSpatialFilter(Map subscription, Map cap_notification) {
+    log.debug("checking non-spatial filter settings for ${subscription.shortcode}");
+    return true;
   }
 
   def matchAlertCircle(float lat, float lon, float radius) {
