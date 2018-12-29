@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 class StaticFeedService {
 
   def grailsApplication
-  public static int MAX_FEED_ENTRIES = 500;
+  public static int MAX_FEED_ENTRIES = 100;
 
   // Hold a cache of rss feeds so that we can avoid repeatedly parsing the same file,
   // particularly when processing multiple files
