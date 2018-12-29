@@ -12,7 +12,9 @@ class CapEventHandlerService {
   def ESWrapperService
   def eventService
   def gazService
-  def executorService
+  def alertFetcherExecutorService
+
+  static final int queue_size = 0;
 
   /**
    * Fired when we have detected a CAP event, to capture the event and index it in our local ES index
@@ -21,16 +23,18 @@ class CapEventHandlerService {
     // break out this call here as this needs to be convered into an executor pool, this handler is
     // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
     // vertices can slow down processing
-    // executorService.submit({
+    queue_size++;
+    alertFetcherExecutorService.submit({
       internalProcess(cap_notification)
-    // } as java.lang.Runnable )
+    } as java.lang.Runnable )
   }
 
 
   def internalProcess(cap_notification) {
 
+    queue_size--;
 
-    log.debug("CapEventHandlerService::process "); // ${cap_notification}");
+    log.debug("CapEventHandlerService::process (${queue_size})"); 
 
     try {
       def cap_body = cap_notification.AlertBody

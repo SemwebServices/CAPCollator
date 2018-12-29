@@ -43,9 +43,12 @@ class CAPIndexingService {
   }
 
   def reindexSubscriptions() {
+    int counter=0;
     Subscription.findAll().each { sub ->
+      log.debug("Reindex (${counter++})");
       indexSub(sub)
     }
+    log.debug("CAPIndexingService::reindexSubscriptions done");
   }
 
   def indexSub(Subscription sub) {
@@ -71,9 +74,9 @@ class CAPIndexingService {
       // geometry is a string containing a geo json structure
       es_record.subshape.coordinates=new groovy.json.JsonSlurper().parseText(sub.filterGeometry)
 
-      log.debug("Send es record ${es_record.subshape.coordinates}");
+      log.debug("Send es record ${es_record.subshape.coordinates} - recordid is ${sub.id}");
 
-      ESWrapperService.index('alertssubscriptions','alertsubscription',"${sub.id}-sub".toString(),es_record);
+      ESWrapperService.index('alertssubscriptions','alertsubscription',"${sub.subscriptionId}".toString(),es_record);
     }
     catch ( Exception e ) {
       log.warn("Problem trying to submit sub ${sub.id} for indexing: ${e.message}");

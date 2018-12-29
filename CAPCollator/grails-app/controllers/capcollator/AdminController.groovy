@@ -90,7 +90,8 @@ class AdminController {
         log.error("problem processing subscription list",e);
       }
       finally {
-        reindex();
+        // this seems very unneccessary
+        // reindex();
       }
     }
 

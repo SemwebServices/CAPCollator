@@ -9,6 +9,7 @@ class Subscription {
 
   private static final long serialVersionUID = 1
 
+  String id
   String subscriptionId
   String subscriptionName
   String subscriptionDescription
@@ -32,6 +33,7 @@ class Subscription {
 
   static mapping = {
     table 'cc_sub'
+                         id column: 'sub_id', generator: 'uuid', length:36
              subscriptionId column: 'sub_txt_id'
            subscriptionName column: 'sub_name'
     subscriptionDescription column: 'sub_desc'
