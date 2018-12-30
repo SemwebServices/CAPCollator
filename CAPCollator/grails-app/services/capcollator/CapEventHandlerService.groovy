@@ -315,7 +315,7 @@ class CapEventHandlerService {
     }
     else {
       result = [
-        subscriptions:[],
+        subscriptions:null,
         messages:[],
         status:'OK'
       ]
@@ -364,8 +364,8 @@ class CapEventHandlerService {
   }
 
   private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, Map cap_notification) {
-    def result = []
-    matching_subscriptions.each { matching_sub ->
+    List result = []
+    matching_subscriptions?.each { matching_sub ->
       Map sub_as_map = matching_sub.sourceAsMap();
       if ( passNonSpatialFilter(sub_as_map, cap_notification) ) {
         result.add(sub_as_map.shortcode)
