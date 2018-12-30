@@ -33,6 +33,7 @@ class CapUrlHandlerService {
 
     String source_feed = context.properties.headers['feed-code'];
     String source_id = context.properties.headers['feed-id'];
+    String is_official = context.properties.headers['feed-is-official'];
 
     log.debug("Looking in link attribute for cap ${link}");
 
@@ -108,6 +109,7 @@ class CapUrlHandlerService {
             alert_metadata.SourceUrl = cap_link
             alert_metadata.capCollatorUUID = alert_uuid;
             alert_metadata.sourceFeed = source_feed;
+            alert_metadata.sourceIsOfficial = is_official;
             alert_metadata.cached_alert_xml = cached_alert_xml;
 
             // alertCacheService.put(alert_uuid,alert_bytes);

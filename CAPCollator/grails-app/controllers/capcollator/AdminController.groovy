@@ -28,6 +28,10 @@ class AdminController {
       log.debug("Attempting to parse list of subs from \"${params.subUrl}\"");
       try {
         def list_of_subscriptions = new groovy.json.JsonSlurper().parse(new java.net.URL(params.subUrl))
+        int num_subscriptions = list_of_subscriptions.subscriptions.size();
+
+        long total_processing_time = 0;
+
         list_of_subscriptions.subscriptions.each { subscription_definition ->
           //   "subscriptionId" : "country-ae-city-swic1190-lang-en",
           //   "subscriptionName" : "Official Public alerts for Dubai in country-ae, in English",
@@ -44,6 +48,9 @@ class AdminController {
           //   },
           //   "feedRssXml" : ""...
           //   "feedItemsLimit": 200
+
+          long sub_start_time = System.currentTimeMillis();
+
           log.debug("Add or update subscription.. ${subscription_definition.subscription.subscriptionId}");
           if ( subscription_definition.subscription &&
                subscription_definition.subscription?.subscriptionId &&
@@ -81,17 +88,25 @@ class AdminController {
           }
 
           result.counter++
-          if ( result.counter % 25 == 0 ) {
-            log.info("AdminController::syncSubList - processed ${result.counter} items so far");
+          long elapsed = System.currentTimeMillis() - sub_start_time;
+          total_processing_time += elapsed;
+          long average_processing_time = total_processing_time / result.counter
+          long long_running_threshold = average_processing_time * 1.5
+
+          if ( elapsed > long_running_threshold ) {
+            log.info("${subscription_definition.subscription?.subscriptionId} took ${elapsed}ms to process, average is ${average_processing_time}");
           }
+
+          if ( ( result.counter % 25 == 0 ) || ( result.counter == num_subscriptions ) ) {
+            log.info("AdminController::syncSubList - processed ${result.counter} of ${num_subscriptions} sub definitions so far. Avg processing time ${average_processing_time}");
+          }
+
         }
       }
       catch ( Exception e ) {
         log.error("problem processing subscription list",e);
       }
       finally {
-        // this seems very unneccessary
-        // reindex();
       }
     }
 

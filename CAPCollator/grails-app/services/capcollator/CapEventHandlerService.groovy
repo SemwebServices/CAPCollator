@@ -5,6 +5,7 @@ import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import java.util.Iterator
 import static groovy.json.JsonOutput.*
 
+
 @Transactional
 class CapEventHandlerService {
 
@@ -13,6 +14,11 @@ class CapEventHandlerService {
   def eventService
   def gazService
   def alertFetcherExecutorService
+
+  // import org.apache.commons.collections4.map.PassiveExpiringMap;
+  // Time to live in millis - 1000 * 60 == 1m 
+  // private Map geo_query_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60))
+  
 
   static final int queue_size = 0;
 
@@ -24,6 +30,7 @@ class CapEventHandlerService {
     // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
     // vertices can slow down processing
     queue_size++;
+    log.debug("CapEventHandlerService::process - enqueue - size is ${queue_size}");
     alertFetcherExecutorService.submit({
       internalProcess(cap_notification)
     } as java.lang.Runnable )
@@ -33,8 +40,9 @@ class CapEventHandlerService {
   def internalProcess(cap_notification) {
 
     queue_size--;
+    long start_time = System.currentTimeMillis();
 
-    log.debug("CapEventHandlerService::process (${queue_size})"); 
+    log.debug("CapEventHandlerService::process (queue_size :: ${queue_size}, alert from ${cap_notification.AlertMetadata.sourceFeed})"); 
 
     try {
       def cap_body = cap_notification.AlertBody
@@ -53,6 +61,8 @@ class CapEventHandlerService {
       if ( cap_body.sent != null ) {
         cap_notification.evtTimestamp = cap_body.sent;
       }
+
+      Map geo_query_cache = [:]
 
       // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
       if ( cap_body?.info ) {
@@ -78,7 +88,6 @@ class CapEventHandlerService {
               }
 
               if ( area.polygon != null ) {
-
   
                 if ( !cap_notification.AlertMetadata.tags.contains('AREATYPE_POLYGON') ) 
                   cap_notification.AlertMetadata.tags.add('AREATYPE_POLYGON');
@@ -92,9 +101,9 @@ class CapEventHandlerService {
                   polygons_found++
                   // We got a polygon
                   def inner_polygon_ring = geoJsonToPolygon(poly_elem)
-                  def match_result = matchSubscriptionPolygon(inner_polygon_ring, cap_notification)
+                  def match_result = matchSubscriptionPolygon(geo_query_cache,inner_polygon_ring)
 
-                  matching_subscriptions.addAll(match_result.subscriptions);
+                  matching_subscriptions.addAll(filterNonGeoProperties(match_result.subscriptions, cap_notification));
 
                   cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
 
@@ -170,8 +179,8 @@ class CapEventHandlerService {
                     def lat = Float.parseFloat(coords[0]);  // -90 to +90
                     def lon = Float.parseFloat(coords[1]);  // -180 to +180
                     def match_result = matchSubscriptionCircle(lat,lon,radius,cap_notification)
-  
-                    matching_subscriptions.addAll(match_result.subscriptions);
+                    matching_subscriptions.addAll(filterNonGeoProperties(match_result.subscriptions, cap_notification));
+                    // matching_subscriptions.addAll(match_result.subscriptions);
   
                     cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
   
@@ -188,7 +197,6 @@ class CapEventHandlerService {
                   }
                 }
               }
-
             }
           }
           log.info("info element checking complete. QueryPhase elapsed: ${System.currentTimeMillis() - query_phase_start_time}");
@@ -210,7 +218,10 @@ class CapEventHandlerService {
 
     }
     catch ( Exception e ) {
-      log.debug("Exception processing CAP notification:\n${cap_notification}\n",e);
+      log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n",e);
+    }
+    finally {
+      log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}");
     }
 
   }
@@ -256,11 +267,11 @@ class CapEventHandlerService {
     }
   }
 
-  def geoJsonToPolygon(polygon_ring_string) {
+  private List geoJsonToPolygon(String polygon_ring_string) {
 
 
     // Polygon as given is a ring list of space separated pairs - "x1,y1 x2,y2 x3,y3 x4,y4 x1,y1"
-    def polygon_ring = []
+    List polygon_ring = []
 
     def last_pair = null
     // def cleaned_polygon_ring_string = polygon_ring_string.replaceAll('\\s+',' ');
@@ -291,15 +302,24 @@ class CapEventHandlerService {
    * Find all subscriptions which overlap with the supplied polygon ring
    * having obtained the list, check non-spatial filter properties
    */
-  def matchSubscriptionPolygon(polygon_ring, Map cap_notification) {
+  def matchSubscriptionPolygon(geo_query_cache,polygon_ring) {
 
     log.debug("matchSubscriptionPolygon(...)");
 
-    def result=[
-      subscriptions:[],
-      messages:[],
-      status:'OK'
-    ]
+    String poly_str = polygon_ring.toString();
+
+    def result=geo_query_cache.get(poly_str)
+
+    if ( result ) {
+      return result;
+    }
+    else {
+      result = [
+        subscriptions:[],
+        messages:[],
+        status:'OK'
+      ]
+    }
 
     String query = '''{
          "bool": {
@@ -326,12 +346,10 @@ class CapEventHandlerService {
       def matching_subs = ESWrapperService.search(indexes_to_search,query);
 
       if ( matching_subs ) {
-        matching_subs.getHits().getHits().each { matching_sub ->
-          Map sub_as_map = matching_sub.sourceAsMap();
-          if ( passNonSpatialFilter(sub_as_map, cap_notification) ) {
-            result.subscriptions.add(sub_as_map.shortcode)
-          }
-        }
+        result.subscriptions = matching_subs.getHits().getHits();
+        // matching_subs.getHits().getHits().each { matching_sub ->
+        //   result.subscriptions.add(sub_as_map.shortcode)
+        // }
       }
     }
     catch ( Exception e ) {
@@ -340,7 +358,22 @@ class CapEventHandlerService {
       log.error("SEARCH ERROR:: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -d ${query}")
     }
 
+    geo_query_cache.put(poly_str,result)
+
     result
+  }
+
+  private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, Map cap_notification) {
+    def result = []
+    matching_subscriptions.each { matching_sub ->
+      Map sub_as_map = matching_sub.sourceAsMap();
+      if ( passNonSpatialFilter(sub_as_map, cap_notification) ) {
+        result.add(sub_as_map.shortcode)
+      }
+    }
+
+    log.debug("filterNonGeoProperties called with list of ${matching_subscriptions.size()} returns list of ${result.size()}");
+    return result;
   }
 
   // def matchSubscriptionCircle(centre, radius) {
@@ -382,12 +415,7 @@ class CapEventHandlerService {
       def matching_subs = ESWrapperService.search(indexes_to_search,query);
 
       if ( matching_subs ) {
-        matching_subs.getHits().getHits().each { matching_sub ->
-          Map sub_as_map = matching_sub.sourceAsMap();
-          if ( passNonSpatialFilter(sub_as_map, cap_notification) ) {
-            result.subscriptions.add(sub_as_map.shortcode)
-          }
-        }
+        result.subscriptions = matching_subs.getHits().getHits();
       }
     }
     catch ( Exception e ) {
@@ -403,15 +431,17 @@ class CapEventHandlerService {
   private boolean passNonSpatialFilter(Map subscription, Map cap_notification) {
     boolean result = true;
 
-    log.debug("checking non-spatial filter settings for ${subscription.shortcode}");
+    log.debug("checking non-spatial filter settings for ${subscription.shortcode} ${subscription}");
     log.debug("Testing ${subscription.languageOnly}");
     if ( subscription.languageOnly ) {
       log.debug("Check for language...${subscription.languageOnly}");
     }
 
+    // (//cap:urgency='Immediate' or //cap:urgency='Expected') and (//cap:severity='Extreme' or //cap:severity='Severe') and (//cap:certainty='Observed' or //cap:certainty='Likely')
     log.debug("Testing ${subscription.highPriorityOnly}");
     if ( subscription.highPriorityOnly ) {
       log.debug("Filter high priority only ${true}");
+      // If ( urgency==immediate || urgency==expected ) && ( severity==extreme || severity==severe ) && ( certainty==observed || certainty==likely )
     }
 
     log.debug("Testing ${subscription.officialOnly}");
