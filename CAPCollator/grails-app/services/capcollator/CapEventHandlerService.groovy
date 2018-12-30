@@ -442,11 +442,19 @@ class CapEventHandlerService {
     if ( subscription.highPriorityOnly ) {
       log.debug("Filter high priority only ${true}");
       // If ( urgency==immediate || urgency==expected ) && ( severity==extreme || severity==severe ) && ( certainty==observed || certainty==likely )
+      // if ( cap_notification.AlertMetadata.
     }
 
     log.debug("Testing ${subscription.officialOnly}");
     if ( subscription.officialOnly ) {
       log.debug("Filter official priority only");
+      if ( cap_notification.AlertMetadata.sourceIsOfficial.equalsIgnoreCase('true') ) {
+        log.debug("pass - source is official");
+      }
+      else {
+        log.debug("fail - source is official");
+        result = false;
+      }
     }
 
     log.debug("Testing ${subscription.xPathFilterId}");
