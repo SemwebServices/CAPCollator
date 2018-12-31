@@ -442,7 +442,7 @@ class CapEventHandlerService {
     if ( subscription.highPriorityOnly ) {
       log.debug("Filter high priority only ${true}");
       // If ( urgency==immediate || urgency==expected ) && ( severity==extreme || severity==severe ) && ( certainty==observed || certainty==likely )
-      // if ( cap_notification.AlertMetadata.
+      // if ( cap_notification.AlertBody.info.urgency ) (cap_notification.AlertBody.info.severity)   cap_notification.AlertBody.info.certainty
     }
 
     log.debug("Testing ${subscription.officialOnly}");
