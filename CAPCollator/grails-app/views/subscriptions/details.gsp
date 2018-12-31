@@ -27,7 +27,7 @@
                 </div>
                 <div class="form-group">
                   <label class="col-sm-3 control-label">Alert Count</label>
-                  <div class="col-sm-7"><p class="form-control-static">${latestAlerts.hits.totalHits} (${latestAlerts.hits.hits.size()} shown)</p></div>
+                  <div class="col-sm-7"><p class="form-control-static">${latestAlerts?.hits?.totalHits} (${latestAlerts?.hits?.hits?.size()} shown)</p></div>
                 </div>
               </div>
   
@@ -44,6 +44,12 @@
                 </div>
               </div>
   
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                langFilter:${subscription.languageOnly}, priorityFilter:${subscription.highPriorityOnly} officialFilter:${subscription.officialOnly} 
+                xpathFilterId:${subscription.xPathFilterId}
+              </div>
             </div>
           </div>
         </div>
@@ -66,11 +72,11 @@
         </g:form>
 
         <div>
-          Showing alerts ${(offset?:0)+1} to ${java.lang.Math.min(((offset?:0)+(max?:10)),(totalAlerts))} of ${totalAlerts}
+          Showing alerts ${(offset?:0)+1} to ${java.lang.Math.min(((offset?:0)+(max?:10)),(totalAlerts?:0))} of ${totalAlerts?:0}
         </div>
 
         <div class="pagination">
-          <g:paginate controller="subscriptions" action="details" params="${[id:params.id]}" total="${totalAlerts}" next="Next" prev="Previous" omitNext="false" omitPrev="false" />
+          <g:paginate controller="subscriptions" action="details" params="${[id:params.id]}" total="${totalAlerts?:0}" next="Next" prev="Previous" omitNext="false" omitPrev="false" />
         </div>
 
       </div>
@@ -82,7 +88,7 @@
             </tr>
           </thead>
           <tbody>
-            <g:each in="${latestAlerts.hits.hits}" var="alert" status="s">
+            <g:each in="${latestAlerts?.hits?.hits}" var="alert" status="s">
               <g:set var="alsrc" value="${alert.getSource()}"/>
               <tr>
                 <td>

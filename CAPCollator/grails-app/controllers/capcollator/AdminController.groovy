@@ -83,7 +83,12 @@ class AdminController {
                           subscriptionName: subscription_definition.subscription?.subscriptionName,
                           subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
                           filterType:filter_type,
-                          filterGeometry:filter_geometry).save(flush:true, failOnError:true);
+                          filterGeometry:filter_geometry,
+                          languageOnly:subscription_definition.subscription?.languageOnly,
+                          highPriorityOnly:subscription_definition.subscription?.highPriorityOnly,
+                          officialOnly:subscription_definition.subscription?.officialOnly,
+                          xPathFilterId:subscription_definition.subscription?.xPathFilterId
+                       ).save(flush:true, failOnError:true);
             }
           }
 

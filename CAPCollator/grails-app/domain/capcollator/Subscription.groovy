@@ -17,6 +17,12 @@ class Subscription {
   String filterType
   String filterGeometry
 
+  String languageOnly
+  String highPriorityOnly
+  String officialOnly
+  String xPathFilterId
+
+
   String notes
 
   static transients = []
@@ -26,9 +32,13 @@ class Subscription {
            subscriptionName blank: false, nullable: false
     subscriptionDescription blank: false, nullable: true
             subscriptionUrl blank: true, nullable: false
-                 filterType blank:true, nullable:true
-             filterGeometry blank:true, nullable:true
-                      notes blank:true, nullable:true
+                 filterType blank: true, nullable: true
+             filterGeometry blank: true, nullable: true
+                      notes blank: true, nullable: true
+               languageOnly blank: true, nullable: true
+           highPriorityOnly blank: true, nullable: true
+               officialOnly blank: true, nullable: true
+              xPathFilterId blank: true, nullable: true
   }
 
   static mapping = {
@@ -39,6 +49,10 @@ class Subscription {
     subscriptionDescription column: 'sub_desc'
             subscriptionUrl column: 'sub_url'
              filterGeometry column: 'sub_filter_geom', type:'text'
+               languageOnly column: 'sub_filter_lang'
+           highPriorityOnly column: 'sub_filter_high_prio'
+               officialOnly column: 'sub_filter_official'
+              xPathFilterId column: 'sub_filter_xpathid'
   }
 
 }

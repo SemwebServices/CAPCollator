@@ -102,7 +102,7 @@ class StaticFeedService {
         // Strip off any prefix we are using locally, to leave the raw path
         String s3_key = path.replaceAll((grailsApplication.config.staticFeedsDir+'/'),'');
 
-        log.debug("S3 mirror ${path} in bucket ${grailsApplication.config.awsBucketName} - key name will be ${s3_key}");
+        // log.debug("S3 mirror ${path} in bucket ${grailsApplication.config.awsBucketName} - key name will be ${s3_key}");
 
         s3.putObject(grailsApplication.config.awsBucketName, s3_key, new File(path));
       }
@@ -177,7 +177,7 @@ class StaticFeedService {
     result = rss_cache.get(path);
  
     if ( result == null ) {
-      log.debug("Parse existing RSS at ${path}/rss.xml and cache");
+      // log.debug("Parse existing RSS at ${path}/rss.xml and cache");
       groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
       xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
       xml_parser.startPrefixMapping('','');
@@ -185,7 +185,7 @@ class StaticFeedService {
       rss_cache.put(path, result);
     }
     else {
-      log.debug("RSS Feed retrieved from cache, no need to parse");
+      // log.debug("RSS Feed retrieved from cache, no need to parse");
       // Re-put the XML so that we reset the expiration time... Making this a kind of LRU expiring cache
       rss_cache.put(path, result);
     }
@@ -202,7 +202,7 @@ class StaticFeedService {
       }
       else {
         feed_write_queue.add(path);
-        log.debug("Add ${path} to feed_write_queue. Current size is ${feed_write_queue.size()} notify all");
+        // log.debug("Add ${path} to feed_write_queue. Current size is ${feed_write_queue.size()} notify all");
         feed_write_queue.notifyAll();
       }
     }
@@ -215,7 +215,7 @@ class StaticFeedService {
       while(true) {
         String path_to_write = null;
         synchronized(feed_write_queue) {
-          log.debug("watchRssQueue() waiting");
+          // log.debug("watchRssQueue() waiting");
           feed_write_queue.wait();
           if ( feed_write_queue.size() > 0 ) {
             path_to_write = feed_write_queue.remove(0)
@@ -223,7 +223,7 @@ class StaticFeedService {
         }
 
         if ( path_to_write != null ) {
-          log.debug("watchRssQueue() process ${path_to_write}");
+          // log.debug("watchRssQueue() process ${path_to_write}");
           java.io.Writer writer = new FileWriter(path_to_write+'/rss.xml')
           def xml_for_feed = rss_cache.get(path_to_write)
 
@@ -236,7 +236,7 @@ class StaticFeedService {
           pushToS3(path_to_write+'/rss.xml');
         }
         else {
-          log.debug("watchRssQueue awake, but no file to write");
+          // log.debug("watchRssQueue awake, but no file to write");
         }
       }
     }
@@ -251,7 +251,7 @@ class StaticFeedService {
 
     // log.debug("addItem(${path},${node})");
     if ( node?.AlertMetadata?.capCollatorUUID ) {
-      log.debug("capCollatorUUID: ${node.AlertMetadata.capCollatorUUID}")
+      // log.debug("capCollatorUUID: ${node.AlertMetadata.capCollatorUUID}")
   
         Long alert_created_systime = node.AlertMetadata.createdAt
   
@@ -263,7 +263,7 @@ class StaticFeedService {
         synchronized(xml) {
   
           //Edit File e.g. append an element called foo with attribute bar
-          log.debug("Get first info section");
+          // log.debug("Get first info section");
           def info = getFirstInfoSection(node);
     
           def formatted_pub_date = null;
@@ -300,7 +300,7 @@ class StaticFeedService {
             ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
           }
     
-          log.debug("Trim rss feed. Size before: ${xml.channel[0].children().size()}");
+          // log.debug("Trim rss feed. Size before: ${xml.channel[0].children().size()}");
           int ctr = MAX_FEED_ENTRIES;
           xml.channel[0] = xml.channel[0].item.each { n ->
             if ( ctr > 0 ) {
@@ -311,7 +311,7 @@ class StaticFeedService {
               n.replaceNode{}
             }
           }
-          log.debug("Trim rss feed. Size after: ${xml.channel[0].children().size()}");
+          // log.debug("Trim rss feed. Size after: ${xml.channel[0].children().size()}");
   
         }
   
@@ -353,14 +353,14 @@ class StaticFeedService {
     cal.setTime(alert_date);
 
     def alert_path = '/'
-    log.debug("Write to ${path}${alert_path}")
+    // log.debug("Write to ${path}${alert_path}")
 
     int duplicate_protection = 0
 
     String prefix = generatePrefix()
     File alert_path_dir = new File(path+alert_path+prefix);
     if ( ! alert_path_dir.exists() ) {
-      log.debug("Setting up new static sub DIR ${alert_path_dir}");
+      // log.debug("Setting up new static sub DIR ${alert_path_dir}");
       alert_path_dir.mkdirs()
     }
 
@@ -373,7 +373,7 @@ class StaticFeedService {
       new_alert_file = new File(path+full_alert_filename)
     }
 
-    log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
+    // log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
 
     new_alert_file << content
 
@@ -391,7 +391,7 @@ class StaticFeedService {
   // Cache the source alert XML in the local filesystem
   public String writeAlertXML(byte[] content, String sourcefeed_id, Date alert_time) {
 
-    log.debug("writeAlertXML(...,${sourcefeed_id},${alert_time})")
+    // log.debug("writeAlertXML(...,${sourcefeed_id},${alert_time})")
 
     String path = grailsApplication.config.staticFeedsDir+'/'
 
@@ -410,7 +410,7 @@ class StaticFeedService {
     def alert_path = sourcefeed_id+'/'
     File alert_path_dir = new File(path+alert_path+prefix);
     if ( ! alert_path_dir.exists() ) {
-      log.debug("Setting up new static sub DIR ${alert_path_dir}");
+      // log.debug("Setting up new static sub DIR ${alert_path_dir}");
       alert_path_dir.mkdirs()
     }
 
@@ -427,7 +427,7 @@ class StaticFeedService {
       new_alert_file = new File(path+full_alert_filename)
     }
 
-    log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
+    // log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
 
     new_alert_file << content
 

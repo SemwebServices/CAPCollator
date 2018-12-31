@@ -26,11 +26,22 @@ class CapEventHandlerService {
    * Fired when we have detected a CAP event, to capture the event and index it in our local ES index
    */
   def process(cap_notification) {
+
+    // This is a bit fugly - but whilst there are more than 100 events, wait for the processing to slim down the queue
+    while ( queue_size > 25 ) {
+      synchronized(this) {
+        log.debug("blocking on cap event processing pool ${queue_size}");
+        this.wait(10000);
+      }
+    }
+
     // break out this call here as this needs to be convered into an executor pool, this handler is
     // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
     // vertices can slow down processing
     queue_size++;
     log.debug("CapEventHandlerService::process - enqueue - size is ${queue_size}");
+
+    // Ideally we would like this call to block until a thread is available to take the request
     alertFetcherExecutorService.submit({
       internalProcess(cap_notification)
     } as java.lang.Runnable )
@@ -40,9 +51,21 @@ class CapEventHandlerService {
   def internalProcess(cap_notification) {
 
     queue_size--;
-    long start_time = System.currentTimeMillis();
 
+    // Wake up anyone who might be blocked
+    if ( queue_size < 100 ) {
+      synchronized(this) {
+        this.notifyAll();
+      }
+    }
+
+    long start_time = System.currentTimeMillis();
     log.debug("CapEventHandlerService::process (queue_size :: ${queue_size}, alert from ${cap_notification.AlertMetadata.sourceFeed})"); 
+
+    cap_notification.AlertMetadata.compound_identifier = 
+                                     cap_notification.AlertMetadata.sourceFeed+'|'+
+                                     cap_notification.AlertBody.identifier+'|'+
+                                     cap_notification.AlertBody.sent;
 
     try {
       def cap_body = cap_notification.AlertBody
@@ -103,7 +126,7 @@ class CapEventHandlerService {
                   def inner_polygon_ring = geoJsonToPolygon(poly_elem)
                   def match_result = matchSubscriptionPolygon(geo_query_cache,inner_polygon_ring)
 
-                  matching_subscriptions.addAll(filterNonGeoProperties(match_result.subscriptions, cap_notification));
+                  matching_subscriptions.addAll(filterNonGeoProperties(match_result.subscriptions, cap_notification, ie));
 
                   cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
 
@@ -179,7 +202,7 @@ class CapEventHandlerService {
                     def lat = Float.parseFloat(coords[0]);  // -90 to +90
                     def lon = Float.parseFloat(coords[1]);  // -180 to +180
                     def match_result = matchSubscriptionCircle(lat,lon,radius,cap_notification)
-                    matching_subscriptions.addAll(filterNonGeoProperties(match_result.subscriptions, cap_notification));
+                    matching_subscriptions.addAll(filterNonGeoProperties(match_result.subscriptions, cap_notification, ie));
                     // matching_subscriptions.addAll(match_result.subscriptions);
   
                     cap_notification.AlertMetadata['warnings'].addAll(match_result.messages);
@@ -258,10 +281,11 @@ class CapEventHandlerService {
       // Drop the signature -- it's very verbose and applies to the underlying XML document. 
       // Consumers should return the source CAP if they want to validate the alert
       cap_notification.AlertBody.Signature=null
-      if ( cap_notification.AlertBody.identifier != null ) {
-        ESWrapperService.index('alerts', 'alert', "${cap_notification.AlertBody.identifier}".toString(), cap_notification)
+      if ( cap_notification.AlertMetadata.compound_identifier != null ) {
+        ESWrapperService.index('alerts', 'alert', "${cap_notification.AlertMetadata.compound_identifier}".toString(), cap_notification)
       }
       else {
+        log.warn("Alert without synthetic identifier..... ${cap_notification.AlertBody.identifier}");
         ESWrapperService.index('alerts', 'alert', cap_notification)
       }
     }
@@ -363,11 +387,11 @@ class CapEventHandlerService {
     result
   }
 
-  private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, Map cap_notification) {
+  private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, Map cap_notification, Map info_element) {
     List result = []
     matching_subscriptions?.each { matching_sub ->
       Map sub_as_map = matching_sub.sourceAsMap();
-      if ( passNonSpatialFilter(sub_as_map, cap_notification) ) {
+      if ( passNonSpatialFilter(sub_as_map, cap_notification, info_element) ) {
         result.add(sub_as_map.shortcode)
       }
     }
@@ -383,7 +407,7 @@ class CapEventHandlerService {
     log.debug("matchSubscriptionCircle(${lat},${lon},${radius})");
 
     def result=[
-      subscriptions:[],
+      subscriptions:null,
       messages:[],
       status:'OK'
     ]
@@ -428,41 +452,89 @@ class CapEventHandlerService {
     result
   }
 
-  private boolean passNonSpatialFilter(Map subscription, Map cap_notification) {
+  private boolean passNonSpatialFilter(Map subscription, Map cap_notification, Map info_element) {
     boolean result = true;
 
-    log.debug("checking non-spatial filter settings for ${subscription.shortcode} ${subscription}");
-    log.debug("Testing ${subscription.languageOnly}");
-    if ( subscription.languageOnly ) {
-      log.debug("Check for language...${subscription.languageOnly}");
-    }
-
-    // (//cap:urgency='Immediate' or //cap:urgency='Expected') and (//cap:severity='Extreme' or //cap:severity='Severe') and (//cap:certainty='Observed' or //cap:certainty='Likely')
-    log.debug("Testing ${subscription.highPriorityOnly}");
-    if ( subscription.highPriorityOnly ) {
-      log.debug("Filter high priority only ${true}");
-      // If ( urgency==immediate || urgency==expected ) && ( severity==extreme || severity==severe ) && ( certainty==observed || certainty==likely )
-      // if ( cap_notification.AlertBody.info.urgency ) (cap_notification.AlertBody.info.severity)   cap_notification.AlertBody.info.certainty
-    }
-
-    log.debug("Testing ${subscription.officialOnly}");
-    if ( subscription.officialOnly ) {
-      log.debug("Filter official priority only");
-      if ( cap_notification.AlertMetadata.sourceIsOfficial.equalsIgnoreCase('true') ) {
-        log.debug("pass - source is official");
+    if ( ( subscription.languageOnly ) && ( !subscription.languageOnly.equalsIgnoreCase('none') ) ) {
+      if ( info_element.language?.toLowerCase().startsWith(subscription.languageOnly.toLowerCase()) ) {
       }
-      else {
-        log.debug("fail - source is official");
+      else {  
+        log.debug("Did not pass language filter (${subscription.languageOnly}/${info_element.language}) ");
         result = false;
       }
     }
 
-    log.debug("Testing ${subscription.xPathFilterId}");
-    if ( subscription.xPathFilterId ) {
-      log.debug("Apply xpath filter ${PathFilterId}")
+    // (//cap:urgency='Immediate' or //cap:urgency='Expected') and (//cap:severity='Extreme' or //cap:severity='Severe') and (//cap:certainty='Observed' or //cap:certainty='Likely')
+    if ( ( subscription.highPriorityOnly ) && ( subscription.highPriorityOnly.equalsIgnoreCase('true') ) ) {
+      log.debug("Filter high priority only ${true}");
+      // If ( urgency==immediate || urgency==expected ) && ( severity==extreme || severity==severe ) && ( certainty==observed || certainty==likely )
+      // if ( info_element.urgency ) (info_element.severity)   info_element.certainty
+      if ( ( info_element.urgency?.equalsIgnoreCase('immediate') || info_element.urgency?.equalsIgnoreCase('expected') ) &&
+           ( info_element.severity?.equalsIgnoreCase('extreme') || info_element.severity?.equalsIgnoreCase('severe') ) &&
+           ( info_element.certainty?.equalsIgnoreCase('observed') || info_element.severity?.equalsIgnoreCase('likely') ) ) {
+      }
+      else {
+        log.debug("Did not pass high priority filter - urgency:${info_element.urgency} severity:${info_element.severity} certainty:${info_element.certainty}");
+        result = false;
+      }
     }
 
-    log.debug("passNonSpatialFilter returns ${result}");
+    if ( ( subscription.officialOnly ) && ( subscription.officialOnly.equalsIgnoreCase('true') ) ) {
+      log.debug("Filter official priority only");
+      if ( cap_notification.AlertMetadata.sourceIsOfficial.equalsIgnoreCase('true') ) {
+      }
+      else {
+        log.debug("Did not pass official filter (${cap_notification.AlertMetadata.sourceIsOfficial} needs to == true)");
+        result = false;
+      }
+    }
+
+    if ( subscription.xPathFilterId ) {
+      def filter_closure = null;
+      switch ( subscription.xPathFilterId ) {
+        case 'actual-public':
+          // cap:status='Actual' and //cap:scope='Public'
+          filter_closure = { p_cap_alert, p_info_element -> return ( p_cap_alert.status?.equalsIgnoreCase('actual') && p_cap_alert.scope.equalsIgnoreCase('public') ) }
+          break;
+        case 'actual-public-not-gale':
+          // //cap:status='Actual' and //cap:scope='Public' and not(//cap:event='Kuling')
+          filter_closure = { p_cap_alert, p_info_element -> return ( p_cap_alert.status?.equalsIgnoreCase('actual') && 
+                                                                     p_cap_alert.scope.equalsIgnoreCase('public') &&
+                                                                     p_info_element.event?.toLowerCase()?.contains('kuling') ) }
+          break;
+        case 'none':
+          // 
+          break;
+        case 'test-public-en':
+          // //cap:status= 'Test' and //cap:scope= 'Public' and //cap:language[starts-with(text(), 'en')]
+          filter_closure = { p_cap_alert, p_info_element -> return ( p_cap_alert.status?.equalsIgnoreCase('test') && 
+                                                                     p_cap_alert.scope?.equalsIgnoreCase('public') &&
+                                                                     p_info_element.language?.toLowerCase()?.startsWith('en') ) }
+          break;
+        case 'unfiltered':
+          //
+          break;
+        case 'volcanoes-only':
+          //cap:alert[contains(.,'volcan')]
+          filter_closure = { p_cap_alert, p_info_element -> return (p_info_element.event?.toLowerCase()?.contains('volcan') ||
+                                                                    p_info_element.headline?.toLowerCase()?.contains('volcan') ||
+                                                                    p_info_element.description?.toLowerCase()?.contains('volcan')) }
+          break;
+      }
+
+      if ( filter_closure ) {
+        boolean filter_result = filter_closure(cap_notification.AlertBody, info_element)
+        if ( filter_result ) {
+          log.debug("xPathFilter passed");
+        }
+        else {
+          log.debug("Did not pass xPathFilter - ${subscription.xPathFilterId} urgency:${info_element.urgency} severity:${info_element.severity} certainty:${info_element.certainty}");
+          result = false;
+        }
+      }
+    }
+
+    log.debug("passNonSpatialFilter ${cap_notification.AlertMetadata.compound_identifier} against sub ${subscription?.shortcode} filter ${result?'':'Did not pass'} - returns ${result}");
 
     return result;
   }
