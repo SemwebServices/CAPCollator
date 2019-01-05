@@ -456,7 +456,7 @@ class CapEventHandlerService {
     boolean result = true;
 
     if ( ( subscription.languageOnly ) && ( !subscription.languageOnly.equalsIgnoreCase('none') ) ) {
-      if ( info_element.language?.toLowerCase().startsWith(subscription.languageOnly.toLowerCase()) ) {
+      if ( info_element.language?.toLowerCase()?.startsWith(subscription.languageOnly.toLowerCase()) ) {
       }
       else {  
         log.debug("Did not pass language filter (${subscription.languageOnly}/${info_element.language}) ");
