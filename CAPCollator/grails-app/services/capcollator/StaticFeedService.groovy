@@ -258,7 +258,15 @@ class StaticFeedService {
         String source_feed_id = node.AlertMetadata.sourceFeed;
         // String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime, source_feed_id);
 
-        groovy.util.Node xml = getExistingRss(path);
+        groovy.util.Node xml = null;
+        try {
+          xml = getExistingRss(path);
+        }
+        catch ( Exception e ) {
+          log.error("Problem trying to read existing RSS file : ${path} - so resetting the file");
+          createStarterFeed(path, subname);
+          xml = getExistingRss(path);
+        }
 
         synchronized(xml) {
   
