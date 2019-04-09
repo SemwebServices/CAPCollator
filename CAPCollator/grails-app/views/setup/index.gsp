@@ -27,10 +27,25 @@
                       <input type="text" name="adminUsername" />
                     </div>
                   </div>
+
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Password</label>
                     <div class="col-sm-7">
                       <input type="text" name="adminPassword" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Admin Email</label>
+                    <div class="col-sm-7">
+                      <input type="text" name="adminEmail" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label"></label>
+                    <div class="col-sm-7">
+                      <button type="submit">Submit</button>
                     </div>
                   </div>
                 </div>
