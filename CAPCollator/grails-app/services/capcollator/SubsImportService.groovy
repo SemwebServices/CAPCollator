@@ -8,7 +8,7 @@ class SubsImportService {
 
   def status = [
     running:false,
-    progress=[]
+    progress:[]
   ]
 
   // A home for running subscription imports outside of controllers for progress reporting
