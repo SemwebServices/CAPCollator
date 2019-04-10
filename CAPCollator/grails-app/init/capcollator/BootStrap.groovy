@@ -1,10 +1,13 @@
 package capcollator
 
+import grails.util.Environment 
+
 class BootStrap {
 
   def CAPIndexingService
   def grailsApplication
   def servletContext
+  def capCollatorSystemService
 
   def sysusers = [
     [
@@ -17,7 +20,9 @@ class BootStrap {
   ]
 
   def init = { servletContext ->
+
     log.info("Starting CAPCollator. ${grailsApplication.metadata.getApplicationName()} ${grailsApplication.metadata.getApplicationVersion()}");
+
     if ( grailsApplication.config.gtmcode != null ) {
       log.debug("Using ${grailsApplication.config.gtmcode} as GTM code");
     }
@@ -29,11 +34,17 @@ class BootStrap {
       log.debug("Static feeds are configured - ${grailsApplication.config.staticFeedsDir}");
     }
 
-    setUpUserAccounts()
+    capCollatorSystemService.freshenState()
+
+    if ( ( Environment.currentEnvironment.name == Environment.DEVELOPMENT ) ||
+         ( Environment.currentEnvironment.name == Environment.TEST ) ) {
+      setUpUserAccounts()
+    }
     CAPIndexingService.freshen()
   }
 
   def setUpUserAccounts() {
+    log.debug("Setting up default user accounts");
     sysusers.each { su ->
       log.debug("test ${su.name} ${su.pass} ${su.display} ${su.roles}");
       def user = User.findByUsername(su.name)

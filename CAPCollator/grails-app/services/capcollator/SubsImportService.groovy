@@ -17,33 +17,43 @@ class SubsImportService {
   }
 
   def loadSubscriptionsFrom(String url) {
+    log.debug("loadSubscriptionsFrom(${url})");
 
+    log.debug("Initialise");
     boolean proceed=false;
+
+    def job_progress = null;
+
     synchronized(status) {
       if ( status.running==false ) {
         status.running=true
         proceed=true
-        def job_progress=[
+        job_progress=[
           startTime:System.currentTimeMillis(),
           endTime:null,
           url: url,
           status: 'idle',
-          numDefined:0,
-          numLoaded:0,
+          numEntriesInFile:0,
+          numProcessed:0,
           numCreated:0,
-          numUpdayed:0,
-          numErrors:0
+          numUpdated:0,
+          numErrors:0,
+          warnings:[]
         ]
         status.progress.add(job_progress);
       }
     }
 
     if ( proceed ) {
+      log.debug("Proceed...");
 
   
       try {
         def list_of_subscriptions = new groovy.json.JsonSlurper().parse(new java.net.URL(url))
         int num_subscriptions = list_of_subscriptions.subscriptions.size();
+
+        job_progress.numEntriesInFile = num_subscriptions;
+        job_progress.status = 'running'
   
         long total_processing_time = 0;
   
@@ -65,7 +75,7 @@ class SubsImportService {
           //   "feedItemsLimit": 200
   
           long sub_start_time = System.currentTimeMillis();
-  
+
           log.debug("Add or update subscription.. ${subscription_definition.subscription.subscriptionId}");
           if ( subscription_definition.subscription &&
                subscription_definition.subscription?.subscriptionId &&
@@ -90,6 +100,7 @@ class SubsImportService {
     
             if ( sub ) {
               log.debug("located existing subscrition for ${subscription_definition.subscription.subscriptionId}");
+              job_progress.numUpdated++;
             }
             else {
               log.debug("New sub ${filter_type} ${filter_geometry}");
@@ -104,33 +115,40 @@ class SubsImportService {
                           officialOnly:subscription_definition.subscription?.officialOnly,
                           xPathFilterId:subscription_definition.subscription?.xPathFilterId
                        ).save(flush:true, failOnError:true);
+              job_progress.numCreated++;
             }
           }
   
-          result.counter++
+          job_progress.numProcessed++;
           long elapsed = System.currentTimeMillis() - sub_start_time;
           total_processing_time += elapsed;
-          long average_processing_time = total_processing_time / result.counter
-          long long_running_threshold = average_processing_time * 1.5
+          job_progress.average_processing_time = total_processing_time / job_progress.numProcessed
+          long long_running_threshold = job_progress.average_processing_time * 1.5
   
           if ( elapsed > long_running_threshold ) {
-            log.info("${subscription_definition.subscription?.subscriptionId} took ${elapsed}ms to process, average is ${average_processing_time}");
+            log.info("${subscription_definition.subscription?.subscriptionId} took ${elapsed}ms to process, average is ${job_progress.average_processing_time}");
           }
   
-          if ( ( result.counter % 25 == 0 ) || ( result.counter == num_subscriptions ) ) {
-            log.info("AdminController::syncSubList - processed ${result.counter} of ${num_subscriptions} sub definitions so far. Avg processing time ${average_processing_time}");
+          if ( ( job_progress.numProcessed % 25 == 0 ) || ( job_progress.numProcessed == num_subscriptions ) ) {
+            log.info("AdminController::syncSubList - processed ${job_progress.numProcessed} of ${num_subscriptions} sub definitions so far. Avg processing time ${job_progress.average_processing_time}");
           }
   
         }
+
+        job_progress.status = 'complete'
       }
       catch ( Exception e ) {
         log.error("problem processing subscription list",e);
+        job_progress.status = 'error'
       }
       finally {
-        synchronized(status) {
-          status.running=false;
-        }
+        log.debug("All done");
+        status.running=false;
+        job_progress.endTime = System.currentTimeMillis()
       }
+    }
+    else {
+      log.debug("Do not proceed");
     }
   }
 }
