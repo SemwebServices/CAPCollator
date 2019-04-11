@@ -19,7 +19,7 @@ class EventCleanupJob {
     log.debug("Expire alerts where expire less than or equal ${now}");
     
     try {
-      ESWrapperService.deleteByQuery('alerts','{ "range" : { "AlertMetadata.Expires" : { "lte" : "'+now+'" } } }');
+      ESWrapperService.deleteByQuery('alerts','{ "range" : { "AlertMetadata.expires" : { "lte" : "'+now+'" } } }');
 
       long one_hour_ago_ms = System.currentTimeMillis() - ( 1 * 3600 * 1000 ) // 1 hour, 3600 seconds in an hour, 1000ms in a second
       String one_hour_ago = sdf.format(new Date(one_hour_ago_ms))
