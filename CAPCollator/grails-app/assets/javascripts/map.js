@@ -12,10 +12,10 @@ function initOSM(map_element_id, alert_body) {
   var osmUrl='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
   var osmAttrib='Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
   var osm = new L.TileLayer(osmUrl, {minZoom: 2, maxZoom: 12, attribution: osmAttrib});    
-  var bounds = null;
+  var features = []
 
   // start the map in South-East England
-  map.setView(new L.LatLng(51.3, 0.7),9);
+  // map.setView(new L.LatLng(51.3, 0.7),9);
   map.addLayer(osm);
 
   // An alert_info consists of one or more areas, each with a type and a geometry
@@ -30,10 +30,11 @@ function initOSM(map_element_id, alert_body) {
       if ( area_element.cc_polys instanceof Array ) {
         // New style records, with a list of cc_polys
         area_element.cc_polys.forEach( function(poly) {
-          var poly = toPoly(poly.type, poly.coordinates, bounds, poly.radius);
+          var poly = toPoly(poly.type, poly.coordinates, poly.radius);
           if ( poly != null ) {
             console.log("Got poly, add to map");
             map.addLayer(poly)
+            features.push(poly)
           }
         });
       }
@@ -46,7 +47,10 @@ function initOSM(map_element_id, alert_body) {
         // }
       }
     })
-  });
+  }
+);
+  var group = new L.featureGroup(features);
+  map.fitBounds(group.getBounds());
 
 }
 
@@ -55,61 +59,9 @@ function initMap(map_element_id, alert_body) {
 
 }
 
-function initGoogleMap(map_element_id, alert_body) {
+function toPoly(geom_type, geom, rad) {
 
-  var bounds = new google.maps.LatLngBounds();
-
-  var map = new google.maps.Map(document.getElementById(map_element_id), {
-    // center: {lat: -34.397, lng: 150.644},
-    // zoom: 8
-  });
-
-  // An alert_info consists of one or more areas, each with a type and a geometry
-  var list_of_info_elements = alert_body.info instanceof Array ? alert_body.info : [ alert_body.info ];
-
-  list_of_info_elements.forEach( function(info_element) {
-
-    var list_of_areas = info_element.area instanceof Array ? info_element.area : [ info_element.area ];
-    list_of_areas.forEach( function(area_element) {
-
-      console.log("process area %o",area_element);
-      if ( area_element.cc_polys instanceof Array ) {
-        // New style records, with a list of cc_polys
-        area_element.cc_polys.forEach( function(poly) {
-          var poly = toPoly(poly.type, poly.coordinates, bounds, poly.radius);
-          if ( poly != null ) {
-            console.log("Got poly, add to map");
-            poly.setMap(map);
-          }
-        });
-      }
-      else {
-        var poly = toPoly(area_element.cc_poly.type, area_element.cc_poly.coordinates, bounds, area_element.cc_poly.radius);
-
-        if ( poly != null ) {
-          console.log("Got poly, add to map");
-          poly.setMap(map);
-        }
-      }
-    })
-  });
-
-  map.fitBounds(bounds);
-
-  return map;
-}
-
-// https://stackoverflow.com/questions/50919409/how-to-programmatically-draw-on-an-osm-map-with-leaflet
-// var poly = new L.Polygon( [
-//         [51.51, -0.1],
-//         [51.5, -0.06],
-//         [51.52, -0.03]
-//     ]);
-// map.addLayer(poly);
-
-function toPoly(geom_type, geom, bounds, rad) {
-
-  console.log("toPoly(%o,%o,%o)",geom_type, geom, bounds);
+  console.log("toPoly(%o,%o)",geom_type, geom);
 
   var result=null;
 
