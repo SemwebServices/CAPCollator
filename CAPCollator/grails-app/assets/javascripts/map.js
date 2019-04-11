@@ -87,20 +87,9 @@ function toPoly(geom_type, geom, rad) {
     var rad_km = parseInt(rad);
     console.log("Draw circle at %o %o %o",geom,rad,rad_km);
 
-    // bounds.extend(new google.maps.LatLng(lat,lng));
-    // var radius = 20;
-    // result = new google.maps.Circle({
-    //            strokeColor: '#FF0000',
-    //            strokeOpacity: 0.8,
-    //            strokeWeight: 2,
-    //            fillColor: '#FF0000',
-    //            fillOpacity: 0.35,
-    //            center: center,
-    //            radius: (rad_km * 1000)
-    //          });
-    // result.getBounds will give the bounds for the circle.
-    // bounds.union(result.getBounds());
+    result = L.Circle(center, rad_km)
   }
+  result.setStyle({fillColor: '#FF0000', color: '#FF0000', fillOpacity:0.35, opacity:0.8, weight:2});
 
 
   return result;
