@@ -1,6 +1,28 @@
 /* For map functions */
+var map;
+var ajaxRequest;
+var plotlist;
+var plotlayers=[];
+
+function initOSM(map_element_id, alert_body) {
+  // set up the map
+  map = new L.Map(map_element_id);
+
+  // create the tile layer with correct attribution
+  var osmUrl='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  var osmAttrib='Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+  var osm = new L.TileLayer(osmUrl, {minZoom: 8, maxZoom: 12, attribution: osmAttrib});    
+
+  // start the map in South-East England
+  map.setView(new L.LatLng(51.3, 0.7),9);
+  map.addLayer(osm);
+}
 
 function initMap(map_element_id, alert_body) {
+  return initOSM(map_element_id, alert_body);
+}
+
+function initGoogleMap(map_element_id, alert_body) {
 
   var bounds = new google.maps.LatLngBounds();
 
@@ -38,7 +60,6 @@ function initMap(map_element_id, alert_body) {
       }
     })
   });
-
 
   map.fitBounds(bounds);
 
@@ -83,14 +104,14 @@ function toPoly(geom_type, geom, bounds, rad) {
     bounds.extend(new google.maps.LatLng(lat,lng));
     var radius = 20;
     result = new google.maps.Circle({
-	             strokeColor: '#FF0000',
-	             strokeOpacity: 0.8,
-	             strokeWeight: 2,
-	             fillColor: '#FF0000',
-	             fillOpacity: 0.35,
-	             center: center,
-	             radius: (rad_km * 1000)
-	           });
+               strokeColor: '#FF0000',
+               strokeOpacity: 0.8,
+               strokeWeight: 2,
+               fillColor: '#FF0000',
+               fillOpacity: 0.35,
+               center: center,
+               radius: (rad_km * 1000)
+             });
     // result.getBounds will give the bounds for the circle.
     bounds.union(result.getBounds());
   }

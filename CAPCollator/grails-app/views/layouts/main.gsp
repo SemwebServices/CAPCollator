@@ -85,7 +85,10 @@
   </div>
   
   <g:layoutBody/>
-  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=${grailsApplication.config.mapskey}"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.js"></script>
+
   <asset:javascript src="application.js"/>
   <asset:deferredScripts/>
 </body>
