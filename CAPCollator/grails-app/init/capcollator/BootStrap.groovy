@@ -9,15 +9,15 @@ class BootStrap {
   def servletContext
   def capCollatorSystemService
 
-  def sysusers = [
-    [
-     name:'admin',
-     pass: System.getenv('YARM_ADM_PW')?:'ChangeMeImmediately',
-     display:'Admin',
-     email:'admin@semweb.co', 
-     roles:['ROLE_ADMIN','ROLE_USER']
-    ]
-  ]
+  // def sysusers = [
+  //   [
+  //    name:'admin',
+  //    pass: System.getenv('YARM_ADM_PW')?:'ChangeMeImmediately',
+  //    display:'Admin',
+  //    email:'admin@semweb.co', 
+  //    roles:['ROLE_ADMIN','ROLE_USER']
+  //   ]
+  // ]
 
   def init = { servletContext ->
 
@@ -34,7 +34,7 @@ class BootStrap {
       log.debug("Static feeds are configured - ${grailsApplication.config.staticFeedsDir}");
     }
 
-    capCollatorSystemService.freshenState()
+    capCollatorSystemService.init()
 
     if ( ( Environment.currentEnvironment.name == Environment.DEVELOPMENT ) ||
          ( Environment.currentEnvironment.name == Environment.TEST ) ) {
@@ -44,6 +44,10 @@ class BootStrap {
   }
 
   def setUpUserAccounts() {
+
+    // No more defaults - each installation will need to setup.
+    def sysusers = grailsApplication.config.sysusers ?: []
+
     log.debug("Setting up default user accounts");
     sysusers.each { su ->
       log.debug("test ${su.name} ${su.pass} ${su.display} ${su.roles}");

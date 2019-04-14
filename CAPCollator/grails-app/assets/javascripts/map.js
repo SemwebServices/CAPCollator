@@ -7,6 +7,7 @@ var plotlayers=[];
 function initOSM(map_element_id, alert_body) {
   // set up the map
   map = new L.Map(map_element_id);
+  map.setView(new L.LatLng(0, 0),9);
 
   // create the tile layer with correct attribution
   var osmUrl='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -39,12 +40,13 @@ function initOSM(map_element_id, alert_body) {
         });
       }
       else {
-        // var poly = toPoly(area_element.cc_poly.type, area_element.cc_poly.coordinates, bounds, area_element.cc_poly.radius);
+        var poly = toPoly(poly.type, poly.coordinates, poly.radius);
 
-        // if ( poly != null ) {
-        //   console.log("Got poly, add to map");
-        //   poly.setMap(map);
-        // }
+        if ( poly != null ) {
+          console.log("Got poly, add to map");
+          map.addLayer(poly)
+          features.push(poly)
+        }
       }
     })
   }
@@ -87,7 +89,7 @@ function toPoly(geom_type, geom, rad) {
     var rad_km = parseInt(rad);
     console.log("Draw circle at %o %o %o",geom,rad,rad_km);
 
-    result = L.Circle(center, rad_km)
+    result = new L.Circle(center, rad_km)
   }
   result.setStyle({fillColor: '#FF0000', color: '#FF0000', fillOpacity:0.35, opacity:0.8, weight:2});
 

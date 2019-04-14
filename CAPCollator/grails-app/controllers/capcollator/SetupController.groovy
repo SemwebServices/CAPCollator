@@ -10,6 +10,7 @@ class SetupController {
     def result=[:]
     Setting setup_completed = Setting.findByKey('capcollator.setupcompleted') ?: new Setting(key:'capcollator.setupcompleted', value:'false').save(flush:true, failOnError:true);
 
+    
     if ( capCollatorSystemService.getCurrentState().setup_completed == false ) {
       log.debug("Do system setup");
       if ( request.method=='POST' ) {
@@ -36,12 +37,30 @@ class SetupController {
             redirect(controller:'home', action:'index');
           }
         }
+
+        updateSetting('capcollator.feedTitlePrefix', params.feedTitlePrefix);
+        updateSetting('capcollator.feedTitlePostfix', params.feedTitlePostfix);
+        updateSetting('capcollator.feedEntryPrefix', params.feedEntryPrefix);
+        updateSetting('capcollator.feedEntryPostfix', params.feedEntryPostfix);
       }
+
+      capCollatorSystemService.freshenState();
     }
     else {
       redirect(controller:'home', action:'index');
     }
 
     result;
+  }
+
+  private void updateSetting(String setting, String value) {
+    Setting s = Setting.findByKey(setting)
+    if ( s == null ) {
+      s = new Setting(key:setting, value:value).save(flush:true, failOnError:true);
+    }
+    else {
+      s.value=value
+      s.save(flush:true, failOnError:true);
+    }
   }
 }

@@ -20,6 +20,8 @@ import java.util.concurrent.ExecutorService;
 class StaticFeedService {
 
   def grailsApplication
+  def capCollatorSystemService
+
   public static int MAX_FEED_ENTRIES = 100;
 
   // Hold a cache of rss feeds so that we can avoid repeatedly parsing the same file,
@@ -114,6 +116,9 @@ class StaticFeedService {
 
   private void createStarterFeed(String path, subname) {
 
+    String feed_name_prefix = capCollatorSystemService.getCurrentState().get('capcollator.feedTitlePrefix') ?: ''
+    String feed_name_postfix = capCollatorSystemService.getCurrentState().get('capcollator.feedTitlePostfix') ?: ''
+
     // <?xml version='1.0' encoding='UTF-8'?>
     // <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     //   <channel>
@@ -150,7 +155,7 @@ class StaticFeedService {
       channel {
         'atom:link'(rel:'self',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
         'atom:link'(rel:'alternate',title:'RSS',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
-        title("Latest Valid CAP alerts received, ${subname}")
+        title("${feed_name_prefix}Latest Valid CAP alerts received, ${subname}${feed_name_postfix}")
         link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}")
         description("This feed lists the most recent valid CAP alerts uploaded to the Filtered Alert Hub.")
         language("en");
@@ -159,7 +164,7 @@ class StaticFeedService {
         lastBuildDate(pub_date_str);
         docs("http://blogs.law.harvard.edu/tech/rss");
         image {
-          title("Latest Valid CAP alerts received, ${subname}");
+          title("${feed_name_prefix}Latest Valid CAP alerts received, ${subname}${feed_name_postfix}");
           url("${grailsApplication.config.staticFeedsBaseUrl}/${subname}/capLogo.jpg");
           link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml");
         }
@@ -249,6 +254,7 @@ class StaticFeedService {
 
   private void addItem(String path, node, subname, cached_alert_file) {
 
+
     // log.debug("addItem(${path},${node})");
     if ( node?.AlertMetadata?.capCollatorUUID ) {
       // log.debug("capCollatorUUID: ${node.AlertMetadata.capCollatorUUID}")
@@ -290,8 +296,13 @@ class StaticFeedService {
           def atomns = new groovy.xml.Namespace('http://www.w3.org/2005/Atom','atom')
           def ccns = new groovy.xml.Namespace('http://demo.semweb.co/CapCollator','capcol');
     
+          String feed_entry_prefix = capCollatorSystemService.getCurrentState().get('capcollator.feedEntryPrefix') ?: ''
+          String feed_entry_postfix = capCollatorSystemService.getCurrentState().get('capcollator.feedEntryPostfix') ?: ''
+
+          String entry_title = info?.headline ?: info?.description;
+
           def new_item_node = xml.channel[0].appendNode( 'item' );
-          new_item_node.appendNode( 'title', info?.headline ?: info?.description );
+          new_item_node.appendNode( 'title', "${feed_entry_prefix}${entry_title}${feed_entry_postfix}".toString() );
           new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${cached_alert_file}".toString());
           new_item_node.appendNode( 'description', info?.description);
           new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);

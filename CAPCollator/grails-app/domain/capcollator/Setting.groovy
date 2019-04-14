@@ -6,8 +6,8 @@ class Setting {
   String value
 
   static constraints = {
-    key blank: false, unique: true
-    value blank: false
+    key nullable:false, blank: false, unique: true
+    value nullable:true, blank: true
   }
 
   static mapping = {

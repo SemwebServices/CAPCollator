@@ -31,7 +31,7 @@
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Password</label>
                     <div class="col-sm-7">
-                      <input type="text" name="adminPassword" />
+                      <input type="password" name="adminPassword" />
                     </div>
                   </div>
 
@@ -41,6 +41,37 @@
                       <input type="text" name="adminEmail" />
                     </div>
                   </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Feed title prefix</label>
+                    <div class="col-sm-7">
+                      <input type="text" name="feedTitlePrefix" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Feed title postfix</label>
+                    <div class="col-sm-7">
+                      <input type="text" name="feedTitlePostfix" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Feed entry prefix</label>
+                    <div class="col-sm-7">
+                      <input type="text" name="feedEntryPrefix" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Feed entry postfix</label>
+                    <div class="col-sm-7">
+                      <input type="text" name="feedEntryPostfix" />
+                    </div>
+                  </div>
+
+
+
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label"></label>
