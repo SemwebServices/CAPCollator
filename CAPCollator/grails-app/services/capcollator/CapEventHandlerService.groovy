@@ -233,6 +233,12 @@ class CapEventHandlerService {
           cap_notification.AlertMetadata.tags.add('No_Polygon_Provided');
         }
 
+        if ( ! matching_subscriptions.contains('unfiltered') ) {
+          // It's likely that the alert was well formed, but did not contain a geo element, and therefore
+          // did not match the unfiltered subscription. Add it anyway!
+          matching_subscriptions.add('unfiltered');
+        }
+
         cap_notification.AlertMetadata.CCHistory.add(['event':'CC-spatial-processing-complete','timestamp':System.currentTimeMillis()]);
         publishAlert(cap_notification, matching_subscriptions);
 
@@ -241,12 +247,15 @@ class CapEventHandlerService {
 
         feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
                                              null,
-                                             "Processing completed, matched ${matching_subscriptions}");
+                                             [ message: "Processing completed, matched ${matching_subscriptions.size()} subscriptions",
+                                               matchedSubscriptions:matching_subscriptions,
+                                               tags:cap_notification.AlertMetadata.tags,
+                                               history:cap_notification.AlertMetadata.CCHistory] );
       }
       else {
         feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
                                              null,
-                                             "Unable to find INFO elements in alert XML");
+                                             "Unable to find any INFO element in alert XML");
       }
 
     }

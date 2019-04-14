@@ -25,34 +25,35 @@ function initOSM(map_element_id, alert_body) {
   list_of_info_elements.forEach( function(info_element) {
 
     var list_of_areas = info_element.area instanceof Array ? info_element.area : [ info_element.area ];
-
     list_of_areas.forEach( function(area_element) {
-      console.log("process area %o",area_element);
-      if ( area_element.cc_polys instanceof Array ) {
-        // New style records, with a list of cc_polys
-        area_element.cc_polys.forEach( function(poly) {
+        console.log("process area %o",area_element);
+        if ( area_element.cc_polys instanceof Array ) {
+          // New style records, with a list of cc_polys
+          area_element.cc_polys.forEach( function(poly) {
+            var poly = toPoly(poly.type, poly.coordinates, poly.radius);
+            if ( poly != null ) {
+              console.log("Got poly, add to map");
+              map.addLayer(poly)
+              features.push(poly)
+            }
+          });
+        }
+        else {
           var poly = toPoly(poly.type, poly.coordinates, poly.radius);
+  
           if ( poly != null ) {
             console.log("Got poly, add to map");
             map.addLayer(poly)
             features.push(poly)
           }
-        });
-      }
-      else {
-        var poly = toPoly(poly.type, poly.coordinates, poly.radius);
-
-        if ( poly != null ) {
-          console.log("Got poly, add to map");
-          map.addLayer(poly)
-          features.push(poly)
         }
-      }
     })
+  });
+
+  if ( features.length > 0 ) {
+    var group = new L.featureGroup(features);
+    map.fitBounds(group.getBounds());
   }
-);
-  var group = new L.featureGroup(features);
-  map.fitBounds(group.getBounds());
 
 }
 

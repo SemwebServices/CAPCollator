@@ -24,6 +24,11 @@ class FeedFeedbackService {
                                Map info) {
     log.debug("publishFeedEvent(${source_feed},${event_id},${info})");
     // Publish to CAPExchange with routing key FFFeedback.feedid
+    rabbitMessagePublisher.send {
+      exchange = "CAPExchange"
+      routingKey = 'FFFeedback.'+source_feed+'.'+(event_id?:'unknown')
+      body = info
+    }
   }
 
 }

@@ -6,7 +6,7 @@
  
     
     <g:if test="${status?.running}">
-      <meta http-equiv="refresh" content="30">
+      <meta http-equiv="refresh" content="10">
     </g:if>
 
     <asset:link rel="icon" href="favicon.ico" type="image/x-ico" />
