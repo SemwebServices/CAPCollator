@@ -6,6 +6,8 @@ import grails.transaction.Transactional
 class SubsImportService {
 
 
+  def rabbitMessagePublisher
+
   def status = [
     running:false,
     progress:[]
@@ -115,6 +117,25 @@ class SubsImportService {
                           officialOnly:subscription_definition.subscription?.officialOnly,
                           xPathFilterId:subscription_definition.subscription?.xPathFilterId
                        ).save(flush:true, failOnError:true);
+
+                
+              rabbitMessagePublisher.send {
+                exchange = "CAPExchange"
+                routingKey = 'CAPSubAdmin.'+subscription_definition.subscription?.subscriptionId
+                body = [
+                  event:'SubscriptionCreated',
+                  subscriptionId:subscription_definition.subscription?.subscriptionId,
+                  subscriptionName: subscription_definition.subscription?.subscriptionName,
+                  subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
+                  filterType:filter_type,
+                  filterGeometry:filter_geometry,
+                  languageOnly:subscription_definition.subscription?.languageOnly,
+                  highPriorityOnly:subscription_definition.subscription?.highPriorityOnly,
+                  officialOnly:subscription_definition.subscription?.officialOnly,
+                  xPathFilterId:subscription_definition.subscription?.xPathFilterId
+                ]
+              }
+
               job_progress.numCreated++;
             }
           }

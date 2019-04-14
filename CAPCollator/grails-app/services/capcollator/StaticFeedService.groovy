@@ -186,8 +186,14 @@ class StaticFeedService {
       groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
       xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
       xml_parser.startPrefixMapping('','');
-      result = xml_parser.parse(new File(path+'/rss.xml'))
-      rss_cache.put(path, result);
+      File existing_rss = new File(path+'/rss.xml');
+      if ( existing_rss.exists() ) {
+        result = xml_parser.parse(new File(path+'/rss.xml'))
+        rss_cache.put(path, result);
+      }
+      else {
+        log.warn("getExistingRss(${path}) did not find an RSS file, and expected to.");
+      }
     }
     else {
       // log.debug("RSS Feed retrieved from cache, no need to parse");
@@ -309,6 +315,7 @@ class StaticFeedService {
           new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
           new_item_node.appendNode( ccns.'dateWritten', formatted_write_date )
           new_item_node.appendNode( ccns.'sourceFeed', node?.AlertMetadata.sourceFeed )
+          new_item_node.appendNode( ccns.'alertId', node?.AlertMetadata?.capCollatorUUID )
     
           //      //'dc:creator'('creator')
           //      //'dc:date'('date')

@@ -6,6 +6,12 @@ in order to maintain a comprehensive and searchable global index of all currentl
 
 A demo system is available at [https://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
 
+## Users
+
+CAPCollator users normally want to aggregate and process alert messages. The following documents may help
+
+* [RabbitMQ Events](rabbit-events.md) - This document describes the various rabbitMQ exchanges, queues and events you can watch
+
 ## Technology
 
 Currently implemented in Java using the groovy-on-grails framework, but runnable as a microservice using the
