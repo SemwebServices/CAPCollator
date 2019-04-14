@@ -7,14 +7,16 @@ import static groovy.json.JsonOutput.*
 class RssEventHandlerService {
 
   def capUrlHandlerService
+  def feedFeedbackService
 
   def handleNotification(body,context) {
     log.debug("RssEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
 
+    String source_feed = context.properties.headers['feed-code'];
+
     try {
 
-      String source_feed = context.properties.headers['feed-code'];
 
       def list_of_links = null
       // Json will be different if we have just 1 body.link - so wrap if needed
@@ -42,6 +44,10 @@ class RssEventHandlerService {
     }
     catch ( Exception e ) {
       log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
+      feedFeedbackService.publishFeedEvent(source_feed,
+                                           null,
+                                           "problem processing Atom event: ${e.message}");
+
     }
 
   }

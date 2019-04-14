@@ -14,6 +14,7 @@ class CapEventHandlerService {
   def eventService
   def gazService
   def alertFetcherExecutorService
+  def feedFeedbackService
 
   // import org.apache.commons.collections4.map.PassiveExpiringMap;
   // Time to live in millis - 1000 * 60 == 1m 
@@ -237,11 +238,21 @@ class CapEventHandlerService {
 
         // Index the CAP event
         indexAlert(cap_notification, matching_subscriptions)
+
+        feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
+                                             null,
+                                             "Processing completed, matched ${matching_subscriptions}");
+      }
+      else {
+        feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
+                                             null,
+                                             "Unable to find INFO elements in alert XML");
       }
 
     }
     catch ( Exception e ) {
       log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n",e);
+      publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,"Error: ${e.message}")
     }
     finally {
       log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}");

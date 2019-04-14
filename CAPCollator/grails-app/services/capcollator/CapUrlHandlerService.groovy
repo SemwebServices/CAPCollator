@@ -14,6 +14,7 @@ class CapUrlHandlerService {
   RabbitMessagePublisher rabbitMessagePublisher
   def eventService
   def staticFeedService
+  def feedFeedbackService
 
   private static final long LONG_ALERT_THRESHOLD = 2000;
   private static final int MAX_RETRIES = 3;
@@ -132,6 +133,9 @@ class CapUrlHandlerService {
           }
           else {
             log.warn("No valid CAP from ${cap_link} -- consider improving rules for handling this");
+            feedFeedbackService.publishFeedEvent(source_feed,
+                                                 source_id,
+                                                 "No valid CAP found at ${cap_link}");
             completed_ok = true;
           }
         }
@@ -144,6 +148,12 @@ class CapUrlHandlerService {
         log.error("problem handling cap alert ${cap_link} ${context} ${e.message}");
         // sleep for .5s before retry
         Thread.sleep(500)
+
+        feedFeedbackService.publishFeedEvent(source_feed,
+                                             source_id,
+                                             "problem processing CAP event (retry ${retries}): ${cap_link} ${e.message}");
+
+
         retries++;
       }
       finally {

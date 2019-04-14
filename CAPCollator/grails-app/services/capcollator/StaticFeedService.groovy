@@ -461,4 +461,30 @@ class StaticFeedService {
 
     return full_alert_filename
   }
+
+  public void initialiseFeed(String sub_name) {
+    String full_path = grailsApplication.config.staticFeedsDir+'/'+sub_name;
+
+    File sub_dir = new File(full_path)
+    if ( ! sub_dir.exists() ) {
+      log.debug("Setting up new static sub DIR ${full_path}");
+      sub_dir.mkdirs()
+    }
+    else {
+      log.debug("${full_path} already present");
+    }
+
+    String starter_rss_file = full_path+'/rss.xml'
+    File rss_file = new File(starter_rss_file);
+    if ( ! rss_file.exists() ) {
+      log.debug("Create starter feed - ${full_path}/rss.xml");
+      createStarterFeed(full_path, sub_name);
+    }
+    else {
+      log.debug("${full_path}/rss.xml present");
+    }
+
+    pushToS3(starter_rss_file);
+
+  }
 }

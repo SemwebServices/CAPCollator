@@ -8,12 +8,14 @@ import static grails.async.Promises.*
 class AtomEventHandlerService {
 
   def capUrlHandlerService
+  def feedFeedbackService
 
   private static long LONG_ALERT_THRESHOLD = 2000;
 
   def handleNotification(body,context) {
     log.debug("AtomEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
+    String source_feed = context.properties.headers['feed-code'];
 
     task {
       def ts_1 = System.currentTimeMillis();
@@ -24,7 +26,6 @@ class AtomEventHandlerService {
 
         def list_of_links = null
 
-        String source_feed = context.properties.headers['feed-code'];
 
         // Json will be different if we have just 1 body.link - so wrap if needed
         if ( body.link instanceof List ) {
@@ -62,6 +63,10 @@ class AtomEventHandlerService {
       }
       catch ( Exception e ) {
         log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
+        feedFeedbackService.publishFeedEvent(source_feed,
+                                             null,
+                                             "problem processing Atom event: ${e.message}");
+
       }
   
       if ( num_cap_files_found == 0 ) {

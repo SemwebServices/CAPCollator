@@ -14,5 +14,6 @@ class SubAdminConsumer {
 
   def handleMessage(def body, MessageContext context) {
     log.debug("SubAdminConsumer::handle - key = ${context.envelope.routingKey}");
+    staticFeedService.initialiseFeed(context.envelope.routingKey);
   }
 }
