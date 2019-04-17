@@ -78,7 +78,7 @@
             </sec:ifAnyGranted>
             <li class="${controllerName=='subscriptions' && actionName=='index' ? 'active' : ''}"><g:link controller="subscriptions" action="index">Subscriptions</g:link></li>
           </sec:ifLoggedIn>
-          <li class="${controllerName=='home' && actionName=='topic' ? 'active' : ''}"><g:link controller="subscriptions" action="details" id="unfiltered">Unfiltered</g:link></li>
+          <li class="${controllerName=='home' && actionName=='topic' ? 'active' : ''}"><g:link controller="subscriptions" action="details" id="unfiltered" params="${[tag:'mappable']}">Unfiltered</g:link></li>
         </ul>
       </div><!--/.nav-collapse -->
     </div>

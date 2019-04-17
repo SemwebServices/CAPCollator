@@ -121,6 +121,11 @@
                       <div class="form-group"> <label class="col-sm-2 control-label">Matched Subscriptions</label> <div class="col-sm-10"><p class="form-control-static">
                        <g:each in="${alsrc.AlertMetadata.MatchedSubscriptions}" var="ms"> <g:link controller="subscriptions" action="details" id="${ms}">${ms}</g:link> &nbsp; </g:each> </p></div> 
                       </div>
+                      <div class="form-group"> <label class="col-sm-2 control-label">Tags</label> 
+                        <div class="col-sm-10">
+                          <p class="form-control-static"><g:each in="${alsrc.AlertMetadata.tags}" var="tag">${tag} &nbsp; </g:each>
+                        </div> 
+                      </div>
                       <g:each in="${ifo_list}" var="ifo">
                         <div class="form-group"> <label class="col-sm-2 control-label">Information</label> <div class="col-sm-10">
                               <div class="form-group"> <label class="col-sm-2 control-label">Language</label> <div class="col-sm-10"><p class="form-control-static">${ifo.language}</p></div> </div>

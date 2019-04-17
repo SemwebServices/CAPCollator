@@ -53,16 +53,26 @@ class SubscriptionsController {
 
     log.debug("Subscriptions::details() ${params} ${response.format}")
 
-    def query_clause='';
+    List<String> query_clauses = []
+    query_clauses.add('{ "match": { "AlertMetadata.MatchedSubscriptions": "'+params.id+'"} }')
+
     if ( params.q ) {
-      query_clause = ',{"simple_query_string": { "query":"'+params.q+'" } }'
+      query_clauses.add('{"simple_query_string": { "query":"'+params.q+'" } }')
     }
+
+    params.each { k,v ->
+      if ( k == 'tag' ) {
+        query_clauses.add('{ "match" : { "AlertMetadata.tags":"'+v+'" } }');
+      }
+    }
+
+    log.debug("Joined query clauses: ${query_clauses.join(',')}");
+
     String[] indexes_to_search = [ 'alerts' ]
     String es_query = '''{
          "bool": {
            "must": [ 
-             { "match": { "AlertMetadata.MatchedSubscriptions": "'''+params.id+'''"} }
-             '''+query_clause+'''
+             '''+query_clauses.join(',')+'''
            ]
          } 
        }'''

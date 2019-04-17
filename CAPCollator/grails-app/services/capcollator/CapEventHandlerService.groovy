@@ -232,6 +232,9 @@ class CapEventHandlerService {
           eventService.registerEvent('CAPXMLWithNoPolygon',System.currentTimeMillis());
           cap_notification.AlertMetadata.tags.add('No_Polygon_Provided');
         }
+        else {
+          cap_notification.AlertMetadata.tags.add('Mappable');
+        }
 
         if ( ! matching_subscriptions.contains('unfiltered') ) {
           // It's likely that the alert was well formed, but did not contain a geo element, and therefore
