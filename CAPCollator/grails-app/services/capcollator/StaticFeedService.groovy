@@ -230,12 +230,14 @@ class StaticFeedService {
           feed_write_queue.wait();
           if ( feed_write_queue.size() > 0 ) {
             path_to_write = feed_write_queue.remove(0)
+            log.debug("Removed ${path_to_write} from feed write queue");
           }
         }
 
         if ( path_to_write != null ) {
           // log.debug("watchRssQueue() process ${path_to_write}");
-          def xml_for_feed = rss_cache.get(path_to_write)
+          // def xml_for_feed = rss_cache.get(path_to_write)
+          def xml_for_feed = getExistingRss(path_to_write)
 
           if ( xml_for_feed == null ) {
             log.error("Unable to find xml for feed with path ${path_to_write} - existing queue cache was null");
@@ -251,7 +253,7 @@ class StaticFeedService {
           }
         }
         else {
-          // log.debug("watchRssQueue awake, but no file to write");
+          log.error("Path to write null.");
         }
       }
     }
