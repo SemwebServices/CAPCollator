@@ -235,16 +235,20 @@ class StaticFeedService {
 
         if ( path_to_write != null ) {
           // log.debug("watchRssQueue() process ${path_to_write}");
-          java.io.Writer writer = new FileWriter(path_to_write+'/rss.xml')
           def xml_for_feed = rss_cache.get(path_to_write)
 
-          synchronized (xml_for_feed) {
-            XmlUtil.serialize(rss_cache.get(path_to_write), writer)
+          if ( xml_for_feed == null ) {
+            log.error("Unable to find xml for feed with path ${path_to_write} - existing queue cache was null");
           }
-
-          writer.flush()
-          writer.close()
-          pushToS3(path_to_write+'/rss.xml');
+          else {
+            synchronized (xml_for_feed) {
+              java.io.Writer writer = new FileWriter(path_to_write+'/rss.xml')
+              XmlUtil.serialize(xml_for_feed, writer)
+              writer.flush()
+              writer.close()
+              pushToS3(path_to_write+'/rss.xml');
+            }
+          }
         }
         else {
           // log.debug("watchRssQueue awake, but no file to write");
@@ -345,6 +349,7 @@ class StaticFeedService {
         rss_cache.put(path, xml)
 
         // Write the file
+        log.debug("Enqueue update for path ${path}");
         enqueueRss(path);
     }
     else {
