@@ -182,7 +182,7 @@ class StaticFeedService {
     result = rss_cache.get(path);
  
     if ( result == null ) {
-      // log.debug("Parse existing RSS at ${path}/rss.xml and cache");
+      log.debug("Parse existing RSS at ${path}/rss.xml and cache");
       groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
       xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
       xml_parser.startPrefixMapping('','');
