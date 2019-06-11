@@ -90,16 +90,18 @@ class CapEventHandlerService {
 
       // Extract any shapes from the cap (info) alert['alert']['info'].each { it.['area'] }
       if ( cap_body?.info ) {
-        def list_of_info_elements = cap_body.info instanceof List ? cap_body.info : [ cap_body.info ]
+        List list_of_info_elements = cap_body.info instanceof List ? cap_body.info : [ cap_body.info ]
 
         // Create a set - this will prevent duplicate subscriptions if multiple info elements match
         def matching_subscriptions = new java.util.HashSet()
 
+        long size_ie_array = list_of_info_elements.size()
+        long ie_ctr = 0;
         list_of_info_elements.each { ie ->
 
           long query_phase_start_time = System.currentTimeMillis();
 
-          log.debug("  -> Check info element");
+          log.debug("  -> Check info element ${ie_ctr}/${size_ie_array}");
           if ( ie.area ) {
             def list_of_area_elements = ie.area instanceof List ? ie.area : [ ie.area ]
 
@@ -223,7 +225,7 @@ class CapEventHandlerService {
               }
             }
           }
-          log.info("info element checking complete. QueryPhase elapsed: ${System.currentTimeMillis() - query_phase_start_time}");
+          log.info("info element checking complete${ie_ctr++}/${size_ie_array}. QueryPhase elapsed: ${System.currentTimeMillis() - query_phase_start_time}");
         }
 
         log.debug("The following subscriptions matched : ${matching_subscriptions} (# polygons found:${polygons_found})");
