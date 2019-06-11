@@ -234,33 +234,36 @@ class StaticFeedService {
           }
         }
 
-        if ( path_to_write != null ) {
-          // log.debug("watchRssQueue() process ${path_to_write}");
-          // def xml_for_feed = rss_cache.get(path_to_write)
-          def xml_for_feed = getExistingRss(path_to_write)
-
-          if ( xml_for_feed == null ) {
-            log.error("Unable to find xml for feed with path ${path_to_write} - existing queue cache was null");
-          }
-          else {
-            synchronized (xml_for_feed) {
-              java.io.Writer writer = new FileWriter(path_to_write+'/rss.xml')
-              XmlUtil.serialize(xml_for_feed, writer)
-              writer.flush()
-              writer.close()
-              pushToS3(path_to_write+'/rss.xml');
+        try {
+          if ( path_to_write != null ) {
+            // log.debug("watchRssQueue() process ${path_to_write}");
+            // def xml_for_feed = rss_cache.get(path_to_write)
+            def xml_for_feed = getExistingRss(path_to_write)
+  
+            if ( xml_for_feed == null ) {
+              log.error("Unable to find xml for feed with path ${path_to_write} - existing queue cache was null");
+            }
+            else {
+              synchronized (xml_for_feed) {
+                java.io.Writer writer = new FileWriter(path_to_write+'/rss.xml')
+                XmlUtil.serialize(xml_for_feed, writer)
+                writer.flush()
+                writer.close()
+                pushToS3(path_to_write+'/rss.xml');
+              }
             }
           }
+          else {
+            log.error("Path to write null.");
+          }
         }
-        else {
-          log.error("Path to write null.");
+        catch ( Exception e ) {
+          log.error("Exception whilst trying to write ${path_to_write}.",e);
         }
       }
     }
     catch ( Exception e ) {
-      log.error("problem",e);
-      e.printStackTrace();
-      System.exit(1);
+      log.error("problem watching RSS Queue",e);
     }
   }
 
