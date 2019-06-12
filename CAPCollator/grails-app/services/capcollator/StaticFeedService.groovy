@@ -182,17 +182,23 @@ class StaticFeedService {
     result = rss_cache.get(path);
  
     if ( result == null ) {
-      log.debug("Parse existing RSS at ${path}/rss.xml and cache");
-      groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
-      xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
-      xml_parser.startPrefixMapping('','');
-      File existing_rss = new File(path+'/rss.xml');
-      if ( existing_rss.exists() ) {
-        result = xml_parser.parse(new File(path+'/rss.xml'))
-        rss_cache.put(path, result);
+      log.debug("Looks like entry for ${path} was evicted from cache. Reload");
+      try {
+        log.debug("Parse existing RSS at ${path}/rss.xml and cache");
+        File existing_rss = new File(path+'/rss.xml');
+        if ( existing_rss.exists() ) {
+          groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
+          xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
+          xml_parser.startPrefixMapping('','');
+          result = xml_parser.parse(new File(path+'/rss.xml'))
+          rss_cache.put(path, result);
+        }
+        else {
+          log.warn("getExistingRss(${path}) did not find an RSS file, and expected to.");
+        }
       }
-      else {
-        log.warn("getExistingRss(${path}) did not find an RSS file, and expected to.");
+      catch ( Exception e ) {
+        log.error("Problem trying to parse existing feed at ${path}",e)
       }
     }
     else {
