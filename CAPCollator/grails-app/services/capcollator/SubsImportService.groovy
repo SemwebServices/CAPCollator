@@ -106,7 +106,10 @@ class SubsImportService {
             }
             else {
               log.debug("New sub ${filter_type} ${filter_geometry}");
-              sub=new Subscription(
+              // Use with Transaction to force a commit at the end of this block and make sure that the
+              // subscription is available to anyone wanting to respond to the event
+              Subscription.withTransaction {
+                sub=new Subscription(
                           subscriptionId:subscription_definition.subscription?.subscriptionId,
                           subscriptionName: subscription_definition.subscription?.subscriptionName,
                           subscriptionUrl:subscription_definition.subscription?.subscriptionUrl,
@@ -115,8 +118,11 @@ class SubsImportService {
                           languageOnly:subscription_definition.subscription?.languageOnly,
                           highPriorityOnly:subscription_definition.subscription?.highPriorityOnly,
                           officialOnly:subscription_definition.subscription?.officialOnly,
-                          xPathFilterId:subscription_definition.subscription?.xPathFilterId
+                          xPathFilterId:subscription_definition.subscription?.xPathFilterId,
+                          feedXmlTemplate:subscription_definition.subscription?.feedRssXml,
+                          feedItemLimit:subscription_definition.subscription?.feedItemsLimit
                        ).save(flush:true, failOnError:true);
+              }
 
                 
               rabbitMessagePublisher.send {
@@ -132,7 +138,10 @@ class SubsImportService {
                   languageOnly:subscription_definition.subscription?.languageOnly,
                   highPriorityOnly:subscription_definition.subscription?.highPriorityOnly,
                   officialOnly:subscription_definition.subscription?.officialOnly,
-                  xPathFilterId:subscription_definition.subscription?.xPathFilterId
+                  xPathFilterId:subscription_definition.subscription?.xPathFilterId,
+                  feedXmlTemplate:subscription_definition.subscription?.feedRssXml,
+                  feedItemLimit:subscription_definition.subscription?.feedItemsLimit
+
                 ]
               }
 

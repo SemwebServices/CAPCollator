@@ -145,7 +145,9 @@ class StaticFeedService {
 
     def sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
     def pub_date_str = sdf.format(new Date());
-
+ 
+    rssBuilder.mkp.xmlDeclaration(version:'1.0', encoding:'utf-8')
+    rssBuilder.pi('xml-stylesheet':[href:'https://alert-feeds.s3.amazonaws.com/rss-style.xsl', type:'text/css']);
     rssBuilder.'rss'(// 'xmlns':'http://www.w3.org/2005/Atom', -- The namespace for the document is not ATON
                      'xmlns:rss':'http://www.rssboard.org/rss-specification',
                      'xmlns:atom':'http://www.w3.org/2005/Atom',
@@ -173,6 +175,25 @@ class StaticFeedService {
     fileWriter.close();
 
     pushToS3(path+'/rss.xml');
+  }
+
+  private void createStarterFeedFromTemplate(String path, String subname, String tmpl) {
+    if ( ( tmpl != null ) && 
+         ( tmpl.length() > 0 ) ) {
+      File f = new File(path+'/rss.xml')
+      if ( f.exists() ) {
+        log.warn("${path}/rss.xml already exists - not overwriting");
+      } 
+      else {
+        // Should probably validate the XML here before just writing it
+        f.write(tmpl)
+        pushToS3(path+'/rss.xml');
+      }
+    }
+    else {
+      log.error("Unable to find subscription by ID: ${subname}. Fallback to old method")
+      createStarterFeed(path,subname);
+    }
   }
 
   private groovy.util.Node getExistingRss(String path) {
@@ -291,7 +312,7 @@ class StaticFeedService {
         }
         catch ( Exception e ) {
           log.error("Problem trying to read existing RSS file : ${path} - so resetting the file");
-          createStarterFeed(path, subname);
+          createStarterFeedFromTemplate(path, subname);
           xml = getExistingRss(path);
         }
 
@@ -478,7 +499,7 @@ class StaticFeedService {
     return full_alert_filename
   }
 
-  public void initialiseFeed(String sub_name) {
+  public void initialiseFeed(String sub_name, String tmpl) {
     String full_path = grailsApplication.config.staticFeedsDir+'/'+sub_name;
 
     File sub_dir = new File(full_path)
@@ -494,7 +515,7 @@ class StaticFeedService {
     File rss_file = new File(starter_rss_file);
     if ( ! rss_file.exists() ) {
       log.debug("Create starter feed - ${full_path}/rss.xml");
-      createStarterFeed(full_path, sub_name);
+      createStarterFeedFromTemplate(full_path, sub_name, tmpl);
     }
     else {
       log.debug("${full_path}/rss.xml present");

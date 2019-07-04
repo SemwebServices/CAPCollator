@@ -22,6 +22,9 @@ class Subscription {
   String officialOnly
   String xPathFilterId
 
+  String feedXmlTemplate
+  Long feedItemLimit
+
 
   String notes
 
@@ -39,6 +42,8 @@ class Subscription {
            highPriorityOnly blank: true, nullable: true
                officialOnly blank: true, nullable: true
               xPathFilterId blank: true, nullable: true
+            feedXmlTemplate blank: true, nullable: true
+              feedItemLimit blank: true, nullable: true
   }
 
   static mapping = {
@@ -53,6 +58,8 @@ class Subscription {
            highPriorityOnly column: 'sub_filter_high_prio'
                officialOnly column: 'sub_filter_official'
               xPathFilterId column: 'sub_filter_xpathid'
+            feedXmlTemplate column: 'sub_feed_xml_template', type:'text'
+              feedItemLimit column: 'sub_feed_item_limit'
   }
 
 }
