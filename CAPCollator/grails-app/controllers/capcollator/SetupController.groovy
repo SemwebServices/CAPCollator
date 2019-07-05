@@ -42,6 +42,7 @@ class SetupController {
         updateSetting('capcollator.feedTitlePostfix', params.feedTitlePostfix);
         updateSetting('capcollator.feedEntryPrefix', params.feedEntryPrefix);
         updateSetting('capcollator.feedEntryPostfix', params.feedEntryPostfix);
+        updateSetting('capcollator.awsBucketName', params.awsBucketName);
       }
 
       capCollatorSystemService.freshenState();

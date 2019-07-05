@@ -70,8 +70,12 @@
                     </div>
                   </div>
 
-
-
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">AWS Bucket Name</label>
+                    <div class="col-sm-7">
+                      <input type="text" name="awsBucketName" value="${grailsApplication.config.defaultAwsBucketName}" />
+                    </div>
+                  </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label"></label>

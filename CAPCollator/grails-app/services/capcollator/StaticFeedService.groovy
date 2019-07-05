@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import grails.events.annotation.Subscriber
 
 @Transactional
 class StaticFeedService {
@@ -38,8 +39,12 @@ class StaticFeedService {
   @javax.annotation.PostConstruct
   def init () {
     log.debug("StaticFeedService::init");
+
+    String bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName') ?: '';
+
     try {
-      if ( grailsApplication.config.awsBucketName ) {
+      if ( ( bucket_name != null ) && 
+           ( bucket_name.length() > 0 ) ) {
         log.info("Configure AWS S3 to mirror feeds using bucket ${grailsApplication.config.awsBucketName}");
         s3 = AmazonS3ClientBuilder.defaultClient();
         log.info("S3 configured");
@@ -55,6 +60,12 @@ class StaticFeedService {
     catch ( com.amazonaws.AmazonServiceException ase) {
       log.error("Problem with AWS mirror setup",ase);
     }
+  }
+
+  @Transactional
+  @Subscriber 
+  capcolSettingsUpdated(Map settings) {
+    log.debug("Static feed service is notified that settings have updated, ${settings}");
   }
 
 
