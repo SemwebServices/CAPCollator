@@ -46,7 +46,7 @@
           <th>Created</th>
           <th>Updated</th>
           <th>Errors</th>
-          <th>Avg Processing Time</th>
+          <th>Avg Processing Time (ms)</th>
         </tr>
       </thead>
       <tbody>

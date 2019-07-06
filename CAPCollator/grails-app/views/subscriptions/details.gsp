@@ -18,40 +18,55 @@
             <div class="panel-heading">
               <h3 class="panel-title">Subscription Info</h3>
             </div>
-            <div class="panel-body form-horizontal container">
+            <div class="panel-body form-horizontal container-fluid">
               <div class="row">
     
-                <div class="col-md-6">
+                <div class="col-md-3">
                   <div class="form-group">
                     <label class="col-sm-3 control-label">URL</label>
-                    <div class="col-sm-7"><p class="form-control-static"><a href="${subscription.subscriptionUrl}">${subscription.subscriptionUrl}</a></p></div>
+                    <div class="col-sm-9"><p class="form-control-static"><a href="${subscription.subscriptionUrl}">${subscription.subscriptionUrl}</a></p></div>
                   </div>
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Alert Count</label>
-                    <div class="col-sm-7"><p class="form-control-static">${latestAlerts?.hits?.totalHits} (${latestAlerts?.hits?.hits?.size()} shown)</p></div>
+                    <div class="col-sm-9"><p class="form-control-static">${latestAlerts?.hits?.totalHits?:0} (${latestAlerts?.hits?.hits?.size()?:0} shown)</p></div>
                   </div>
                 </div>
     
     
-                <div class="col-md-6">
+                <div class="col-md-3">
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Filter Type</label>
-                    <div class="col-sm-7"><p class="form-control-static">${subscription.filterType}</p></div>
+                    <div class="col-sm-9"><p class="form-control-static">${subscription.filterType}</p></div>
                   </div>
     
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Filter Geometry</label>
-                    <div class="col-sm-7"><p class="form-control-static" id="sub-filter-geom" data-sub-geom="${subscription.filterGeometry}" >${subscription.filterGeometry}</p></div>
+                    <div class="col-sm-9"><p class="form-control-static" id="sub-filter-geom" data-sub-geom="${subscription.filterGeometry}" >${subscription.filterGeometry}</p></div>
                   </div>
                 </div>
+
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Params</label>
+                    <div class="col-sm-9"><p class="form-control-static"><ul>
+                        <li>langFilter:<strong>${subscription.languageOnly}</strong></li>
+                        <li>priorityFilter:<strong>${subscription.highPriorityOnly}</strong></li>
+                        <li>officialFilter:<strong>${subscription.officialOnly}</strong></li>
+                        <li>xpathFilterId:<strong>${subscription.xPathFilterId}</strong></li>
+                      </ul>
+                    </p></div>
+                  </div>
+                </div>
+
+                <div class="col-md-3">
+                  <div class="MapWithFeatures" id="subscription_map"
+                                              data-features="[]"></div>
+
+                </div>
+
     
               </div>
-              <div class="row">
-                <div class="col-md-12">
-                  langFilter:${subscription.languageOnly}, priorityFilter:${subscription.highPriorityOnly} officialFilter:${subscription.officialOnly} 
-                  xpathFilterId:${subscription.xPathFilterId}
-                </div>
-              </div>
+
             </div>
           </div>
   
@@ -165,8 +180,14 @@
       $('.MapWithAlert').each(function(i,obj) {
         initMap(obj.id, $(obj).data("alert-body"));
       });
+
+      $('.MapWithFeatures').each(function(i,obj) {
+        console.log("Map with features");
+        mapWithGeoJsonFeatures(obj.id, sub_geom);
+      });
     })(jQuery);
   }
+
 </asset:script>
 
 </body>

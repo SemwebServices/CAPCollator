@@ -4,6 +4,57 @@ var ajaxRequest;
 var plotlist;
 var plotlayers=[];
 
+// A more general function for showing a map and fitting an arbitrary list of features
+function initOSMMapWithGeoJsonFeatures(map_element_id, feature_list) {
+  // set up the map
+  map = new L.Map(map_element_id);
+  map.setView(new L.LatLng(0, 0),9);
+
+  console.log("initOSMMapWithFeatures %o", feature_list);
+
+  // create the tile layer with correct attribution
+  var osmUrl='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  var osmAttrib='Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+  var osm = new L.TileLayer(osmUrl, {minZoom: 2, maxZoom: 12, attribution: osmAttrib});
+  var features = []
+
+  // start the map in South-East England
+  // map.setView(new L.LatLng(51.3, 0.7),9);
+  map.addLayer(osm);
+
+  if ( feature_list != null ) {
+    feature_list.forEach( function(feature) {
+      console.log("Feature: %o",feature);
+      var coords = [];
+
+       feature.forEach( function(elem) {
+         var lat=parseFloat(elem[1]);
+         var lng=parseFloat(elem[0]);
+         coords.push({lat:lat, lng:lng});
+       });
+
+       console.log("Create polygon with coords %o",coords);
+
+       // Construct the polygon.
+       var poly = new L.Polygon( coords );
+
+       if ( poly != null ) {
+         poly.setStyle({fillColor: '#FF0000', color: '#FF0000', fillOpacity:0.35, opacity:0.8, weight:2});
+         console.log("add poly %o",poly);
+         map.addLayer(poly)
+         features.push(poly)
+       }
+    });
+  }
+
+  if ( features.length > 0 ) {
+    console.log("fitting: %o",features);
+    var group = new L.featureGroup(features);
+    map.fitBounds(group.getBounds());
+  }
+
+}
+
 function initOSM(map_element_id, alert_body) {
   // set up the map
   map = new L.Map(map_element_id);
@@ -62,9 +113,13 @@ function initMap(map_element_id, alert_body) {
 
 }
 
+function mapWithGeoJsonFeatures(map_element_id, feature_list) {
+  return initOSMMapWithGeoJsonFeatures(map_element_id, feature_list);
+}
+
 function toPoly(geom_type, geom, rad) {
 
-  console.log("toPoly(%o,%o)",geom_type, geom);
+  // console.log("toPoly(%o,%o)",geom_type, geom);
 
   var result=null;
 
@@ -78,7 +133,7 @@ function toPoly(geom_type, geom, rad) {
       coords.push({lat:lat, lng:lng});
     });
 
-    console.log("Create polygon with coords %o",coords);
+    // console.log("Create polygon with coords %o",coords);
 
     // Construct the polygon.
     result = new L.Polygon( coords );
@@ -88,7 +143,7 @@ function toPoly(geom_type, geom, rad) {
     var lng=parseFloat(geom[0]);
     var center = {lat: lat, lng: lng};
     var rad_km = parseInt(rad);
-    console.log("Draw circle at %o %o %o",geom,rad,rad_km);
+    // console.log("Draw circle at %o %o %o",geom,rad,rad_km);
 
     result = new L.Circle(center, rad_km)
   }

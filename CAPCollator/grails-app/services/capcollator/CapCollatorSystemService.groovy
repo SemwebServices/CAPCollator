@@ -25,6 +25,8 @@ public class CapCollatorSystemService {
 
   public synchronized void freshenState() {
 
+    log.debug("Freshen State ${Setting.list()}");
+
     if ( state == null ) {
       state = [:]
     }
@@ -36,11 +38,10 @@ public class CapCollatorSystemService {
     else {
       state.setup_completed = false;
     }
-    cacheSetting('capcollator.feedTitlePrefix','');
-    cacheSetting('capcollator.feedTitlePostfix','');
-    cacheSetting('capcollator.feedEntryPrefix','');
-    cacheSetting('capcollator.feedEntryPostfix','');
-    cacheSetting('capcollator.awsBucketName','');
+
+    Setting.list().each { setting ->
+      state[setting.key] = setting.value;
+    }
 
     capcolSettingsUpdated();
   }

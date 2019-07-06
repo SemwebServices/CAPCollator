@@ -36,16 +36,25 @@ class StaticFeedService {
   // Needs setup in ~/.aws/confing and ~/.aws/credentials
   AmazonS3 s3 = null;
 
+  private String bucket_name;
+  private String static_feeds_dir;
+  private String feed_base_url;
+
   @javax.annotation.PostConstruct
   def init () {
     log.debug("StaticFeedService::init");
+  }
 
-    String bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName') ?: '';
+  @Transactional
+  @Subscriber 
+  capcolSettingsUpdated(Map settings) {
+    log.debug("Static feed service is notified that settings have updated, ${settings}");
 
+    bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
     try {
       if ( ( bucket_name != null ) && 
            ( bucket_name.length() > 0 ) ) {
-        log.info("Configure AWS S3 to mirror feeds using bucket ${grailsApplication.config.awsBucketName}");
+        log.info("Configure AWS S3 to mirror feeds using bucket ${bucket_name}");
         s3 = AmazonS3ClientBuilder.defaultClient();
         log.info("S3 configured");
       }
@@ -60,12 +69,11 @@ class StaticFeedService {
     catch ( com.amazonaws.AmazonServiceException ase) {
       log.error("Problem with AWS mirror setup",ase);
     }
-  }
 
-  @Transactional
-  @Subscriber 
-  capcolSettingsUpdated(Map settings) {
-    log.debug("Static feed service is notified that settings have updated, ${settings}");
+    static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
+    feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
+
+    log.debug("After config update, bucket_name=${bucket_name}, static_feeds_dir=${static_feeds_dir}, feed_base_url=${feed_base_url}");
   }
 
 
@@ -78,7 +86,7 @@ class StaticFeedService {
     String[] key_components = routingKey.split('\\.');
     if ( key_components.length == 2 ) {
       String sub_name = key_components[1]
-      String full_path = grailsApplication.config.staticFeedsDir+'/'+sub_name;
+      String full_path = static_feeds_dir+'/'+sub_name;
       String cached_alert_file = body.AlertMetadata.cached_alert_xml
 
       File sub_dir = new File(full_path)
@@ -113,11 +121,11 @@ class StaticFeedService {
     try {
       if ( s3 ) {
         // Strip off any prefix we are using locally, to leave the raw path
-        String s3_key = path.replaceAll((grailsApplication.config.staticFeedsDir+'/'),'');
+        String s3_key = path.replaceAll((static_feeds_dir+'/'),'');
 
-        // log.debug("S3 mirror ${path} in bucket ${grailsApplication.config.awsBucketName} - key name will be ${s3_key}");
+        // log.debug("S3 mirror ${path} in bucket ${bucket_name} - key name will be ${s3_key}");
 
-        s3.putObject(grailsApplication.config.awsBucketName, s3_key, new File(path));
+        s3.putObject(bucket_name, s3_key, new File(path));
       }
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
@@ -166,10 +174,10 @@ class StaticFeedService {
                      'xmlns:cap':'http://demo.semweb.co/capcollator/', 
                      version:"2.0") {
       channel {
-        'atom:link'(rel:'self',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
-        'atom:link'(rel:'alternate',title:'RSS',href:"${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml", type:"application/rss+xml")
+        'atom:link'(rel:'self',href:"${feed_base_url}/${subname}/rss.xml", type:"application/rss+xml")
+        'atom:link'(rel:'alternate',title:'RSS',href:"${feed_base_url}/${subname}/rss.xml", type:"application/rss+xml")
         title("${feed_name_prefix}Latest Valid CAP alerts received, ${subname}${feed_name_postfix}")
-        link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}")
+        link("${feed_base_url}/${subname}")
         description("This feed lists the most recent valid CAP alerts uploaded to the Filtered Alert Hub.")
         language("en");
         copyright("public domain");
@@ -178,8 +186,8 @@ class StaticFeedService {
         docs("http://blogs.law.harvard.edu/tech/rss");
         image {
           title("${feed_name_prefix}Latest Valid CAP alerts received, ${subname}${feed_name_postfix}");
-          url("${grailsApplication.config.staticFeedsBaseUrl}/${subname}/capLogo.jpg");
-          link("${grailsApplication.config.staticFeedsBaseUrl}/${subname}/rss.xml");
+          url("${feed_base_url}/${subname}/capLogo.jpg");
+          link("${feed_base_url}/${subname}/rss.xml");
         }
       }
     }
@@ -356,7 +364,7 @@ class StaticFeedService {
 
           def new_item_node = xml.channel[0].appendNode( 'item' );
           new_item_node.appendNode( 'title', "${feed_entry_prefix}${entry_title}${feed_entry_postfix}".toString() );
-          new_item_node.appendNode( 'link', "${grailsApplication.config.staticFeedsBaseUrl}/${cached_alert_file}".toString());
+          new_item_node.appendNode( 'link', "${feed_base_url}/${cached_alert_file}".toString());
           new_item_node.appendNode( 'description', info?.description);
           new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
           new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
@@ -467,7 +475,7 @@ class StaticFeedService {
 
     // log.debug("writeAlertXML(...,${sourcefeed_id},${alert_time})")
 
-    String path = grailsApplication.config.staticFeedsDir+'/'
+    String path = static_feeds_dir+'/'
 
     // Arrange for a UTC timestamp to be used as the filename
     TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
@@ -511,7 +519,7 @@ class StaticFeedService {
   }
 
   public void initialiseFeed(String sub_name, String tmpl) {
-    String full_path = grailsApplication.config.staticFeedsDir+'/'+sub_name;
+    String full_path = static_feeds_dir+'/'+sub_name;
 
     File sub_dir = new File(full_path)
     if ( ! sub_dir.exists() ) {

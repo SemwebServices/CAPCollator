@@ -13,4 +13,8 @@ class Setting {
   static mapping = {
     table 'cc_setting'
   }
+
+  public String toString() {
+    "${key}:${value}"
+  }
 }

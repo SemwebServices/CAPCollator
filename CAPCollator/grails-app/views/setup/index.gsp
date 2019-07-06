@@ -23,63 +23,81 @@
                 <div class="col-md-6">
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Username</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="text" name="adminUsername" />
                     </div>
+                    <small id="adminUsernameHelp" class="form-text text-muted  col-sm-4">The new administrative username.</small>
                   </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Password</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="password" name="adminPassword" />
                     </div>
+                    <small id="adminPasswordHelp" class="form-text text-muted  col-sm-4">The new administrative password.</small>
                   </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Admin Email</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="text" name="adminEmail" />
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Feed title prefix</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="text" name="feedTitlePrefix" />
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Feed title postfix</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="text" name="feedTitlePostfix" />
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Feed entry prefix</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="text" name="feedEntryPrefix" />
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label">Feed entry postfix</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="text" name="feedEntryPostfix" />
                     </div>
                   </div>
 
                   <div class="form-group">
                     <label class="col-sm-3 control-label">AWS Bucket Name</label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <input type="text" name="awsBucketName" value="${grailsApplication.config.defaultAwsBucketName}" />
                     </div>
                   </div>
 
                   <div class="form-group">
+                    <label class="col-sm-3 control-label">Default Base URL (Feeds)</label>
+                    <div class="col-sm-5">
+                      <input id="staticFeedsBaseUrl" type="text" name="staticFeedsBaseUrl" />
+                    </div>
+                    <small id="staticFeedsDirHelp" class="form-text text-muted col-sm-4">Default feed URL (No trailing slash).</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-sm-3 control-label">Static Feeds Directory</label>
+                    <div class="col-sm-5">
+                      <input id="staticFeedsDir" type="text" name="staticFeedsDir" value="${grailsApplication.config.staticFeedsDir?:'/var/www/html/cap'}" />
+                    </div>
+                    <small id="staticFeedsDirHelp" class="form-text text-muted col-sm-4">The filesystem directory where static feeds will be written.</small>
+                  </div>
+
+                  <div class="form-group">
                     <label class="col-sm-3 control-label"></label>
-                    <div class="col-sm-7">
+                    <div class="col-sm-5">
                       <button type="submit">Submit</button>
                     </div>
                   </div>
@@ -91,5 +109,8 @@
       </div>
     </div>
   </div>
+  <script type="text/javascript">
+    document.getElementById('staticFeedsBaseUrl').value = window.location.href;
+  </script>
 </body>
 </html>

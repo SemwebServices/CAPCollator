@@ -12,7 +12,8 @@ class SetupController {
 
     
     if ( capCollatorSystemService.getCurrentState().setup_completed == false ) {
-      log.debug("Do system setup");
+      log.debug("Do system setup ${params}");
+
       if ( request.method=='POST' ) {
         if ( ( params.adminUsername?.length() > 0 ) && 
              ( params.adminPassword?.length() > 0 ) ) {
@@ -43,9 +44,14 @@ class SetupController {
         updateSetting('capcollator.feedEntryPrefix', params.feedEntryPrefix);
         updateSetting('capcollator.feedEntryPostfix', params.feedEntryPostfix);
         updateSetting('capcollator.awsBucketName', params.awsBucketName);
+        updateSetting('capcollator.staticFeedsBaseUrl', params.staticFeedsBaseUrl);
+        updateSetting('capcollator.staticFeedsDir', params.staticFeedsDir);
+
+        log.debug("Settings after update: ${Setting.list()}");
+
+        capCollatorSystemService.freshenState();
       }
 
-      capCollatorSystemService.freshenState();
     }
     else {
       redirect(controller:'home', action:'index');

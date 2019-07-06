@@ -40,6 +40,7 @@ class BootStrap {
          ( Environment.currentEnvironment.name == Environment.TEST ) ) {
       setUpUserAccounts()
     }
+
     CAPIndexingService.freshen()
   }
 
