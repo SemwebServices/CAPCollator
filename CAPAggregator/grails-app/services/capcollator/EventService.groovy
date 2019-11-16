@@ -1,6 +1,6 @@
 package capcollator
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.*
 
 @Transactional
 class EventService {

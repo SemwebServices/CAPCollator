@@ -1,6 +1,6 @@
 package capcollator
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.*
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import static groovy.json.JsonOutput.*
 

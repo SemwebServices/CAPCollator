@@ -1,6 +1,6 @@
 package capcollator
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.*
 import groovy.xml.MarkupBuilder
 import java.io.File
 import java.io.FileWriter
@@ -15,9 +15,9 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
 import grails.events.annotation.Subscriber
+import grails.async.Promise
+import static grails.async.Promises.*
 
 @Transactional
 class StaticFeedService {
@@ -32,8 +32,6 @@ class StaticFeedService {
   private Map rss_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*40))
 
   private List<String> feed_write_queue = Collections.synchronizedList(new ArrayList<String>());
-
-  ExecutorService executor = Executors.newSingleThreadExecutor()
 
   // Needs setup in ~/.aws/confing and ~/.aws/credentials
   AmazonS3 s3 = null;
@@ -65,9 +63,16 @@ class StaticFeedService {
         log.info("No awsBucketName configured - local feeds will not be mirrored on S3");
       }
 
-      executor.execute {
+      Promise p = task {
         watchRssQueue();
       }
+      p.onError { Throwable err ->
+        log.error("Promise error",err);
+      }
+      p.onComplete { result ->
+        log.debug("Promise completed OK");
+      }
+
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
       log.error("Problem with AWS mirror setup",ase);

@@ -1,10 +1,11 @@
 package capcollator
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.*
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import java.util.Iterator
 import static groovy.json.JsonOutput.*
-
+import grails.async.Promise
+import static grails.async.Promises.*
 
 @Transactional
 class CapEventHandlerService {
@@ -13,7 +14,6 @@ class CapEventHandlerService {
   def ESWrapperService
   def eventService
   def gazService
-  def alertFetcherExecutorService
   def feedFeedbackService
 
   // import org.apache.commons.collections4.map.PassiveExpiringMap;
@@ -44,9 +44,16 @@ class CapEventHandlerService {
     log.debug("CapEventHandlerService::process - enqueue - size is ${queue_size}");
 
     // Ideally we would like this call to block until a thread is available to take the request
-    alertFetcherExecutorService.submit({
+    Promise p = task {
       internalProcess(cap_notification)
-    } as java.lang.Runnable )
+    }
+    p.onError { Throwable err ->
+      log.error("Promise error",err);
+    }
+    p.onComplete { result ->
+      log.debug("Promise completed OK");
+    }
+
   }
 
 

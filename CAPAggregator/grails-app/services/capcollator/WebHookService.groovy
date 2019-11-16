@@ -1,9 +1,8 @@
 package capcollator
 
-import grails.transaction.Transactional
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.Method
-import groovyx.net.http.ContentType
+import static groovyx.net.http.HttpBuilder.configure
+
+import grails.gorm.transactions.*
 
 class WebHookService {
 
@@ -15,19 +14,20 @@ class WebHookService {
 
     Subscription s = Subscription.findBySubscriptionId(feed);
     if ( s ) {
-
       s.hooks.each { hook ->
-         HTTPBuilder http = new HTTPBuilder(hook.hookUrl)
-
-        http.request(Method.POST) {
-          body = alert_info
-          requestContentType = ContentType.JSON
-
-          response.success = { resp ->
+        def builder = configure {
+          request.uri = hook.hookUrl
+        }
+        builder.post {
+          request.contentType = 'application/json'
+          request.body = alert_info
+  
+          // handle response
+          response.success { fromServer, body ->
             log.debug("Webhook ${feed} ${hook.hookUrl} OK")
           }
-
-          response.failure = { resp ->
+  
+          response.error { fromServer, body ->
             log.debug("Webhook ${feed} ${hook.hookUrl} FAILED ${resp.status}")
           }
         }

@@ -1,6 +1,6 @@
 package capcollator
 
-import grails.transaction.Transactional
+import grails.gorm.transactions.*
 import static groovy.json.JsonOutput.*
 import static grails.async.Promises.*
 

@@ -1,12 +1,9 @@
 package capcollator
 
-import grails.transaction.Transactional
-
+import grails.gorm.transactions.*
 import java.text.SimpleDateFormat
 import java.net.InetAddress;
-
 import static groovy.json.JsonOutput.*
-
 import org.grails.datastore.mapping.engine.event.*
 import grails.events.*
 import javax.annotation.*
