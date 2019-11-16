@@ -16,6 +16,9 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest
+import org.elasticsearch.index.reindex.BulkByScrollResponse
+
 
 import org.elasticsearch.client.*
 import org.elasticsearch.client.RequestOptions;
@@ -229,6 +232,25 @@ class ESWrapperService {
     }
 
     result
+  }
+
+  def deleteByJsonQuery(String index, String query) {
+    // https://artifacts.elastic.co/javadoc/org/elasticsearch/client/elasticsearch-rest-high-level-client/7.4.2/org/elasticsearch/client/RestHighLevelClient.html
+    // see https://www.elastic.co/guide/en/elasticsearch/client/java-rest/master/java-rest-high-document-delete-by-query.html
+    def result = [:]
+    RestHighLevelClient esclient = getClient()
+    try {
+       DeleteByQueryRequest dbq = new DeleteByQueryRequest(index);
+       dbq.setQuery(QueryBuilders.wrapperQuery(query));
+       BulkByScrollResponse dbq_resp = esclient.deleteByQuery(dbq, RequestOptions.DEFAULT);
+    }
+    catch ( Exception e ) {
+      log.error("Problem in deleteByJsonQuery",e);
+    }
+
+    result
+
+
   }
 
 }

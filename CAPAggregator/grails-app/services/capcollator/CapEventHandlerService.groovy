@@ -21,7 +21,7 @@ class CapEventHandlerService {
   // private Map geo_query_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60))
   
 
-  static final int queue_size = 0;
+  static int queue_size = 0;
   private static final double EARTH_RADIUS_METERS = 6371000.0;
 
   /**
