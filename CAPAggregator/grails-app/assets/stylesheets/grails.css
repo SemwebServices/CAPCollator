@@ -34,7 +34,7 @@ pre {
 .navbar .container {
     margin: 10px;
 }
-.navbar-dark a {
+.navbar-default a {
     color: #ffffff !important;
     font-size: 18px !important;
     text-decoration: none;
@@ -43,15 +43,15 @@ pre {
     width: 40px;
 
 }
-.navbar-dark, .navbar-static-top {
-    background-color: #424649;
+.navbar-default, .navbar-static-top {
+    background-color: #4D8618;
     border: 0px;
 }
 a.navbar-brand {
     color: white !important;
     font-size: 19px !important;
 }
-.navbar-dark .navbar-nav>.active>a, .navbar-dark .navbar-nav>.active>a:hover, .navbar-dark .navbar-nav>.active>a:focus {
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:hover, .navbar-default .navbar-nav>.active>a:focus {
     background-color: transparent;
     color: white;
 }
@@ -59,35 +59,17 @@ a.navbar-brand {
     color: white !important;
 }
 .navbar-nav>li>a:hover {
-    background-color: #2559a7 !important;
+    background-color: #db4800 !important;
     color: white !important;
 }
 .navbar-nav>li>a {
     color: #c0d3db;
 }
-.navbar-dark .navbar-toggler .icon-bar {
+.navbar-default .navbar-toggle .icon-bar {
     background-color: white;
 }
-.navbar-dark .navbar-toggle:hover, .navbar-dark .navbar-toggle:focus {
-    background-color: #2559a7;
-}
-
-.navbar-toggler {
-    position: relative;
-    float: right;
-    padding: 9px 10px;
-    margin-top: 8px;
-    margin-right: 15px;
-    margin-bottom: 8px;
-    background-color: transparent;
-    background-image: none;
-    border: 1px solid transparent;
-    border-radius: 4px;
-}
-
-.nav .dropdown a.dropdown-toggle {
-    padding-top: 25px;
-    padding-bottom: 25px;
+.navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
+    background-color: #db4800;
 }
 
 @media (min-width: 768px) {
@@ -131,7 +113,7 @@ a.navbar-brand {
 
 #band {
     /*grey =#808080*/
-    background: #2559a7  no-repeat 50% 30%;
+    background: #79B94C  no-repeat 50% 30%;
     height: 400px;
 }
 
@@ -253,15 +235,15 @@ a.navbar-brand {
 
 @media (max-width: 1010px) {
     .event-logo {
-        height: 100px;
+        height: ;
     }
+
 }
 
 @media (max-width: 690px) {
     .event-logo {
         height: 60px;
-    }
-}
+    }}
 
 @media (max-width: 475px) {
     .event-logo {
@@ -399,12 +381,12 @@ body, html {
 }
 
 a {
-    color: #2559a7;
+    color: #db4800;
     text-decoration: underline;
 }
 
 a:hover {
-    color: #2559a7;
+    color: #db4800;
     text-decoration: none
 }
 
@@ -431,13 +413,13 @@ h4 {
 h5 {
     font-size: 1.125em;
     font-weight: bold;
-    color: #2559a7;
+    color: #db4800;
 }
 
 h6 {
     font-size: 1.08em;
     font-weight: normal;
-    color: #2559a7;
+    color: #db4800;
 }
 
 h7 {
@@ -577,8 +559,7 @@ h8 {
     font-weight: 200;
     text-align: center;
     margin: 0;
-    padding: 20px 0;
-    width: 100%;
+    padding: 20px 0
 }
 
 #content hr.row, #content hr.divider {
@@ -646,7 +627,7 @@ h8 {
     display: block;
     width: 80px;
     height: 80px;
-    background-image: url(../images/icons-colset-2-its.png);
+    background-image: url(../img/icons-colset-2-its.png);
     float: left;
     margin-top: 12px;
     margin-right: 15px
@@ -772,14 +753,14 @@ h8 {
 
 #content.page-1 .row article h1 {
     margin: 0;
-    padding: 0;
+    paddnig: 0;
     text-align: left;
     font-size: 26px
 }
 
 #content.page-1 .row article h2 {
     margin: 0;
-    padding: 0
+    paddnig: 0
 }
 
 #content.page-1 .row article h3 {
@@ -918,7 +899,7 @@ html, body, .st-container, .st-pusher, .st-content {
     visibility: hidden;
     width: 300px;
     height: 100%;
-    background: #2559a7;
+    background: #79B94C;
     -webkit-transition: all .5s;
     transition: all .5s;
     right: -600px

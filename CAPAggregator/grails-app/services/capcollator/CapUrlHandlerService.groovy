@@ -145,7 +145,7 @@ class CapUrlHandlerService {
         }
       }
       catch ( Exception e ) {
-        log.error("problem handling cap alert ${cap_link} ${context} ${e.message}");
+        log.error("problem handling cap alert ${cap_link} ${context} ${e.message}",e);
         // sleep for .5s before retry
         Thread.sleep(500)
 
