@@ -561,22 +561,24 @@ class CapEventHandlerService {
     boolean result = true;
 
     if ( ( subscription.languageOnly ) && ( !subscription.languageOnly.equalsIgnoreCase('none') ) ) {
-      if ( info_element.language?.toLowerCase()?.startsWith(subscription.languageOnly.toLowerCase()) ) {
+      def lang_from_alert =  info_element.language?.toLowerCase() ?: 'en'
+      if ( lang_from_alert?.startsWith(subscription.languageOnly.toLowerCase()) ) {
+        log.debug("Pass language-only");
       }
       else {  
-        log.debug("Did not pass language filter (${subscription.languageOnly}/${info_element.language}) ");
+        log.debug("Did not pass language filter (req:${subscription.languageOnly}/rejected:${info_element.language}) ");
         result = false;
       }
     }
 
     // (//cap:urgency='Immediate' or //cap:urgency='Expected') and (//cap:severity='Extreme' or //cap:severity='Severe') and (//cap:certainty='Observed' or //cap:certainty='Likely')
     if ( ( subscription.highPriorityOnly ) && ( subscription.highPriorityOnly.equalsIgnoreCase('true') ) ) {
-      log.debug("Filter high priority only ${true}");
       // If ( urgency==immediate || urgency==expected ) && ( severity==extreme || severity==severe ) && ( certainty==observed || certainty==likely )
       // if ( info_element.urgency ) (info_element.severity)   info_element.certainty
       if ( ( info_element.urgency?.equalsIgnoreCase('immediate') || info_element.urgency?.equalsIgnoreCase('expected') ) &&
            ( info_element.severity?.equalsIgnoreCase('extreme') || info_element.severity?.equalsIgnoreCase('severe') ) &&
            ( info_element.certainty?.equalsIgnoreCase('observed') || info_element.severity?.equalsIgnoreCase('likely') ) ) {
+        log.debug("Pass - Filter high priority only");
       }
       else {
         log.debug("Did not pass high priority filter - urgency:${info_element.urgency} severity:${info_element.severity} certainty:${info_element.certainty}");
@@ -585,8 +587,8 @@ class CapEventHandlerService {
     }
 
     if ( ( subscription.officialOnly ) && ( subscription.officialOnly.equalsIgnoreCase('true') ) ) {
-      log.debug("Filter official priority only");
       if ( cap_notification.AlertMetadata.sourceIsOfficial.equalsIgnoreCase('true') ) {
+        log.debug("Pass Filter official priority only");
       }
       else {
         log.debug("Did not pass official filter (${cap_notification.AlertMetadata.sourceIsOfficial} needs to == true)");
