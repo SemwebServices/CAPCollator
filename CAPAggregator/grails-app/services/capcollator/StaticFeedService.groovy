@@ -293,8 +293,9 @@ class StaticFeedService {
       while(true) {
         String path_to_write = null;
         synchronized(feed_write_queue) {
-          // log.debug("watchRssQueue() waiting");
+          log.debug("watchRssQueue() waiting");
           feed_write_queue.wait();
+
           if ( feed_write_queue.size() > 0 ) {
             path_to_write = feed_write_queue.remove(0)
             log.debug("Removed ${path_to_write} from feed write queue");
@@ -305,7 +306,7 @@ class StaticFeedService {
           if ( path_to_write != null ) {
             // https://stackoverflow.com/questions/13681882/parse-xml-using-groovy-override-charset-in-declaration-and-add-xml-processing-i
 
-            // log.debug("watchRssQueue() process ${path_to_write}");
+            log.debug("watchRssQueue() process ${path_to_write}");
             // def xml_for_feed = rss_cache.get(path_to_write)
             def xml_for_feed = getExistingRss(path_to_write)
             // <?xml-stylesheet href='https://cap-alerts.s3.amazonaws.com/rss-style.xsl' type='text/css'?>

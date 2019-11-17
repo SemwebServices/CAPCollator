@@ -143,7 +143,7 @@ class CapEventHandlerService {
 
                   if ( match_result.status == 'ERROR' ) {
                     log.debug("Adding GEO_SEARCH_ERROR tag to alert");
-                    cap_notification.AlertMetadata.tags.add('GEO_SEARCH_ERROR');
+                    cap_notification.AlertMetadata.tags.add('GEO_SEARCH_ERROR/POLYGON');
                     
                   }
                   else {
@@ -291,12 +291,16 @@ class CapEventHandlerService {
         // Index the CAP event
         indexAlert(cap_notification, matching_subscriptions)
 
-        feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
-                                             null,
-                                             [ message: "Processing completed, matched ${matching_subscriptions.size()} subscriptions",
-                                               matchedSubscriptions:matching_subscriptions,
-                                               tags:cap_notification.AlertMetadata.tags,
-                                               history:cap_notification.AlertMetadata.CCHistory] );
+        // If there was a geo search error, send feedback to the feed fetcher that there is an issue with the alerts
+        // coming from this feed.
+        if ( cap_notification.AlertMetadata.tags.find { it.startsWith('GEO_SEARCH_ERROR') } != null ) {
+          feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
+                                               null,
+                                               [ message: "GEO_SEARCH_ERROR",
+                                                 matchedSubscriptions:matching_subscriptions,
+                                                 tags:cap_notification.AlertMetadata.tags,
+                                                 history:cap_notification.AlertMetadata.CCHistory] );
+        }
       }
       else {
         feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
