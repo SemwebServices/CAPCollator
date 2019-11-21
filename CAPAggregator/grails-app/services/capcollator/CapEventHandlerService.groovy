@@ -305,13 +305,13 @@ class CapEventHandlerService {
       else {
         feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
                                              null,
-                                             "Unable to find any INFO element in alert XML");
+                                             [ message: "Unable to find any INFO element in alert XML"] );
       }
 
     }
     catch ( Exception e ) {
       log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n",e);
-      publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,"Error: ${e.message}")
+      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ message: "Error: ${e.message}".toString() })
     }
     finally {
       log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}");

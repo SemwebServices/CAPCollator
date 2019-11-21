@@ -1,3 +1,7 @@
+#!/bin/bash
+export SDKMAN_DIR="/home/ibbo/.sdkman"
+[[ -s "/home/ibbo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/ibbo/.sdkman/bin/sdkman-init.sh"
+
 sdk use grails 4.0.1
 sdk use java 11.0.5.j9-adpt
 cd CAPAggregator

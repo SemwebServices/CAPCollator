@@ -55,14 +55,21 @@ class ESWrapperService {
     log.info("init ES wrapper service eshost: ${grailsApplication.config?.eshost ?: 'default to eskbplusg3'}");
   }
 
-  private RestHighLevelClient ensureClient() {
+  private synchronized RestHighLevelClient ensureClient() {
 
     if ( esclient == null ) {
+      int retries = 0;
       def es_host_name = grailsApplication.config?.eshost ?: 'elasticsearch'
-
-      log.debug("Create new RestHighLevelClient ${es_host_name}");
-      esclient = new RestHighLevelClient(RestClient.builder( new HttpHost(es_host_name, 9200, "http")));
-      log.debug("ES wrapper service init completed OK");
+      while ( ( esclient == null ) && ( retries < 10 ) ) {
+        try {
+          log.debug("Create new RestHighLevelClient ${es_host_name}");
+          esclient = new RestHighLevelClient(RestClient.builder( new HttpHost(es_host_name, 9200, "http")));
+          log.debug("ES wrapper service init completed OK");
+        }
+        catch ( Exception e ) {
+          log.warn("Unable to connect to ES - assuming that the ES node is not yet available. Retries=${retries++}");
+        }
+      }
     }
     else {
       log.debug("return client already held");
@@ -72,7 +79,10 @@ class ESWrapperService {
   }
 
   public RestHighLevelClient getClient() {
-    return ensureClient()
+    if ( esclient == null )
+      ensureClient()
+
+    return esclient;
   }
 
   @javax.annotation.PreDestroy
