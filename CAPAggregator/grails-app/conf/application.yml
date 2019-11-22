@@ -1,6 +1,6 @@
 ---
 server:
-    contextPath: /CAPCollator
+    contextPath: /CAPAggregator
 grails:
     profile: web
     codegen:
