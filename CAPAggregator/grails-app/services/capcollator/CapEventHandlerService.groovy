@@ -311,7 +311,7 @@ class CapEventHandlerService {
     }
     catch ( Exception e ) {
       log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n",e);
-      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ message: "Error: ${e.message}".toString() })
+      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ message: "Error: ${e.message}".toString() ])
     }
     finally {
       log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}");
