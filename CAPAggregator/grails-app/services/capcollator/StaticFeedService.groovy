@@ -629,6 +629,7 @@ class StaticFeedService {
       if ( ! rss_file.exists() ) {
         String s3_key = starter_rss_file.replaceAll((static_feeds_dir+'/'),'');
         if ( s3.doesObjectExist(bucket_name, s3_key) ) {
+          log.debug("${starter_rss_file} found in S3 - pulling file into local cache");
           // s3.putObject(bucket_name, s3_key, new FileInputStream(path), om);
           // s3.public S3Object getObject(String bucketName, String key)
           S3Object s3o = s3.getObject(bucket_name, s3_key);
