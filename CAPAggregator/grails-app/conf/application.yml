@@ -166,6 +166,8 @@ rabbitmq:
         host: rabbitmq
         username: cap
         password: cap
+        automaticReconnect: true
+        requestedHeartbeat: 60s
 ---
 elasticSearch:
     client:

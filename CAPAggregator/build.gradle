@@ -72,7 +72,7 @@ dependencies {
     testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:3.14.0"
     testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:3.14.0"
 
-    compile 'org.grails.plugins:rabbitmq-native:3.3.2'
+    compile 'org.grails.plugins:rabbitmq-native:3.3.2' // 3.5.1 is the latest version
     compile 'org.elasticsearch:elasticsearch:7.4.0'
     compile 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.4.0'
     compile 'org.elasticsearch.client:elasticsearch-rest-client:7.4.0'
