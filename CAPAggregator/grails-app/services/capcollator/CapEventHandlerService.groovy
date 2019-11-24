@@ -397,16 +397,11 @@ class CapEventHandlerService {
 
   def matchSubscriptionAsPoint(lat,lon,cap_notification) {
 
-    if ( result ) {
-      return result;
-    }
-    else {
-      result = [
-        subscriptions:null,
-        messages:[],
-        status:'OK'
-      ]
-    }
+    def result = [
+      subscriptions:null,
+      messages:[],
+      status:'OK'
+    ]
 
     String query = '''{ "bool": { "must": { "match_all": {} }, "filter": { "geo_shape": { "subshape": { "shape": { "type": "point", "coordinates":['''+lon+''','''+lat+'''] }, "relation":"intersects" } } } } }'''
 
