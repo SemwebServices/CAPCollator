@@ -25,6 +25,12 @@ spring:
 endpoints:
     enabled: false
     jmx:
+        enabled: false
+    health:
+        enabled: true
+    info:
+        enabled: true
+    loggers:
         enabled: true
 
 ---
