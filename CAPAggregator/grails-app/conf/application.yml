@@ -20,19 +20,33 @@ spring:
     groovy:
         template:
             check-template-location: false
-
-# Spring Actuator Endpoints are Disabled by Default
-endpoints:
-    enabled: false
     jmx:
-        enabled: false
-    health:
+        unique-names: true
+management:
+    security:
         enabled: true
-    info:
-        enabled: true
-    loggers:
-        enabled: true
-
+    endpoints:
+        enabled-by-default: true
+        jmx:
+            enabled: true
+        health:
+            enabled: true
+            db:
+                enabled: true
+            defaults:
+                enabled: true
+            show-details: when-authorized
+            show-components: when-authorized
+            roles: ROLE_ADMIN,ROLE_USER
+        info:
+            enabled: true
+        configprops:
+            enabled: true
+        loggers:
+            enabled: true
+        web:
+            exposure:
+                include: 'health,info'
 ---
 grails:
     mime:
