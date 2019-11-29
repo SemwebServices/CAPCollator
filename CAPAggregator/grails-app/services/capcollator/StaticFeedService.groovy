@@ -284,14 +284,14 @@ class StaticFeedService {
 
   // This method should defer writing briefly in case other alerts come in, so we can write them all at once.
   private void enqueueRss(String path) {
-    log.debug("enqueueRss(${path}) wait for lock on feed_write_queue");
+    log.debug("Waiting for lock on feed write queue");
     synchronized(feed_write_queue) {
       if ( feed_write_queue.contains(path) ) {
         // Already queued
       }
       else {
         feed_write_queue.add(path);
-        // log.debug("Add ${path} to feed_write_queue. Current size is ${feed_write_queue.size()} notify all");
+        log.info("Add ${path} to feed_write_queue. Current size is ${feed_write_queue.size()} notify all");
         feed_write_queue.notifyAll();
       }
     }
