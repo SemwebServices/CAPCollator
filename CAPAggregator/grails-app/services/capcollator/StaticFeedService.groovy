@@ -34,9 +34,14 @@ class StaticFeedService {
   private List<String> feed_write_queue = Collections.synchronizedList(new ArrayList<String>());
 
   // Needs setup in ~/.aws/confing and ~/.aws/credentials
-  AmazonS3 s3 = null;
+  // AmazonS3 s3 = null;
 
+  // Where we are going to read our bootstrap rss feeds from. Useful for migration
+  private String bootstrap_bucket_name;
+
+  // The S3 bucket we will write updated feeds to
   private String bucket_name;
+
   private String static_feeds_dir;
   private String feed_base_url;
 
@@ -52,13 +57,12 @@ class StaticFeedService {
 
     bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
     try {
-      if ( ( bucket_name != null ) && 
-           ( bucket_name.length() > 0 ) ) {
-        log.info("Configure AWS S3 to mirror feeds using bucket ${bucket_name}");
+      // if ( ( bucket_name != null ) && ( bucket_name.length() > 0 ) ) {
+      //   log.info("Configure AWS S3 to mirror feeds using bucket ${bucket_name}");
         // use default client -- and an S3 policy/Role to allow this EC2 instance to write to the specified bucket
-        s3 = AmazonS3ClientBuilder.defaultClient();
-        log.info("S3 configured");
-      }
+      //   s3 = AmazonS3ClientBuilder.defaultClient();
+      //   log.info("S3 configured");
+      // }
       else {
         log.info("No awsBucketName configured - local feeds will not be mirrored on S3");
       }
@@ -134,7 +138,9 @@ class StaticFeedService {
   // IF therw are S3 credentals configured, push the alert there also
   private pushToS3(String path) {
     try {
-      if ( s3 ) {
+      if ( ( bucket_name != null ) && ( bucket_name.length() > 0 ) ) {
+        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
+
         // Strip off any prefix we are using locally, to leave the raw path
         String s3_key = path.replaceAll((static_feeds_dir+'/'),'');
      
@@ -143,10 +149,15 @@ class StaticFeedService {
 
         log.debug("S3 mirror ${path} in bucket ${bucket_name} - key name will be ${s3_key}");
         s3.putObject(bucket_name, s3_key, new FileInputStream(path), om);
+
+        s3.shutdown()
       }
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
       log.error("Problem with AWS mirror",ase);
+    }
+    finally {
+      log.info("pushToS3(${path}) complete");
     }
   }
 
@@ -293,7 +304,7 @@ class StaticFeedService {
       while(true) {
         String path_to_write = null;
         synchronized(feed_write_queue) {
-          log.debug("watchRssQueue() waiting");
+          log.info("watchRssQueue() waiting");
           feed_write_queue.wait();
 
           if ( feed_write_queue.size() > 0 ) {
@@ -614,7 +625,13 @@ class StaticFeedService {
   // return true if the file was pulled, false otherwise
   private boolean tryToCacheRssFromS3(String sub_name) {
     boolean result = false;
-    if ( s3 ) {
+
+    String bucket = bootstrap_bucket_name ?: bucket_name;
+
+    if ( ( bucket != null ) && ( bucket.length() > 0 ) ) {
+
+      AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient()
+
       String full_path = static_feeds_dir+'/'+sub_name;
       File sub_dir = new File(full_path)
       if ( ! sub_dir.exists() ) {
@@ -628,15 +645,17 @@ class StaticFeedService {
       File rss_file = new File(starter_rss_file);
       if ( ! rss_file.exists() ) {
         String s3_key = starter_rss_file.replaceAll((static_feeds_dir+'/'),'');
-        if ( s3.doesObjectExist(bucket_name, s3_key) ) {
+        if ( s3.doesObjectExist(bucket, s3_key) ) {
           log.debug("${starter_rss_file} found in S3 - pulling file into local cache");
           // s3.putObject(bucket_name, s3_key, new FileInputStream(path), om);
           // s3.public S3Object getObject(String bucketName, String key)
-          S3Object s3o = s3.getObject(bucket_name, s3_key);
+          S3Object s3o = s3.getObject(bucket, s3_key);
           rss_file.write s3o.getObjectContent()
           result = true;
         }
       }
+
+      s3.shutdown()
     }
 
     return result;
