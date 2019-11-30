@@ -18,7 +18,7 @@ class CAPSubscriptionMatchConsumer {
     // log.debug(context.properties?.toString());
     // log.debug(context.envelope?.toString());
     String[] routing_key_components = context.envelope.routingKey.split('\\.');
-    log.debug("Routing key components: ${routing_key_components}")
+    log.debug("CAPSubscriptionMatchConsumer::handleMessage - Routing key components: ${routing_key_components}")
     // If we have a static feeds DIR configured, log alerts in that file.
     try {
       if ( ( grailsApplication.config.staticFeedsDir != null ) &&

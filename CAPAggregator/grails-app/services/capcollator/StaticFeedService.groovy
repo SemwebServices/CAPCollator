@@ -49,6 +49,16 @@ class StaticFeedService {
   @javax.annotation.PostConstruct
   def init () {
     log.debug("StaticFeedService::init");
+
+    Promise p = task {
+      watchRssQueue();
+    }
+    p.onError { Throwable err ->
+      log.error("Promise error",err);
+    }
+    p.onComplete { result ->
+      log.debug("Promise completed OK");
+    }
   }
 
   @Transactional
@@ -57,34 +67,12 @@ class StaticFeedService {
     log.info("Static feed service is notified that settings have updated, ${settings}");
 
     bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
-    try {
-      // if ( ( bucket_name != null ) && ( bucket_name.length() > 0 ) ) {
-      //   log.info("Configure AWS S3 to mirror feeds using bucket ${bucket_name}");
-        // use default client -- and an S3 policy/Role to allow this EC2 instance to write to the specified bucket
-      //   s3 = AmazonS3ClientBuilder.defaultClient();
-      //   log.info("S3 configured");
-      // }
-      else {
-        log.info("No awsBucketName configured - local feeds will not be mirrored on S3");
-      }
-
-      Promise p = task {
-        watchRssQueue();
-      }
-      p.onError { Throwable err ->
-        log.error("Promise error",err);
-      }
-      p.onComplete { result ->
-        log.debug("Promise completed OK");
-      }
-
-    }
-    catch ( com.amazonaws.AmazonServiceException ase) {
-      log.error("Problem with AWS mirror setup",ase);
-    }
-
     static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
     feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
+
+    synchronized(feed_write_queue) {
+      feed_write_queue.notifyAll();
+    }
 
     log.info("After config update, bucket_name=${bucket_name}, static_feeds_dir=${static_feeds_dir}, feed_base_url=${feed_base_url}");
   }
@@ -96,6 +84,7 @@ class StaticFeedService {
    * @param context
    */
   def update(routingKey, body, context) {
+    log.info("StaticFeedService::update(${routingKey},...)");
     try {
       String[] key_components = routingKey.split('\\.');
       if ( key_components.length == 2 ) {
@@ -144,10 +133,8 @@ class StaticFeedService {
         // ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider(profile);
                              // .withRegion("us-west-1") // The first region to try your request against
                              // .withCredentials(new ProfileCredentialsProvider('inmet')) // The first region to try your request against
-        clientBuilder.setCredentials(credentialsProvider);
-        AmazonS3 client = AmazonS3ClientBuilder.standard()
-                             .withForceGlobalBucketAccess(true) // If a bucket is in a different region, try again in the correct region
-                             .build();
+                             // .withRegion("us-east-1") // The first region to try your request against
+        AmazonS3 client = AmazonS3ClientBuilder.defaultClient();
 
 
         // Strip off any prefix we are using locally, to leave the raw path
@@ -161,10 +148,10 @@ class StaticFeedService {
         om.setContentType('application/xml');
 
         log.debug("S3 mirror ${path} in bucket ${bucket_name} - key name will be ${s3_key}");
-        PutObjectResult result = s3.putObject(bucket_name, s3_key, new FileInputStream(path), om);
+        PutObjectResult result = client.putObject(bucket_name, s3_key, new FileInputStream(path), om);
         log.debug("Result of s3.putObject: ${result}");
 
-        s3.shutdown()
+        client.shutdown()
       }
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
@@ -629,14 +616,6 @@ class StaticFeedService {
   
       pushToS3(starter_rss_file);
     }
-    else {
-      log.debug("Initialised feed for ${sub_name} from S3");
-      if ( bootstrap_bucket_name != bucket_name ) {
-        log.debug("  -> Copying feed from bootstrap bucket to new bucket");
-        pushToS3(starter_rss_file);
-      }
-    }
-
   }
 
   // Try to pull the local cache of the RSS from S3
@@ -648,7 +627,6 @@ class StaticFeedService {
 
     if ( ( bucket != null ) && ( bucket.length() > 0 ) ) {
 
-      AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient()
 
       String full_path = static_feeds_dir+'/'+sub_name;
       File sub_dir = new File(full_path)
@@ -662,16 +640,30 @@ class StaticFeedService {
       String starter_rss_file = full_path+'/rss.xml'
       File rss_file = new File(starter_rss_file);
       if ( ! rss_file.exists() ) {
-        String s3_key = starter_rss_file.replaceAll((static_feeds_dir+'/'),'');
-        if ( s3.doesObjectExist(bucket, s3_key) ) {
-          log.debug("${starter_rss_file} found in S3 - pulling file into local cache");
-          S3Object s3o = s3.getObject(bucket, s3_key);
-          rss_file.write s3o.getObjectContent()
-          result = true;
+        try {
+          log.debug("build client");
+          AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient()
+          log.debug("Got client");
+          String s3_key = starter_rss_file.replaceAll((static_feeds_dir+'/'),'');
+          log.debug("Attempt to cache ${s3_key} from bucket ${bucket}");
+          if ( s3.doesObjectExist(bucket, s3_key) ) {
+            log.debug("${starter_rss_file} found in S3 - pulling file into local cache");
+            S3Object s3o = s3.getObject(bucket, s3_key);
+            rss_file << s3o.getObjectContent()
+            result = true;
+          }
+          s3.shutdown()
+        }
+        catch ( Exception e ) {
+          log.error("Problem fetching feed from s3");
+        }
+        finally { 
+          log.debug("fetch from s3 complete");
         }
       }
-
-      s3.shutdown()
+      else {
+        result = true;
+      }
     }
 
     return result;

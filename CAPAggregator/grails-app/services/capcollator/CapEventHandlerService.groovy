@@ -320,7 +320,7 @@ class CapEventHandlerService {
   }
 
   def publishAlert(cap_notification, matching_subscriptions) {
-    log.debug("Publishing CAPSubMatch. notifications");
+    log.debug("publishAlert - Publishing CAPSubMatch. ${matching_subscriptions}");
     matching_subscriptions.each { sub_id ->
 
       // Apply other subscription filters

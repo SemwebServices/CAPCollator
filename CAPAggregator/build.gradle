@@ -78,8 +78,8 @@ dependencies {
     compile 'org.elasticsearch.client:elasticsearch-rest-client:7.4.0'
     compile 'net.sf.json-lib:json-lib:2.4:jdk15'
     compile 'org.apache.commons:commons-collections4:4.2'
-    compile 'com.amazonaws:aws-java-sdk-bom:1.11.422'
-    compile 'com.amazonaws:aws-java-sdk-s3:1.11.422'
+    compile 'com.amazonaws:aws-java-sdk-bom:1.11.683'
+    compile 'com.amazonaws:aws-java-sdk-s3:1.11.683'
     compile("org.quartz-scheduler:quartz:2.2.3") {
         exclude group: 'slf4j-api', module: 'c3p0'
     }
