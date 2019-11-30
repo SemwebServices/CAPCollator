@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import grails.events.annotation.Subscriber
 import grails.async.Promise
 import static grails.async.Promises.*
@@ -139,7 +140,15 @@ class StaticFeedService {
   private pushToS3(String path) {
     try {
       if ( ( bucket_name != null ) && ( bucket_name.length() > 0 ) ) {
-        AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
+        // AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
+        // ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider(profile);
+                             // .withRegion("us-west-1") // The first region to try your request against
+                             // .withCredentials(new ProfileCredentialsProvider('inmet')) // The first region to try your request against
+        clientBuilder.setCredentials(credentialsProvider);
+        AmazonS3 client = AmazonS3ClientBuilder.standard()
+                             .withForceGlobalBucketAccess(true) // If a bucket is in a different region, try again in the correct region
+                             .build();
+
 
         // Strip off any prefix we are using locally, to leave the raw path
         String s3_key = path.replaceAll((static_feeds_dir+'/'),'');
@@ -147,8 +156,13 @@ class StaticFeedService {
         ObjectMetadata om = new ObjectMetadata()
         om.setCacheControl('max-age=60');
 
+        File file_input = new File(path);
+        om.setContentLength(file_input.length());
+        om.setContentType('application/xml');
+
         log.debug("S3 mirror ${path} in bucket ${bucket_name} - key name will be ${s3_key}");
-        s3.putObject(bucket_name, s3_key, new FileInputStream(path), om);
+        PutObjectResult result = s3.putObject(bucket_name, s3_key, new FileInputStream(path), om);
+        log.debug("Result of s3.putObject: ${result}");
 
         s3.shutdown()
       }
@@ -617,6 +631,10 @@ class StaticFeedService {
     }
     else {
       log.debug("Initialised feed for ${sub_name} from S3");
+      if ( bootstrap_bucket_name != bucket_name ) {
+        log.debug("  -> Copying feed from bootstrap bucket to new bucket");
+        pushToS3(starter_rss_file);
+      }
     }
 
   }
@@ -647,8 +665,6 @@ class StaticFeedService {
         String s3_key = starter_rss_file.replaceAll((static_feeds_dir+'/'),'');
         if ( s3.doesObjectExist(bucket, s3_key) ) {
           log.debug("${starter_rss_file} found in S3 - pulling file into local cache");
-          // s3.putObject(bucket_name, s3_key, new FileInputStream(path), om);
-          // s3.public S3Object getObject(String bucketName, String key)
           S3Object s3o = s3.getObject(bucket, s3_key);
           rss_file.write s3o.getObjectContent()
           result = true;
