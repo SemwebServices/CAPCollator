@@ -9,8 +9,8 @@ grails prod war
 cp build/libs/CAPAggregator-2.0.0.war ../docker/CAPAggregator.war
 cd ../docker
 docker login
-docker build -t semweb/caphub_aggregator:v2.0.1 -t semweb/caphub_aggregator:v2.0 -t semweb/caphub_aggregator:v2 -t semweb/caphub_aggregator:latest .
-docker push semweb/caphub_aggregator:v2.0.1
+docker build -t semweb/caphub_aggregator:v2.0.2 -t semweb/caphub_aggregator:v2.0 -t semweb/caphub_aggregator:v2 -t semweb/caphub_aggregator:latest .
+docker push semweb/caphub_aggregator:v2.0.2
 docker push semweb/caphub_aggregator:v2.0
 docker push semweb/caphub_aggregator:v2
 docker push semweb/caphub_aggregator:latest
