@@ -289,6 +289,7 @@ class StaticFeedService {
     synchronized(feed_write_queue) {
       if ( feed_write_queue.contains(path) ) {
         // Already queued
+        log.info("${path} already present in feed_write_queue. Current size is ${feed_write_queue.size()}");
       }
       else {
         feed_write_queue.add(path);
@@ -304,9 +305,13 @@ class StaticFeedService {
     try {
       while(true) {
         String path_to_write = null;
+
         synchronized(feed_write_queue) {
           log.info("watchRssQueue() waiting");
-          feed_write_queue.wait();
+
+          if ( feed_write_queue.size() == 0 ) {
+            feed_write_queue.wait(60000);
+          }
 
           if ( feed_write_queue.size() > 0 ) {
             path_to_write = feed_write_queue.remove(0)
