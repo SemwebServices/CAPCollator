@@ -48,7 +48,11 @@ class StaticFeedService {
 
   @javax.annotation.PostConstruct
   def init () {
-    log.debug("StaticFeedService::init");
+    log.info("StaticFeedService::init - PATCH-20191201-1426");
+
+    bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
+    static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
+    feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
 
     Promise p = task {
       watchRssQueue();
@@ -222,6 +226,7 @@ class StaticFeedService {
     }
     fileWriter.close();
 
+    log.info("createStarterFeed calling push to s3 ${path}/rss.xml");
     pushToS3(path+'/rss.xml');
   }
 
@@ -235,6 +240,7 @@ class StaticFeedService {
       else {
         // Should probably validate the XML here before just writing it
         f.write(tmpl)
+        log.info("createStarterFeedFromTemplate calling pushToS3 - ${path}/rss.xml");
         pushToS3(path+'/rss.xml');
       }
     }
@@ -307,15 +313,15 @@ class StaticFeedService {
         String path_to_write = null;
 
         synchronized(feed_write_queue) {
-          log.info("watchRssQueue() waiting");
 
           if ( feed_write_queue.size() == 0 ) {
+            log.info("watchRssQueue() waiting up to 60s (Queue size is 0)");
             feed_write_queue.wait(60000);
           }
 
           if ( feed_write_queue.size() > 0 ) {
             path_to_write = feed_write_queue.remove(0)
-            log.debug("Removed ${path_to_write} from feed write queue");
+            log.debug("Removed ${path_to_write} from feed write queue. new size is ${feed_write_queue.size()}");
           }
         }
 
@@ -351,6 +357,7 @@ class StaticFeedService {
                 File f = new File(path_to_write+'/rss.xml')
                 f.write(newfeed)
 
+                log.info("call push to S3 from watchRssQueue with ${path_to_write}");
                 pushToS3(path_to_write+'/rss.xml');
               }
             }
@@ -545,6 +552,7 @@ class StaticFeedService {
 
     new_alert_file << content
 
+    log.info("call pushToS3 from writeAlertXML with ${path} and ${full_alert_filename}");
     pushToS3(path+full_alert_filename);
 
     return full_alert_filename
