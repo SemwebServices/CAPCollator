@@ -374,7 +374,6 @@ class StaticFeedService {
         Long alert_created_systime = node.AlertMetadata.createdAt
   
         String source_feed_id = node.AlertMetadata.sourceFeed;
-        // String static_alert_file = writeAlertFile(node.AlertMetadata.capCollatorUUID, path, node, source_alert, alert_created_systime, source_feed_id);
 
         groovy.util.Node xml = null;
         try {
@@ -492,52 +491,6 @@ class StaticFeedService {
     return result
   }
 
-  private String writeAlertFile(uuid, path, node, content, alert_time, sourcefeed_id) {
-
-    // https://alert-hub.s3.amazonaws.com/us-epa-aq-en/2018/09/07/12/28/2018-09-07-12-28-41-693.xml
-    // log.debug("writeAlertNode ${new String(content)}");
-    TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
-    def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
-
-    def output_filename_sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z')
-    output_filename_sdf.setTimeZone(timeZone_utc);
-
-    // def alert_date = sdf.parse(node?.AlertBody?.sent);
-    def alert_date = new Date(alert_time)
-
-    def cal = Calendar.getInstance(timeZone_utc)
-    cal.setTime(alert_date);
-
-    def alert_path = '/'
-    // log.debug("Write to ${path}${alert_path}")
-
-    int duplicate_protection = 0
-
-    String prefix = generatePrefix()
-    File alert_path_dir = new File(path+alert_path+prefix);
-    if ( ! alert_path_dir.exists() ) {
-      // log.debug("Setting up new static sub DIR ${alert_path_dir}");
-      alert_path_dir.mkdirs()
-    }
-
-    String output_filename = sourcefeed_id+'_'+output_filename_sdf.format(alert_date)
-    String full_alert_filename = alert_path+prefix+output_filename + '_0.xml'
-
-    File new_alert_file = new File(path+full_alert_filename)
-    while ( new_alert_file.exists() ) {
-      full_alert_filename = alert_path+prefix+output_filename + '_' + (++duplicate_protection) +'.xml'
-      new_alert_file = new File(path+full_alert_filename)
-    }
-
-    // log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
-
-    new_alert_file << content
-
-    pushToS3(path+full_alert_filename);
-
-    return full_alert_filename
-  }
-
   private String generatePrefix() {
     def rnd = new Random();
     String result = ''+ ( ( rnd.nextInt(26) + ('a' as char) ) as char ) + ( ( rnd.nextInt(26) + ('a' as char) ) as char ) + '/'
@@ -547,7 +500,7 @@ class StaticFeedService {
   // Cache the source alert XML in the local filesystem
   public String writeAlertXML(byte[] content, String sourcefeed_id, Date alert_time) {
 
-    // log.debug("writeAlertXML(...,${sourcefeed_id},${alert_time})")
+    log.debug("writeAlertXML(...,${sourcefeed_id},${alert_time})")
 
     String path = static_feeds_dir+'/'
 
@@ -583,7 +536,7 @@ class StaticFeedService {
       new_alert_file = new File(path+full_alert_filename)
     }
 
-    // log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
+    log.debug("Writing alert [${content.length}] xml to ${new_alert_file}");
 
     new_alert_file << content
 
