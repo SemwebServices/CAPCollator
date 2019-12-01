@@ -50,9 +50,9 @@ class StaticFeedService {
   def init () {
     log.info("StaticFeedService::init - PATCH-20191201-1426");
 
-    bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
-    static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
-    feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
+    //bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
+    //static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
+    //feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
 
     Promise p = task {
       watchRssQueue();
