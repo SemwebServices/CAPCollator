@@ -363,7 +363,7 @@ class StaticFeedService {
             }
           }
           else {
-            log.error("Path to write null.");
+            // This thread wakes up every 60s now - path to write can be null
           }
         }
         catch ( Exception e ) {
