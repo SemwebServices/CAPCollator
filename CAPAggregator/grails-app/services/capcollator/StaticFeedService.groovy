@@ -91,7 +91,7 @@ class StaticFeedService {
     log.info("StaticFeedService::update(${routingKey},...)");
     try {
       String[] key_components = routingKey.split('\\.');
-      if ( key_components.length == 2 ) {
+      if ( ( static_feeds_dir != null ) && ( key_components.length == 2 ) ) {
         String sub_name = key_components[1]
         String full_path = static_feeds_dir+'/'+sub_name;
         String cached_alert_file = body.AlertMetadata.cached_alert_xml
@@ -117,7 +117,7 @@ class StaticFeedService {
         addItem(full_path, body, sub_name, cached_alert_file)
       }
       else {
-        log.error("Unexpected number of routing key components:: ${key_components}");
+        log.error("Unexpected number of routing key components:: ${key_components} or static_feeds_dir is null (${static_feeds_dir})");
       }
     }
     catch ( Exception e ) {
@@ -132,7 +132,9 @@ class StaticFeedService {
   // IF therw are S3 credentals configured, push the alert there also
   private pushToS3(String path) {
     try {
-      if ( ( bucket_name != null ) && ( bucket_name.length() > 0 ) ) {
+      if ( ( bucket_name != null ) && 
+           ( bucket_name.length() > 0 ) && 
+           ( static_feeds_dir != null ) ) {
         // AmazonS3 s3 = AmazonS3ClientBuilder.defaultClient();
         // ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider(profile);
                              // .withRegion("us-west-1") // The first region to try your request against
@@ -156,6 +158,9 @@ class StaticFeedService {
         log.debug("Result of s3.putObject: ${result}");
 
         client.shutdown()
+      }
+      else {
+        log.warn("pushToS3(${path}) - no action - bucket name null(${bucket_name}) OR static_feeds_dir null (${static_feeds_dir})");
       }
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
@@ -591,7 +596,9 @@ class StaticFeedService {
 
     String bucket = bootstrap_bucket_name ?: bucket_name;
 
-    if ( ( bucket != null ) && ( bucket.length() > 0 ) ) {
+    if ( ( bucket != null ) && 
+         ( bucket.length() > 0 ) && 
+         ( static_feeds_dir != null ) ) {
 
 
       String full_path = static_feeds_dir+'/'+sub_name;
@@ -630,6 +637,9 @@ class StaticFeedService {
       else {
         result = true;
       }
+    }
+    else {
+      log.warn("tryToCacheRssFromS3(${sub_name}) - No action. bucket null (${bucket}) or  static_feeds_dir null (${static_feeds_dir})");
     }
 
     return result;
