@@ -98,6 +98,13 @@
                   </div>
 
                   <div class="form-group">
+                    <label class="col-sm-3 control-label">Static Feed List Size</label>
+                    <div class="col-sm-5">
+                      <input type="text" name="staticFeedListSize" value="${grailsApplication.config.staticFeedListSize}" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
                     <label class="col-sm-3 control-label"></label>
                     <div class="col-sm-5">
                       <button type="submit">Submit</button>

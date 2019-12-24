@@ -46,6 +46,8 @@ class StaticFeedService {
   private String static_feeds_dir;
   private String feed_base_url;
 
+  private Integer staticFeedListSize = new Integer(100);
+
   @javax.annotation.PostConstruct
   def init () {
     log.info("StaticFeedService::init - PATCH-20191201-1426");
@@ -73,6 +75,18 @@ class StaticFeedService {
     bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
     static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
     feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
+    String list_size_str = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedListSize')
+    if ( list_size_str ) {
+      try {
+        staticFeedListSize = Intger.parseInt(list_size_str)
+      }
+      catch ( Exception e ) {
+        staticFeedListSize = 100;
+      }
+    }
+    else {
+      staticFeedListSize = 100;
+    }
 
     synchronized(feed_write_queue) {
       feed_write_queue.notifyAll();
@@ -472,7 +486,7 @@ class StaticFeedService {
           }
     
           // log.debug("Trim rss feed. Size before: ${xml.channel[0].children().size()}");
-          int ctr = MAX_FEED_ENTRIES;
+          int ctr = staticFeedListSize ?: MAX_FEED_ENTRIES;
           xml.channel[0] = xml.channel[0].item.each { n ->
             if ( ctr > 0 ) {
               ctr--;

@@ -46,6 +46,7 @@ class SetupController {
           updateSetting('capcollator.awsBucketName', params.awsBucketName);
           updateSetting('capcollator.staticFeedsBaseUrl', params.staticFeedsBaseUrl);
           updateSetting('capcollator.staticFeedsDir', params.staticFeedsDir);
+          updateSetting('capcollator.staticFeedsListSize', params.staticFeedListSize);
   
           log.debug("Settings after update: ${Setting.list()}");
 

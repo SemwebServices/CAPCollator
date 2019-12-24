@@ -6,6 +6,7 @@ import java.util.Iterator
 import static groovy.json.JsonOutput.*
 import grails.async.Promise
 import static grails.async.Promises.*
+import java.text.SimpleDateFormat;
 
 @Transactional
 class CapEventHandlerService {
@@ -88,11 +89,10 @@ class CapEventHandlerService {
         cap_notification.AlertMetadata['warnings'] = []
       }
 
-      // This is a little ugly, but pull the event time up to the root of the document, so that we have something we know we
-      // can sort by without needing a nested query
-      if ( cap_body.sent != null ) {
-        cap_notification.evtTimestamp = cap_body.sent;
-      }
+      // if ( cap_body.sent != null ) {
+      // changing this - use the system timestamp for ordering rather than the date on the alert - which can be odd due to
+      // timezone offsets (Incorrectly formatted iso dates don't order properly if they have a timezone offset).
+      cap_notification.evtTimestamp =  new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date())
 
       Map geo_query_cache = [:]
 
