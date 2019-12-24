@@ -2,7 +2,7 @@
 export SDKMAN_DIR="/home/ibbo/.sdkman"
 [[ -s "/home/ibbo/.sdkman/bin/sdkman-init.sh" ]] && source "/home/ibbo/.sdkman/bin/sdkman-init.sh"
 
-export CC_VER=`grep appVersion ./feedFacade/gradle.properties | cut -f2 -d=`
+export CC_VER=`grep appVersion ./CAPAggregator/gradle.properties | cut -f2 -d=`
 
 echo Releasing CAPAggregator ${CC_VER}
 
