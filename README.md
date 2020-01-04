@@ -4,7 +4,11 @@ CAPCollator is middleware that bridges the gap between the diverse set of Common
 to consume alerts that might be applicable in a specific place. It runs on a server and harvests alerts from a configured collection of sources
 in order to maintain a comprehensive and searchable global index of all currently live CAP alerts, regardless of source.
 
-A demo system is available at [https://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
+A demo system is available at [http://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
+
+This work has been kindly supported by UCAR Subaward SUBAWD001770
+
+
 
 ## Technology
 
