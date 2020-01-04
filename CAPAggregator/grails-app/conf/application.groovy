@@ -9,6 +9,7 @@ grails.plugin.springsecurity.authority.className = 'capcollator.Role'
 // So use /home/topic instead of /topics/**
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	[pattern: '/',                  access: ['permitAll']],
+        [pattern: '/actuator/**',       access: ['ROLE_ADMIN', 'isFullyAuthenticated()']],
 	[pattern: '/setup/**',          access: ['permitAll']],
 	[pattern: '/logout',            access: ['permitAll']],
 	[pattern: '/error',             access: ['permitAll']],
