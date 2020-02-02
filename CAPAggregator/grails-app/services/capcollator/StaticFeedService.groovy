@@ -51,11 +51,11 @@ class StaticFeedService {
 
   @javax.annotation.PostConstruct
   def init () {
-    log.info("StaticFeedService::init - PATCH-20191201-1426");
+    log.info("StaticFeedService::init");
+    Map s = capCollatorSystemService.getCurrentState()
 
-    //bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
-    //static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
-    //feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
+    log.debug("Using settings ${s}");
+    updateSettings(s)
 
     Promise p = task {
       watchRssQueue();
@@ -71,6 +71,10 @@ class StaticFeedService {
   @Transactional
   @Subscriber 
   capcolSettingsUpdated(Map settings) {
+    updateSettings(settings)
+  }
+
+  updateSettings(Map settings) {
     log.info("Static feed service is notified that settings have updated, ${settings}");
 
     bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
