@@ -29,5 +29,8 @@ else
 fi
 
 
+echo You can upgrade this on the live server with a command like
+echo docker service update --image semweb/caphub_aggregator:$CC_VER fah_capAggregator
+
 
 
