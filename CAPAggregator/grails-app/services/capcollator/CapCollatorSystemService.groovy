@@ -14,6 +14,7 @@ public class CapCollatorSystemService {
   }
 
   public void init() {
+    log.debug("CapCollatorSystemService::init()");
     freshenState();  
   }
 

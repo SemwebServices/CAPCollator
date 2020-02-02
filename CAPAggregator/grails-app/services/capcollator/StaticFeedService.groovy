@@ -45,6 +45,7 @@ class StaticFeedService {
 
   private String static_feeds_dir;
   private String feed_base_url;
+  private String alert_xslt;
 
   private Integer staticFeedListSize = new Integer(100);
 
@@ -75,7 +76,12 @@ class StaticFeedService {
     bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
     static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')
     feed_base_url = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsBaseUrl')
+    alert_xslt = capCollatorSystemService.getCurrentState().get('capcollator.alertXslt')
+    if ( alert_xslt == null || alert_xslt=='' ) 
+      alert_xslt = 'https://cap-alerts.s3.amazonaws.com/rss-style.xsl' 
+
     String list_size_str = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedListSize')
+
     if ( list_size_str ) {
       try {
         staticFeedListSize = Intger.parseInt(list_size_str)
@@ -218,7 +224,7 @@ class StaticFeedService {
     def pub_date_str = sdf.format(new Date());
  
     rssBuilder.mkp.xmlDeclaration(version:'1.0', encoding:'utf-8')
-    rssBuilder.pi('xml-stylesheet':[href:'https://cap-alerts.s3.amazonaws.com/rss-style.xsl', type:'text/css']);
+    rssBuilder.pi('xml-stylesheet':[href:alert_xslt, type:'text/css']);
     rssBuilder.'rss'(// 'xmlns':'http://www.w3.org/2005/Atom', -- The namespace for the document is not ATON
                      'xmlns:rss':'http://www.rssboard.org/rss-specification',
                      'xmlns:atom':'http://www.w3.org/2005/Atom',
