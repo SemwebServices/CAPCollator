@@ -10,10 +10,9 @@ class BootStrap {
   def capCollatorSystemService
 
   def init = { servletContext ->
-
-      capCollatorSystemService.init()
-      CAPIndexingService.freshen()
-
+    log.info("Starting CAPCollator. ${grailsApplication.metadata?.getApplicationName()} ${grailsApplication.metadata?.getApplicationVersion()}");
+    capCollatorSystemService.init()
+    CAPIndexingService.freshen()
   }
 
   def destroy = {
