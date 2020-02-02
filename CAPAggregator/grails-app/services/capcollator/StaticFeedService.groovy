@@ -52,10 +52,15 @@ class StaticFeedService {
   @javax.annotation.PostConstruct
   def init () {
     log.info("StaticFeedService::init");
-    Map s = capCollatorSystemService.getCurrentState()
 
-    log.debug("Using settings ${s}");
-    updateSettings(s)
+    try {
+      Map s = capCollatorSystemService.getCurrentState()
+      log.debug("Using settings ${s}");
+      updateSettings(s)
+    }
+    catch ( Exception e ) {
+      log.error("Problem processing settings",e);
+    }
 
     Promise p = task {
       watchRssQueue();
@@ -71,11 +76,12 @@ class StaticFeedService {
   @Transactional
   @Subscriber 
   capcolSettingsUpdated(Map settings) {
+    log.info("Static feed service is notified that settings have updated, ${settings}");
     updateSettings(settings)
   }
 
   private void updateSettings(Map settings) {
-    log.info("Static feed service is notified that settings have updated, ${settings}");
+    log.debug("Process updated settings ${settings}");
 
     bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
     static_feeds_dir = capCollatorSystemService.getCurrentState().get('capcollator.staticFeedsDir')

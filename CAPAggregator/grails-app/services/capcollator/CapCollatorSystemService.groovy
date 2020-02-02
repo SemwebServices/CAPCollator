@@ -7,6 +7,7 @@ public class CapCollatorSystemService {
   private Map state = null;
 
   public Map getCurrentState() {
+    log.debug("CapCollatorSystemService::getCurrentState()");
     if ( state==null)
       init();
 
