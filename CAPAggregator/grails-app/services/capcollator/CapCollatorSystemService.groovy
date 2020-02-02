@@ -27,22 +27,26 @@ public class CapCollatorSystemService {
 
   public synchronized void freshenState() {
 
-    log.debug("Freshen State ${Setting.list()}");
-
-    if ( state == null ) {
-      state = [:]
-    }
-
-    Setting setup_completed = Setting.findByKey('capcollator.setupcompleted') ?: new Setting(key:'capcollator.setupcompleted', value:'false').save(flush:true, failOnError:true);
-    if ( setup_completed.value == 'true' ) {
-      state.setup_completed = true;
-    }
-    else {
-      state.setup_completed = false;
-    }
-
-    Setting.list().each { setting ->
-      state[setting.key] = setting.value;
+    log.debug("Freshen State");
+    Setting.withNewSession { session ->
+      Setting.withTransaction { ts ->
+  
+        if ( state == null ) {
+          state = [:]
+        }
+    
+        Setting setup_completed = Setting.findByKey('capcollator.setupcompleted') ?: new Setting(key:'capcollator.setupcompleted', value:'false').save(flush:true, failOnError:true);
+        if ( setup_completed.value == 'true' ) {
+          state.setup_completed = true;
+        }
+        else {
+          state.setup_completed = false;
+        }
+  
+        Setting.list().each { setting ->
+          state[setting.key] = setting.value;
+        }
+      }
     }
 
     capcolSettingsUpdated();
