@@ -74,7 +74,7 @@ class StaticFeedService {
     updateSettings(settings)
   }
 
-  updateSettings(Map settings) {
+  private void updateSettings(Map settings) {
     log.info("Static feed service is notified that settings have updated, ${settings}");
 
     bucket_name = capCollatorSystemService.getCurrentState().get('capcollator.awsBucketName')
