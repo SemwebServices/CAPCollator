@@ -9,7 +9,7 @@ sdk use grails 4.0.1
 sdk use java 11.0.5.j9-adpt
 cd CAPAggregator
 grails prod war
-cp build/libs/CAPAggregator-*.war ../docker/CAPAggregator.war
+cp build/libs/CAPAggregator-$CC_VER.war ../docker/CAPAggregator.war
 cd ../docker
 docker login
 
