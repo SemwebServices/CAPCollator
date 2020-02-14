@@ -105,6 +105,13 @@
                   </div>
 
                   <div class="form-group">
+                    <label class="col-sm-3 control-label">Static Feed Xslt</label>
+                    <div class="col-sm-5">
+                      <input type="text" name="alertXslt" value="https://cap-alerts.s3.amazonaws.com/rss-style.xsl" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
                     <label class="col-sm-3 control-label"></label>
                     <div class="col-sm-5">
                       <button type="submit">Submit</button>

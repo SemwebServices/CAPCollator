@@ -1,16 +1,22 @@
 # About
 
-CAPCollator is middleware that bridges the gap between the diverse set of Common Alerting Protocol (CAP) Alert Producers and systems which wish
-to consume alerts that might be applicable in a specific place. It runs on a server and harvests alerts from a configured collection of sources
+CAPCollator is a component in a service oriented middleware system that bridges the gap between the diverse set of Common Alerting 
+Protocol (CAP) Alert Producers and systems which wish
+to consume alerts that might be applicable in a specific place and with specific critera (EG Official Only, High Priority, Matching keywords). 
+It runs on a server, usually in a docker-swarm orchestrated cluster, and harvests alerts from a configured collection of sources
 in order to maintain a comprehensive and searchable global index of all currently live CAP alerts, regardless of source.
 
-A demo system is available at [https://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
+A demo system is available at [http://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
+
+This work has been kindly supported by UCAR Subaward SUBAWD001770
+
+
 
 ## Technology
 
-Currently implemented in Java using the groovy-on-grails framework, but runnable as a microservice using the
-production jar. An embedded database is used for feed state. Elasticsearch 5.2+ is used for geo indexing, RabbitMQ is used for
-message fanout and durable delivery.
+Currently implemented in Java using the groovy-on-grails framework, runnable as a microservice using the
+production jar or as a docker container [https://hub.docker.com/repository/docker/semweb/caphub_aggregator](see Dockerhub) . An embedded database is used for feed state. Elasticsearch 7 is used for geo indexing, RabbitMQ is used for
+message fanout and durable delivery. There have been experiments running the service under kubernetes/OpenShift - contact @ianibo for info.
 
 ## Deployment
 

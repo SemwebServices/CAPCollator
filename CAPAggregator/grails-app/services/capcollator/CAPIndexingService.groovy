@@ -28,7 +28,7 @@ class CAPIndexingService {
   
 
   def freshen() {
-    // log.debug("freshen...");
+    log.debug("freshen...");
   }
 
   def reindexSubscriptions() {
