@@ -145,14 +145,13 @@ class CapEventHandlerService {
                     log.debug("Adding GEO_SEARCH_ERROR tag to alert");
                     cap_notification.AlertMetadata.tags.add('GEO_SEARCH_ERROR/POLYGON');
                     
-                  }
-                  else {
                     // IF the search failed - that probably means that there is a problem with the source shape. 
                     if ( cap_notification.AlertMetadata.errorShapes == null )
                       cap_notification.AlertMetadata.errorShapes = [ inner_polygon_ring.toString() ]
                     else
                       cap_notification.AlertMetadata.errorShapes.add(inner_polygon_ring.toString())
-
+                  }
+                  else {
                     // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
                     // database of alerts geo searchable
                     area.cc_polys.add( [ type:'polygon', coordinates: [ inner_polygon_ring ] ] );
