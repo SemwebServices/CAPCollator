@@ -92,7 +92,9 @@ class CapEventHandlerService {
       // if ( cap_body.sent != null ) {
       // changing this - use the system timestamp for ordering rather than the date on the alert - which can be odd due to
       // timezone offsets (Incorrectly formatted iso dates don't order properly if they have a timezone offset).
-      cap_notification.evtTimestamp =  new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date())
+      SimpleDateFormat ts_sdf = new SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss.SSS'Z'".toString());
+      ts_sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+      cap_notification.evtTimestamp = ts_sdf.format(new Date())
 
       Map geo_query_cache = [:]
 
