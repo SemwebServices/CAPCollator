@@ -4,7 +4,7 @@ server:
         context-path: /CAPAggregator
         use-forward-headers: true
     use-forward-headers: true
-    forward-headers-strategy: framework
+    forward-headers-strategy: FRAMEWORK
 grails:
     profile: web
     codegen:
