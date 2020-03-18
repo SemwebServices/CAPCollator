@@ -2,6 +2,7 @@
 server:
     servlet:
         context-path: /CAPAggregator
+    use-forward-headers: true
 grails:
     profile: web
     codegen:
