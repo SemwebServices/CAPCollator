@@ -143,11 +143,27 @@ function toPoly(geom_type, geom, rad) {
     var lng=parseFloat(geom[0]);
     var center = {lat: lat, lng: lng};
     var rad_km = parseInt(rad);
+    if ( ( rad_km == null ) || ( rad_km == 0 ) )
+      rad_km  1;
+
     // console.log("Draw circle at %o %o %o",geom,rad,rad_km);
 
     result = new L.Circle(center, rad_km)
   }
-  result.setStyle({fillColor: '#FF0000', color: '#FF0000', fillOpacity:0.35, opacity:0.8, weight:2});
+  else if ( geom_type==='point' ) {
+    var lat=parseFloat(geom[1]);
+    var lng=parseFloat(geom[0]);
+    var center = {lat: lat, lng: lng};
+    var rad_km = 1;
+    result = new L.Circle(center, rad_km)
+  }
+  else {
+    console.log("Unhandled geom_type: %s",geom_type);
+  }
+
+  if ( result != null ) {
+    result.setStyle({fillColor: '#FF0000', color: '#FF0000', fillOpacity:0.35, opacity:0.8, weight:2});
+  }
 
 
   return result;
