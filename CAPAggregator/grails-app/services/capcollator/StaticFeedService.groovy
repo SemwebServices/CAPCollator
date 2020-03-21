@@ -190,7 +190,8 @@ class StaticFeedService {
         client.shutdown()
       }
       else {
-        log.warn("pushToS3(${path}) - no action - bucket name null(${bucket_name}) OR static_feeds_dir null (${static_feeds_dir})");
+        // lets not do this - it's too much cruft in the logs
+        // log.warn("pushToS3(${path}) - no action - bucket name null(${bucket_name}) OR static_feeds_dir null (${static_feeds_dir})");
       }
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
