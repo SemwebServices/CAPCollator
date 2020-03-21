@@ -144,7 +144,7 @@ function toPoly(geom_type, geom, rad) {
     var center = {lat: lat, lng: lng};
     var rad_km = parseInt(rad);
     if ( ( rad_km == null ) || ( rad_km == 0 ) )
-      rad_km  1;
+      rad_km = 1;
 
     // console.log("Draw circle at %o %o %o",geom,rad,rad_km);
 
