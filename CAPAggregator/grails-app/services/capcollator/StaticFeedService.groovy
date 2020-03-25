@@ -301,7 +301,6 @@ class StaticFeedService {
           groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
           xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
           xml_parser.startPrefixMapping('','');
-          // xml_parser.processingInstruction('xml-stylesheet', 'type="text/xsl" href="https://cap-alerts.s3.amazonaws.com/rss-style.xsl"');
           result = xml_parser.parse(new File(path+'/rss.xml'))
 
           // This parser ignores processing instructions, so manually re-add a stylesheet
@@ -368,7 +367,6 @@ class StaticFeedService {
             log.debug("watchRssQueue() process ${path_to_write}");
             // def xml_for_feed = rss_cache.get(path_to_write)
             def xml_for_feed = getExistingRss(path_to_write)
-            // <?xml-stylesheet href='https://cap-alerts.s3.amazonaws.com/rss-style.xsl' type='text/css'?>
   
             if ( xml_for_feed == null ) {
               log.error("Unable to find xml for feed with path ${path_to_write} - existing queue cache was null");
@@ -384,9 +382,9 @@ class StaticFeedService {
                 String newfeed = writer.toString();
                 log.debug("Before Replace... ${newfeed.substring(0,50)}");
                 java.lang.CharSequence cs1 = '<rss';
-                java.lang.CharSequence cs2 = '''
-<?xml-stylesheet href='https://alert-feeds.s3.amazonaws.com/rss-style.xsl' type='text/xsl'?>
-<rss''';
+                java.lang.CharSequence cs2 = """
+<?xml-stylesheet href='${alert_xslt}' type='text/xsl'?>
+<rss""".toString();
                 newfeed = newfeed.replace(cs1, cs2);
                 log.debug("After Replace... ${newfeed.substring(0,50)}");
 
