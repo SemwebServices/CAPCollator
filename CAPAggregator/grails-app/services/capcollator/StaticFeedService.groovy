@@ -240,7 +240,7 @@ class StaticFeedService {
                      'xmlns:rss':'http://www.rssboard.org/rss-specification',
                      'xmlns:atom':'http://www.w3.org/2005/Atom',
                      'xmlns:dc':'http://purl.org/dc/elements/1.1/', 
-                     'xmlns:cap':'http://demo.semweb.co/capcollator/', 
+                     'xmlns:cap':'http://alert-hub.org/cap-extensions', 
                      version:"2.0") {
       channel {
         'atom:link'(rel:'self',href:"${feed_base_url}/${subname}/rss.xml", type:"application/rss+xml")
@@ -460,7 +460,7 @@ class StaticFeedService {
           }
     
           def atomns = new groovy.xml.Namespace('http://www.w3.org/2005/Atom','atom')
-          def ccns = new groovy.xml.Namespace('http://demo.semweb.co/CapCollator','capcol');
+          def ccns = new groovy.xml.Namespace('http://alert-hub.org/cap-extensions','capcol');
     
           String feed_entry_prefix = capCollatorSystemService.getCurrentState().get('capcollator.feedEntryPrefix') ?: ''
           String feed_entry_postfix = capCollatorSystemService.getCurrentState().get('capcollator.feedEntryPostfix') ?: ''
