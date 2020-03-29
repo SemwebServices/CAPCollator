@@ -91,6 +91,7 @@ dependencies {
     compile 'org.apache.commons:commons-collections4:4.1'
     compile 'commons-io:commons-io:2.5'
     compile 'xom:xom:1.2.5'
+    compile group: 'net.sf.saxon', name: 'Saxon-HE', version: '9.9.1-7'
 }
 
 bootRun {

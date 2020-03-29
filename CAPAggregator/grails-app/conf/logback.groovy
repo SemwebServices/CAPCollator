@@ -44,6 +44,7 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
     logger ('grails.gorm.multitenancy.Tenants', DEBUG)
     logger ('capcollator.AlertCacheService', DEBUG)
     logger ('org.hibernate.orm.deprecation', ERROR)
+    logger ('capcollator.StaticFeedService', ERROR)
     root(ERROR, ['STDOUT', 'FULL_STACKTRACE'])
 }
 else {
