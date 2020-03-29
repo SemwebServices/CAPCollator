@@ -3,7 +3,7 @@ package capcollator
 import grails.gorm.transactions.*
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import static groovy.json.JsonOutput.*
-
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 
 /**
  * This is where all CAP URLs detected in feeds, be they atom, RSS, or other source types come to be resolved.
@@ -16,13 +16,15 @@ class CapUrlHandlerService {
   def staticFeedService
   def feedFeedbackService
 
+  // Alerts can live in the cache for up to 2 minutes
+  private Map parsed_alert_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*2))
+
   private static final long LONG_ALERT_THRESHOLD = 2000;
   private static final int MAX_RETRIES = 3;
 
   def process(cap_url) {
     log.debug("RssEventHandlerService::process ${cap_url}");
   }
-
 
   def handleNotification(link,context) {
 
@@ -79,7 +81,9 @@ class CapUrlHandlerService {
           def parsed_cap = parser.parse(new ByteArrayInputStream(alert_bytes));
           String alert_uuid = java.util.UUID.randomUUID().toString()
 
-          if ( parsed_cap.identifier ) {
+          if ( ( parsed_cap != null ) && 
+               ( parsed_cap.identifier != null ) ) {
+
             def ts_3 = System.currentTimeMillis();
             log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
 

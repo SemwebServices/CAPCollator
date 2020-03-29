@@ -8,6 +8,16 @@ import grails.async.Promise
 import static grails.async.Promises.*
 import java.text.SimpleDateFormat;
 
+import org.w3c.dom.Document;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 @Transactional
 class CapEventHandlerService {
 
@@ -16,6 +26,7 @@ class CapEventHandlerService {
   def eventService
   def gazService
   def feedFeedbackService
+  def capUrlHandlerService
 
   // import org.apache.commons.collections4.map.PassiveExpiringMap;
   // Time to live in millis - 1000 * 60 == 1m 
@@ -472,9 +483,15 @@ class CapEventHandlerService {
 
   private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, Map cap_notification, Map info_element) {
     List result = []
+
+    // def parsed_xml = capUrlHandlerService.getParsedXML(cap_notification.AlertMetadata.SourceUrl)
+    // Lets parse the source URL as a DOM tree so we can do a traditional XPATH match
+
+    Document d = fetchDOM(cap_notification.AlertMetadata.SourceUrl);
+
     matching_subscriptions?.each { matching_sub ->
       Map sub_as_map = matching_sub.getSourceAsMap();
-      if ( passNonSpatialFilter(sub_as_map, cap_notification, info_element) ) {
+      if ( passNonSpatialFilter(sub_as_map, cap_notification, info_element, d) ) {
         result.add(sub_as_map.shortcode?.toString())
       }
     }
@@ -554,7 +571,8 @@ class CapEventHandlerService {
   }
 
 
-  private boolean passNonSpatialFilter(Map subscription, Map cap_notification, Map info_element) {
+  private boolean passNonSpatialFilter(Map subscription, Map cap_notification, Map info_element, Document d) {
+
     boolean result = true;
 
     if ( ( subscription.languageOnly ) && ( !subscription.languageOnly.equalsIgnoreCase('none') ) ) {
@@ -591,6 +609,11 @@ class CapEventHandlerService {
         log.debug("Did not pass official filter (${cap_notification.AlertMetadata.sourceIsOfficial} needs to == true)");
         result = false;
       }
+    }
+
+    // subscription.xPathFilter contains an expath expression
+    if ( ( subscription.xPathFilter != null ) && ( subscription.xPathFilter.length() > 0 ) ) {
+      log.debug("Process xpath filter ${subscription.xPathFilter}");
     }
 
     if ( subscription.xPathFilterId ) {
@@ -742,5 +765,14 @@ class CapEventHandlerService {
     points[points.length-1][0] = points[0][0]
     points[points.length-1][1] = points[0][1]
     return points;
+  }
+
+  // https://www.baeldung.com/java-xpath
+  Document fetchDOM(String alert_url) {
+    log.debug("Fetch alert from ${alert_url}");
+    InputStream is = new URL(alert_url).openStream();
+    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = builderFactory.newDocumentBuilder();
+    return builder.parse(is);
   }
 }

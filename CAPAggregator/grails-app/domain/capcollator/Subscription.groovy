@@ -20,6 +20,7 @@ class Subscription {
   String languageOnly
   String highPriorityOnly
   String officialOnly
+  String xPathFilter
   String xPathFilterId
 
   String feedXmlTemplate
@@ -50,6 +51,7 @@ class Subscription {
                languageOnly blank: true, nullable: true
            highPriorityOnly blank: true, nullable: true
                officialOnly blank: true, nullable: true
+                xPathFilter blank: true, nullable: true
               xPathFilterId blank: true, nullable: true
             feedXmlTemplate blank: true, nullable: true
               feedItemLimit blank: true, nullable: true
@@ -66,6 +68,7 @@ class Subscription {
                languageOnly column: 'sub_filter_lang'
            highPriorityOnly column: 'sub_filter_high_prio'
                officialOnly column: 'sub_filter_official'
+                xPathFilter column: 'sub_filter_xpath'
               xPathFilterId column: 'sub_filter_xpathid'
             feedXmlTemplate column: 'sub_feed_xml_template', type:'text'
               feedItemLimit column: 'sub_feed_item_limit'
