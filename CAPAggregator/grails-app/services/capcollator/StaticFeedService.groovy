@@ -437,16 +437,23 @@ class StaticFeedService {
           // log.debug("Get first info section");
           def info = getFirstInfoSection(node);
     
-          def formatted_pub_date = null;
-          def formatted_pub_date_2 = null;
-          def formatted_write_date = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date());
+          TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
+
+          def entry_updated_date = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ').format(new Date(alert_created_systime));
           def rfc822_formatted_write_date = new SimpleDateFormat('EEE, dd MMM yyyy HH:mm:ss Z').format(new Date());
+
+          def iso_pub_date = null;
+          def formatted_pub_date = null;
+
+          def iso_utc_formatter = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ')
+          iso_utc_formatter.setTimeZone(timeZone_utc);
   
+          // Operations that depend on parsing the date in the original alert
           try {
-            formatted_pub_date_2 = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ').format(new Date(alert_created_systime));
             def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
             def alert_date = sdf.parse(node?.AlertBody?.sent);
             formatted_pub_date = new SimpleDateFormat('EEE, dd MMM yyyy HH:mm:ss Z').format(alert_date);
+            iso_pub_date = iso_utc_formatter.format(alert_date);
           }
           catch ( Exception e ) {
             log.error("Problem formatting dates for static feed publishing. alert sent at ${node?.AlertBody?.sent}", e);
@@ -465,15 +472,15 @@ class StaticFeedService {
           new_item_node.appendNode( 'link', "${feed_base_url}/${cached_alert_file}".toString());
           new_item_node.appendNode( 'description', info?.description);
           new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
-          new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
-          // new_item_node.appendNode( ccns.'dateWritten', formatted_write_date )
+          new_item_node.appendNode( atomns.'updated', entry_updated_date )
           new_item_node.appendNode( ccns.'sourceFeed', node?.AlertMetadata.sourceFeed )
           new_item_node.appendNode( ccns.'alertId', node?.AlertMetadata?.capCollatorUUID )
+          new_item_node.appendNode( ccns.'isoPubDate', iso_pub_date);
     
           //      //'dc:creator'('creator')
           //      //'dc:date'('date')
 
-          log.debug("Static feed appending new node with atom:updated ${formatted_pub_date_2} entry will be sorted based on this value");
+          log.debug("Static feed appending new node with atom:updated ${entry_updated_date} entry will be sorted based on this value");
     
           // The true asks the sort to mutate the source list. Source elements without a pubDate element high - so the none item
           // entries float to the top of the list
@@ -493,7 +500,7 @@ class StaticFeedService {
             xml.channel[0].appendNode('pubDate', rfc822_formatted_write_date)
           }
           else if ( xml.channel[0].pubDate.size() == 1 ) {
-            log.debug("update pub date to ${formatted_pub_date} ?: ${node?.AlertBody?.sent}");
+            log.debug("update pub date to ${rfc822_formatted_write_date}");
             xml.channel[0].pubDate[0].value = rfc822_formatted_write_date
           }
           else {
