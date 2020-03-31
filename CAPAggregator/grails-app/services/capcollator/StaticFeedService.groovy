@@ -484,8 +484,15 @@ class StaticFeedService {
     
           // The true asks the sort to mutate the source list. Source elements without a pubDate element high - so the none item
           // entries float to the top of the list
+          def pubdate_parse_format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
           xml.channel[0].children().sort(true) { a,b ->
-            ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
+            int result = null;
+            // Compare the isoPubDate if it's present, otherwise parse the pubDate and use that
+            String a_date = a.isoPubDate ?: iso_utc_formatter.format(pubdate_parse_format.parse(a.pubDate))
+            String b_date = b.isoPubDate ?: iso_utc_formatter.format(pubdate_parse_format.parse(b.pubDate))
+            // result = ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
+            result = ( b_date ).compareTo( a_date )
+            return result;
           }
 
           if ( xml.channel[0].lastBuildDate.size() == 0 ) {
