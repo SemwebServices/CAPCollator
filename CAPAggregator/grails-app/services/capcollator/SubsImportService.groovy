@@ -102,6 +102,9 @@ class SubsImportService {
     
             if ( sub ) {
               log.debug("located existing subscrition for ${subscription_definition.subscription.subscriptionId}");
+              if  ( sub.xPathFilter != subscription_definition.subscription?.xPathFilter )
+                sub.xPathFilter = subscription_definition.subscription?.xPathFilter;
+              sub.save(flush:true, failOnError:true);
               job_progress.numUpdated++;
             }
             else {
@@ -118,6 +121,7 @@ class SubsImportService {
                           languageOnly:subscription_definition.subscription?.languageOnly,
                           highPriorityOnly:subscription_definition.subscription?.highPriorityOnly,
                           officialOnly:subscription_definition.subscription?.officialOnly,
+                          xPathFilter:subscription_definition.subscription?.xPathFilter,
                           xPathFilterId:subscription_definition.subscription?.xPathFilterId,
                           feedXmlTemplate:subscription_definition.subscription?.feedRssXml,
                           feedItemLimit:subscription_definition.subscription?.feedItemsLimit
@@ -139,6 +143,7 @@ class SubsImportService {
                   highPriorityOnly:subscription_definition.subscription?.highPriorityOnly,
                   officialOnly:subscription_definition.subscription?.officialOnly,
                   xPathFilterId:subscription_definition.subscription?.xPathFilterId,
+                  xPathFilter:subscription_definition.subscription?.xPathFilter,
                   feedXmlTemplate:subscription_definition.subscription?.feedRssXml,
                   feedItemLimit:subscription_definition.subscription?.feedItemsLimit
 

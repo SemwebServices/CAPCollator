@@ -49,6 +49,7 @@ public class CapCollatorSystemService {
       }
     }
 
+    log.debug("Notify all observers that state has changed: ${state}");
     capcolSettingsUpdated();
   }
 

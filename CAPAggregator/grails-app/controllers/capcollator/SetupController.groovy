@@ -8,6 +8,7 @@ class SetupController {
 
   def index() {
     def result=[:]
+
     Setting.withTransaction {
       Setting setup_completed = Setting.findByKey('capcollator.setupcompleted') ?: new Setting(key:'capcollator.setupcompleted', value:'false').save(flush:true, failOnError:true);
       
@@ -50,7 +51,6 @@ class SetupController {
   
           log.debug("Settings after update: ${Setting.list()}");
 
-          capCollatorSystemService.freshenState();
         }
 
       }
@@ -58,6 +58,9 @@ class SetupController {
         redirect(controller:'home', action:'index');
       }
     }
+
+
+    capCollatorSystemService.freshenState();
 
     result;
   }

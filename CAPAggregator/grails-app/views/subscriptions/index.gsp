@@ -44,6 +44,7 @@
               <th>Name</th>
               <th>URL</th>
               <th>Type</th>
+              <th>Filter</th>
               <th>Geom</th>
               <th>Actions</th>
             </tr>
@@ -56,6 +57,15 @@
                 <td>${sub.subscriptionName}</td>
                 <td>${sub.subscriptionUrl}</td>
                 <td>${sub.filterType}</td>
+                <td>
+                  <ul>
+                    <li>FilterId: ${sub.xPathFilterId}</li>
+                    <li>XPath: ${sub.xPathFilter}</li>
+                    <li>Language: ${languageOnly ?: 'all'}</li>
+                    <li>High Priority: ${highPriorityOnly ?: 'all'}</li>
+                    <li>Official: ${officialOnly ?: 'all'}</li>
+                  </ul>
+                </td>
                 <td>${sub.filterGeometry}</td>
                 <td>
                   <sec:ifAnyGranted roles="ROLE_ADMIN">

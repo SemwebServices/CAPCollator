@@ -171,7 +171,7 @@ class ESWrapperService {
        SearchResponse searchResponse = esclient.search(searchRequest, RequestOptions.DEFAULT);
 
        if (searchResponse != null) {
-         log.debug("Got search response ${searchResponse.class.name}");
+         // log.debug("Got search response ${searchResponse.class.name}");
 
          def search_hits = searchResponse.getHits()
          result.hits = search_hits.getHits()
@@ -180,7 +180,7 @@ class ESWrapperService {
          if (searchResponse.getAggregations()) {
            result.facets = [:]
            searchResponse.getAggregations().each { entry ->
-             log.debug("Aggregation entry ${entry} ${entry.getName()}");
+             // log.debug("Aggregation entry ${entry} ${entry.getName()}");
              def facet_values = []
              entry.buckets.each { bucket ->
                bucket.each { bi ->
@@ -193,7 +193,7 @@ class ESWrapperService {
        }
     }
     finally {
-      log.debug("Search result(${index},${query}) = ${result?.resultsTotal}");
+      // log.debug("Search result(${index},${query}) = ${result?.resultsTotal}");
     }
 
     result

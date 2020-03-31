@@ -8,6 +8,16 @@ import grails.async.Promise
 import static grails.async.Promises.*
 import java.text.SimpleDateFormat;
 
+import org.w3c.dom.Document;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 @Transactional
 class CapEventHandlerService {
 
@@ -16,6 +26,7 @@ class CapEventHandlerService {
   def eventService
   def gazService
   def feedFeedbackService
+  def capUrlHandlerService
 
   // import org.apache.commons.collections4.map.PassiveExpiringMap;
   // Time to live in millis - 1000 * 60 == 1m 
@@ -92,7 +103,9 @@ class CapEventHandlerService {
       // if ( cap_body.sent != null ) {
       // changing this - use the system timestamp for ordering rather than the date on the alert - which can be odd due to
       // timezone offsets (Incorrectly formatted iso dates don't order properly if they have a timezone offset).
-      cap_notification.evtTimestamp =  new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date())
+      SimpleDateFormat ts_sdf = new SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss.SSS'Z'".toString());
+      ts_sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+      cap_notification.evtTimestamp = ts_sdf.format(new Date())
 
       Map geo_query_cache = [:]
 
@@ -469,9 +482,15 @@ class CapEventHandlerService {
 
   private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, Map cap_notification, Map info_element) {
     List result = []
+
+    // def parsed_xml = capUrlHandlerService.getParsedXML(cap_notification.AlertMetadata.SourceUrl)
+    // Lets parse the source URL as a DOM tree so we can do a traditional XPATH match
+
+    Document d = fetchDOM(cap_notification.AlertMetadata.SourceUrl);
+
     matching_subscriptions?.each { matching_sub ->
       Map sub_as_map = matching_sub.getSourceAsMap();
-      if ( passNonSpatialFilter(sub_as_map, cap_notification, info_element) ) {
+      if ( passNonSpatialFilter(sub_as_map, cap_notification, info_element, d) ) {
         result.add(sub_as_map.shortcode?.toString())
       }
     }
@@ -551,7 +570,8 @@ class CapEventHandlerService {
   }
 
 
-  private boolean passNonSpatialFilter(Map subscription, Map cap_notification, Map info_element) {
+  private boolean passNonSpatialFilter(Map subscription, Map cap_notification, Map info_element, Document d) {
+
     boolean result = true;
 
     if ( ( subscription.languageOnly ) && ( !subscription.languageOnly.equalsIgnoreCase('none') ) ) {
@@ -590,49 +610,42 @@ class CapEventHandlerService {
       }
     }
 
-    if ( subscription.xPathFilterId ) {
-      def filter_closure = null;
-      switch ( subscription.xPathFilterId ) {
-        case 'actual-public':
-          // cap:status='Actual' and //cap:scope='Public'
-          filter_closure = { p_cap_alert, p_info_element -> return ( p_cap_alert.status?.equalsIgnoreCase('actual') && p_cap_alert.scope.equalsIgnoreCase('public') ) }
-          break;
-        case 'actual-public-not-gale':
-          // //cap:status='Actual' and //cap:scope='Public' and not(//cap:event='Kuling')
-          filter_closure = { p_cap_alert, p_info_element -> return ( p_cap_alert.status?.equalsIgnoreCase('actual') && 
-                                                                     p_cap_alert.scope.equalsIgnoreCase('public') &&
-                                                                     p_info_element.event?.toLowerCase()?.contains('kuling') ) }
-          break;
-        case 'none':
-          // 
-          break;
-        case 'test-public-en':
-          // //cap:status= 'Test' and //cap:scope= 'Public' and //cap:language[starts-with(text(), 'en')]
-          filter_closure = { p_cap_alert, p_info_element -> return ( p_cap_alert.status?.equalsIgnoreCase('test') && 
-                                                                     p_cap_alert.scope?.equalsIgnoreCase('public') &&
-                                                                     p_info_element.language?.toLowerCase()?.startsWith('en') ) }
-          break;
-        case 'unfiltered':
-          //
-          break;
-        case 'volcanoes-only':
-          //cap:alert[contains(.,'volcan')]
-          filter_closure = { p_cap_alert, p_info_element -> return (p_info_element.event?.toLowerCase()?.contains('volcan') ||
-                                                                    p_info_element.headline?.toLowerCase()?.contains('volcan') ||
-                                                                    p_info_element.description?.toLowerCase()?.contains('volcan')) }
-          break;
+    // subscription.xPathFilter contains an expath expression
+    // http://www.saxonica.com/documentation/#!xpath-api/jaxp-xpath/factory
+    if ( ( subscription.xPathFilter != null ) && 
+         ( subscription.xPathFilter.length() > 0 ) && 
+         ( subscription.xPathFilter != 'none' ) ) {
+
+      javax.xml.namespace.NamespaceContext ns_ctx = new javax.xml.namespace.NamespaceContext() {
+         @Override
+         public String getNamespaceURI(String prefix) {
+           if ( prefix=='cap' )
+             return 'urn:oasis:names:tc:emergency:cap:1.2'
+           else
+             return null;
+         }
+ 
+         @Override
+         public String getPrefix(String namespaceURI) {
+             return null;
+         }
+ 
+         @SuppressWarnings("rawtypes")
+         @Override
+         public Iterator getPrefixes(String namespaceURI) {
+             return null;
+         }
       }
 
-      if ( filter_closure ) {
-        boolean filter_result = filter_closure(cap_notification.AlertBody, info_element)
-        if ( filter_result ) {
-          log.debug("xPathFilter passed");
-        }
-        else {
-          log.debug("Did not pass xPathFilter - ${subscription.xPathFilterId} urgency:${info_element.urgency} severity:${info_element.severity} certainty:${info_element.certainty}");
-          result = false;
-        }
-      }
+      log.debug("Process xpath filter ${subscription.xPathFilter}");
+      XPathFactory xpathFactory = new net.sf.saxon.xpath.XPathFactoryImpl();
+      XPath xPath = xpathFactory.newXPath();
+      xPath.setNamespaceContext(ns_ctx)
+      result = xPath.compile(subscription.xPathFilter).evaluate(d, XPathConstants.BOOLEAN);
+      log.debug("XPath result: ${result}");
+    }
+    else {
+      log.debug("No XPATH present (${subscription.xPathFilter})");
     }
 
     log.debug("passNonSpatialFilter ${cap_notification.AlertMetadata.compound_identifier} against sub ${subscription?.shortcode} filter ${result?'':'Did not pass'} - returns ${result}");
@@ -739,5 +752,14 @@ class CapEventHandlerService {
     points[points.length-1][0] = points[0][0]
     points[points.length-1][1] = points[0][1]
     return points;
+  }
+
+  // https://www.baeldung.com/java-xpath
+  Document fetchDOM(String alert_url) {
+    log.debug("Fetch alert from ${alert_url}");
+    InputStream is = new URL(alert_url).openStream();
+    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = builderFactory.newDocumentBuilder();
+    return builder.parse(is);
   }
 }

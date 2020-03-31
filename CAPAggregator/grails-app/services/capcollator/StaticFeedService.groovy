@@ -190,7 +190,8 @@ class StaticFeedService {
         client.shutdown()
       }
       else {
-        log.warn("pushToS3(${path}) - no action - bucket name null(${bucket_name}) OR static_feeds_dir null (${static_feeds_dir})");
+        // lets not do this - it's too much cruft in the logs
+        // log.warn("pushToS3(${path}) - no action - bucket name null(${bucket_name}) OR static_feeds_dir null (${static_feeds_dir})");
       }
     }
     catch ( com.amazonaws.AmazonServiceException ase) {
@@ -239,7 +240,7 @@ class StaticFeedService {
                      'xmlns:rss':'http://www.rssboard.org/rss-specification',
                      'xmlns:atom':'http://www.w3.org/2005/Atom',
                      'xmlns:dc':'http://purl.org/dc/elements/1.1/', 
-                     'xmlns:cap':'http://demo.semweb.co/capcollator/', 
+                     'xmlns:cap':'http://alert-hub.org/cap-extensions', 
                      version:"2.0") {
       channel {
         'atom:link'(rel:'self',href:"${feed_base_url}/${subname}/rss.xml", type:"application/rss+xml")
@@ -300,7 +301,6 @@ class StaticFeedService {
           groovy.util.XmlParser xml_parser = new XmlParser(false,true,true)
           xml_parser.startPrefixMapping('atom','http://www.w3.org/2005/Atom');
           xml_parser.startPrefixMapping('','');
-          // xml_parser.processingInstruction('xml-stylesheet', 'type="text/xsl" href="https://cap-alerts.s3.amazonaws.com/rss-style.xsl"');
           result = xml_parser.parse(new File(path+'/rss.xml'))
 
           // This parser ignores processing instructions, so manually re-add a stylesheet
@@ -367,7 +367,6 @@ class StaticFeedService {
             log.debug("watchRssQueue() process ${path_to_write}");
             // def xml_for_feed = rss_cache.get(path_to_write)
             def xml_for_feed = getExistingRss(path_to_write)
-            // <?xml-stylesheet href='https://cap-alerts.s3.amazonaws.com/rss-style.xsl' type='text/css'?>
   
             if ( xml_for_feed == null ) {
               log.error("Unable to find xml for feed with path ${path_to_write} - existing queue cache was null");
@@ -383,9 +382,9 @@ class StaticFeedService {
                 String newfeed = writer.toString();
                 log.debug("Before Replace... ${newfeed.substring(0,50)}");
                 java.lang.CharSequence cs1 = '<rss';
-                java.lang.CharSequence cs2 = '''
-<?xml-stylesheet href='https://alert-feeds.s3.amazonaws.com/rss-style.xsl' type='text/xsl'?>
-<rss''';
+                java.lang.CharSequence cs2 = """
+<?xml-stylesheet href='${alert_xslt}' type='text/xsl'?>
+<rss""".toString();
                 newfeed = newfeed.replace(cs1, cs2);
                 log.debug("After Replace... ${newfeed.substring(0,50)}");
 
@@ -438,23 +437,30 @@ class StaticFeedService {
           // log.debug("Get first info section");
           def info = getFirstInfoSection(node);
     
-          def formatted_pub_date = null;
-          def formatted_pub_date_2 = null;
-          def formatted_write_date = new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss-SSS.z').format(new Date());
+          TimeZone timeZone_utc = TimeZone.getTimeZone("UTC");
+
+          def entry_updated_date = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ').format(new Date(alert_created_systime));
           def rfc822_formatted_write_date = new SimpleDateFormat('EEE, dd MMM yyyy HH:mm:ss Z').format(new Date());
+
+          def iso_pub_date = null;
+          def formatted_pub_date = null;
+
+          def iso_utc_formatter = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ')
+          iso_utc_formatter.setTimeZone(timeZone_utc);
   
+          // Operations that depend on parsing the date in the original alert
           try {
-            formatted_pub_date_2 = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ').format(new Date(alert_created_systime));
             def sdf = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ssX')
             def alert_date = sdf.parse(node?.AlertBody?.sent);
             formatted_pub_date = new SimpleDateFormat('EEE, dd MMM yyyy HH:mm:ss Z').format(alert_date);
+            iso_pub_date = iso_utc_formatter.format(alert_date);
           }
           catch ( Exception e ) {
             log.error("Problem formatting dates for static feed publishing. alert sent at ${node?.AlertBody?.sent}", e);
           }
     
           def atomns = new groovy.xml.Namespace('http://www.w3.org/2005/Atom','atom')
-          def ccns = new groovy.xml.Namespace('http://demo.semweb.co/CapCollator','capcol');
+          def ccns = new groovy.xml.Namespace('http://alert-hub.org/cap-extensions','capcol');
     
           String feed_entry_prefix = capCollatorSystemService.getCurrentState().get('capcollator.feedEntryPrefix') ?: ''
           String feed_entry_postfix = capCollatorSystemService.getCurrentState().get('capcollator.feedEntryPostfix') ?: ''
@@ -466,15 +472,15 @@ class StaticFeedService {
           new_item_node.appendNode( 'link', "${feed_base_url}/${cached_alert_file}".toString());
           new_item_node.appendNode( 'description', info?.description);
           new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
-          new_item_node.appendNode( atomns.'updated', formatted_pub_date_2 )
-          // new_item_node.appendNode( ccns.'dateWritten', formatted_write_date )
+          new_item_node.appendNode( atomns.'updated', entry_updated_date )
           new_item_node.appendNode( ccns.'sourceFeed', node?.AlertMetadata.sourceFeed )
           new_item_node.appendNode( ccns.'alertId', node?.AlertMetadata?.capCollatorUUID )
+          new_item_node.appendNode( ccns.'isoPubDate', iso_pub_date);
     
           //      //'dc:creator'('creator')
           //      //'dc:date'('date')
 
-          log.debug("Static feed appending new node with atom:updated ${formatted_pub_date_2} entry will be sorted based on this value");
+          log.debug("Static feed appending new node with atom:updated ${entry_updated_date} entry will be sorted based on this value");
     
           // The true asks the sort to mutate the source list. Source elements without a pubDate element high - so the none item
           // entries float to the top of the list
@@ -494,7 +500,7 @@ class StaticFeedService {
             xml.channel[0].appendNode('pubDate', rfc822_formatted_write_date)
           }
           else if ( xml.channel[0].pubDate.size() == 1 ) {
-            log.debug("update pub date to ${formatted_pub_date} ?: ${node?.AlertBody?.sent}");
+            log.debug("update pub date to ${rfc822_formatted_write_date}");
             xml.channel[0].pubDate[0].value = rfc822_formatted_write_date
           }
           else {

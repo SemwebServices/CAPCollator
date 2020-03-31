@@ -53,7 +53,7 @@ class CAPIndexingService {
                       highPriorityOnly: sub.highPriorityOnly,
                       officialOnly: sub.officialOnly,
                       xPathFilterId: sub.xPathFilterId,
-                      xPathFilter: null,
+                      xPathFilter: sub.xPathFilter,
                       areaFilterId: null,
                       loadSubsVersion: "1.1"
                     ]
