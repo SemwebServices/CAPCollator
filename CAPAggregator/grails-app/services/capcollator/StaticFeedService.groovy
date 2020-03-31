@@ -486,13 +486,19 @@ class StaticFeedService {
           // entries float to the top of the list
           def pubdate_parse_format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
           xml.channel[0].children().sort(true) { a,b ->
-            int result = null;
             // Compare the isoPubDate if it's present, otherwise parse the pubDate and use that
-            String a_date = a.isoPubDate ?: iso_utc_formatter.format(pubdate_parse_format.parse(a.pubDate))
-            String b_date = b.isoPubDate ?: iso_utc_formatter.format(pubdate_parse_format.parse(b.pubDate))
+           
+
+            String a_date = 'zzz';
+            String b_date = 'zzz';
+            if ( ( a.pubDate?.text() != null ) && ( a.pubDate?.text().length() > 0 ) )
+              a_date = iso_utc_formatter.format(pubdate_parse_format.parse(a.pubDate?.text()))
+
+            if ( ( b.pubDate?.text() != null ) && ( b.pubDate?.text().length() > 0 ) )
+              b_date = iso_utc_formatter.format(pubdate_parse_format.parse(b.pubDate?.text()))
+
             // result = ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
-            result = ( b_date ).compareTo( a_date )
-            return result;
+            return ( b_date ).compareTo( a_date )
           }
 
           if ( xml.channel[0].lastBuildDate.size() == 0 ) {
