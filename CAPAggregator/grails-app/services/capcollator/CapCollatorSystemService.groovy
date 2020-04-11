@@ -62,4 +62,44 @@ public class CapCollatorSystemService {
   public Object getSetting(String key) {
     return this.state[key]
   }
+
+  public void loadLocalFeedSettings(String source_url) {
+    try {
+      def live_json_data = new groovy.json.JsonSlurper().parse(new java.net.URL(source_url))
+      ingestLocalFeedSettings(live_json_data)
+    }
+    catch ( Exception e ) {
+      log.error("problem syncing cap feed list",e);
+    }
+  }
+
+  private void ingestLocalFeedSettings(Object fd) {
+    fd?.each { s ->
+      log.debug("Processing ${s}");
+      try {
+        // Array of maps containing a source elenment
+        if ( s?.uriname ) {
+          log.debug("Validate source ${s}");
+          def source = LocalFeedSettings.findByUriname(s.uriname)
+          if ( source == null ) {
+            source = new LocalFeedSettings(
+                                           uriname: s.uriname,
+                                           alternateFeedURL: s.alternateFeedURL,
+                                           authenticationMethod: s.authenticationMethod,
+                                           credentials: s.credentials).save(flush:true, failOnError:true);
+          }
+          else {
+            source.alternateFeedURL = s.alternateFeedURL
+            source.authenticationMethod = s.authenticationMethod
+            source.credentials = s.credentials
+            source.save(flush:true, failOnError:true);
+          }
+        }
+      }
+      catch ( Exception e ) {
+        log.error("Problem trying to add or update entry ${s?.uriname}",e);
+      }
+    }
+  }
+
 }

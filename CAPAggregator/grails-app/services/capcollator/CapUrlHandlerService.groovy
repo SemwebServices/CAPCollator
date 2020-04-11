@@ -37,13 +37,30 @@ class CapUrlHandlerService {
     String source_feed = context.properties.headers['feed-code'];
     String source_id = context.properties.headers['feed-id'];
     String is_official = context.properties.headers['feed-is-official'];
+    String original_cap_link = cap_link
+
+    LocalFeedSettings lfs = LocalFeedSettings.findByUriname(source_feed)
+    if ( lfs != null ) {
+      log.debug("Have override local feed settings for ${lfs.uriname}");
+
+      switch ( lfs.authenticationMethod ) {
+        case 'pin':
+          cap_link += "?pin=${lfs.credentials}"
+          break;
+        default:
+          break;
+      }
+
+      log.debug("modifed URL: ${cap_link}");
+    }
+
 
     log.debug("Looking in link attribute for cap ${link}");
 
     // Different feeds behave differently wrt properly setting the type attribute. 
     // Until we get to grips a little better - try and parse every link - and if we manage to parse XML, see if the root node is a cap element
 
-    log.debug("  -> processing link ${link}");
+    log.debug("  -> processing link ${link} via ${source_feed}");
 
     boolean completed_ok = false;
     int retries = 0;
@@ -111,7 +128,8 @@ class CapUrlHandlerService {
               log.info("Alert processing exceeded LONG_ALERT_THRESHOLD(${elapsed}) ${cap_link_url}");
             }
 
-            alert_metadata.SourceUrl = cap_link
+            alert_metadata.PrivateSourceUrl = cap_link
+            alert_metadata.SourceUrl = original_cap_link
             alert_metadata.capCollatorUUID = alert_uuid;
             alert_metadata.sourceFeed = source_feed;
             alert_metadata.sourceIsOfficial = is_official;

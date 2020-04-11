@@ -333,6 +333,10 @@ class CapEventHandlerService {
 
   def publishAlert(cap_notification, matching_subscriptions) {
     log.debug("publishAlert - Publishing CAPSubMatch. ${matching_subscriptions}");
+
+    if ( cap_notification.AlertMetadata.PrivateSourceUrl != null ) 
+      cap_notification.AlertMetadata.remove('PrivateSourceUrl');
+
     matching_subscriptions.each { sub_id ->
 
       // Apply other subscription filters
@@ -480,13 +484,17 @@ class CapEventHandlerService {
     result
   }
 
-  private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, Map cap_notification, Map info_element) {
+  private List filterNonGeoProperties(org.elasticsearch.search.SearchHit[] matching_subscriptions, 
+                                      Map cap_notification, 
+                                      Map info_element) {
     List result = []
 
-    // def parsed_xml = capUrlHandlerService.getParsedXML(cap_notification.AlertMetadata.SourceUrl)
-    // Lets parse the source URL as a DOM tree so we can do a traditional XPATH match
+    log.debug("filterNonGeoProperties(...,${cap_notification} ${info_element})");
 
-    Document d = fetchDOM(cap_notification.AlertMetadata.SourceUrl);
+    // In CapUrl handler we might have decorated the the alert URL with some credentials and
+    // put that alert in PrivateSourceUrl. Reuse it here. This URL will be removed before the
+    // json is published so we don't leak credential
+    Document d = fetchDOM(cap_notification.AlertMetadata.PrivateSourceUrl);
 
     matching_subscriptions?.each { matching_sub ->
       Map sub_as_map = matching_sub.getSourceAsMap();

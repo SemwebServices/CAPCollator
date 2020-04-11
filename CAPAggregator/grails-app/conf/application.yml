@@ -207,3 +207,14 @@ staticFeedsDir: /tmp/cap
 staticFeedsBaseUrl: 'https://s3-eu-west-1.amazonaws.com/alert-feeds'
 # We don't usually configure S3 publishing by default.
 # awsBucketName: 'cap-alerts'
+environments:
+    development:
+        capcol:
+            localFeedSettings: "${user.home}/.grails/localFeedSettings.json"
+    test:
+        capcol:
+            localFeedSettings: "${user.home}/.grails/localFeedSettings.json"
+    production:
+        capcol:
+            localFeedSettings: /localFeedSettings.json
+
