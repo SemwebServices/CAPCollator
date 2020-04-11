@@ -104,6 +104,10 @@ class SubsImportService {
               log.debug("located existing subscrition for ${subscription_definition.subscription.subscriptionId}");
               if  ( sub.xPathFilter != subscription_definition.subscription?.xPathFilter )
                 sub.xPathFilter = subscription_definition.subscription?.xPathFilter;
+
+              if ( sub.filterGeometry != filter_geometry )
+                sub.filterGeometry = filter_geometry;
+
               sub.save(flush:true, failOnError:true);
               job_progress.numUpdated++;
             }
