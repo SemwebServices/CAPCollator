@@ -4,6 +4,11 @@ import grails.gorm.transactions.*
 import com.budjb.rabbitmq.publisher.RabbitMessagePublisher
 import static groovy.json.JsonOutput.*
 import org.apache.commons.collections4.map.PassiveExpiringMap;
+import groovyx.net.http.HttpBuilder
+import groovyx.net.http.FromServer
+import groovyx.net.http.ChainedHttpConfig
+import static groovyx.net.http.HttpBuilder.configure
+
 
 /**
  * This is where all CAP URLs detected in feeds, be they atom, RSS, or other source types come to be resolved.
@@ -70,12 +75,28 @@ class CapUrlHandlerService {
         def ts_2 = System.currentTimeMillis();
 
         log.debug("test ${cap_link}");
-        java.net.URL cap_link_url = new java.net.URL(cap_link)
-        java.net.URLConnection conn = cap_link_url.openConnection()
-        conn.setConnectTimeout(5000);
-        conn.setReadTimeout(5000);
-          
-        def detected_content_type = conn.getContentType()
+        // java.net.URL cap_link_url = new java.net.URL(cap_link)
+        // java.net.URLConnection conn = cap_link_url.openConnection()
+        // conn.setConnectTimeout(5000);
+        // conn.setReadTimeout(5000);
+        def detected_content_type = null
+        HttpBuilder http_client = configure {
+          request.uri = cap_link
+          client.clientCustomizer { HttpURLConnection conn ->
+            conn.connectTimeout = 5000;
+          }
+        }
+
+        http_client.head {
+          response.success { FromServer resp ->
+            detected_content_type = FromServer.Header.find( resp.headers, 'Content-Type')?.value
+          }
+
+          response.failure {
+            log.warn("Unable to get last modified from server");
+          }
+        }
+
         log.debug("URL Connection reports content type ${detected_content_type}");
 
         if ( detected_content_type &&
@@ -83,11 +104,29 @@ class CapUrlHandlerService {
                detected_content_type.toLowerCase().startsWith('application/octet-stream') ||   // Because of http://www.gestiondelriesgo.gov.co
                detected_content_type.toLowerCase().startsWith('application/xml') ) ) {
 
+          String response_content = http_client.get {
+            response.parser('application/xml') { ChainedHttpConfig cfg, FromServer fs ->
+              fs.inputStream.text
+            }
+            response.parser('application/octet-stream') { ChainedHttpConfig cfg, FromServer fs ->
+              fs.inputStream.text
+            }
+            response.parser('text/xml') { ChainedHttpConfig cfg, FromServer fs ->
+              fs.inputStream.text
+            }
+
+            response.failure { FromServer resp ->
+              log.debug("Failure fetching content : ${resp}")
+              return null;
+            }
+          }
+
           def parser = new XmlSlurper()
 
           def fetch_completed = System.currentTimeMillis();
 
-          byte[] alert_bytes = conn.getInputStream().getBytes();
+          // byte[] alert_bytes = conn.getInputStream().getBytes();
+          byte[] alert_bytes = response_content.getBytes()
 
           String cached_alert_xml = staticFeedService.writeAlertXML(alert_bytes, source_feed, new Date(ts_2))
 

@@ -9,7 +9,8 @@ class SubAdminConsumer {
 
   static rabbitConfig = [
     "exchange": "CAPExchange",
-    "binding": "CAPSubAdmin.#"
+    "binding": "CAPSubAdmin.#",
+    "transacted": true
   ]
 
   def handleMessage(def body, MessageContext context) {
