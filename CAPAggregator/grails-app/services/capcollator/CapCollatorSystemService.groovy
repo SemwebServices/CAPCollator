@@ -7,7 +7,7 @@ public class CapCollatorSystemService {
   private Map state = null;
 
   public Map getCurrentState() {
-    log.debug("CapCollatorSystemService::getCurrentState()");
+    // log.debug("CapCollatorSystemService::getCurrentState()");
     if ( state==null)
       init();
 
@@ -21,13 +21,13 @@ public class CapCollatorSystemService {
 
   @Publisher
   capcolSettingsUpdated() {
-    log.debug("Broadcast settings updated event so anyone depending on these can update");
+    // log.debug("Broadcast settings updated event so anyone depending on these can update");
     return state;
   }
 
   public synchronized void freshenState() {
 
-    log.debug("Freshen State");
+    // log.debug("Freshen State");
     Setting.withNewSession { session ->
       Setting.withTransaction { ts ->
   

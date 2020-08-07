@@ -1,5 +1,6 @@
 package capcollator
 
+
 import grails.gorm.transactions.*
 import static groovy.json.JsonOutput.*
 
@@ -46,7 +47,7 @@ class RssEventHandlerService {
       log.error("problem handling cap alert ${body} ${context} ${e.message}",e);
       feedFeedbackService.publishFeedEvent(source_feed,
                                            null,
-                                           "problem processing Atom event: ${e.message}");
+                                           "problem processing RSS event: ${e.message}");
 
     }
 
