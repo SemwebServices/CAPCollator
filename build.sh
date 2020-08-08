@@ -5,7 +5,7 @@ export SDKMAN_DIR="/home/ibbo/.sdkman"
 export CC_VER=`grep appVersion ./CAPAggregator/gradle.properties | cut -f2 -d=`
 echo Releasing CAPAggregator ${CC_VER}
 
-sdk use grails 4.0.2
+sdk use grails 4.0.3
 sdk use java 11.0.5.j9-adpt
 cd CAPAggregator
 grails prod war
