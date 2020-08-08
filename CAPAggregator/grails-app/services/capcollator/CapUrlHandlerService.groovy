@@ -23,12 +23,30 @@ class CapUrlHandlerService {
 
   // Alerts can live in the cache for up to 2 minutes
   private Map parsed_alert_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60*2))
+  private Map local_feed_setting_cache = [:]
 
   private static final long LONG_ALERT_THRESHOLD = 2000;
   private static final int MAX_RETRIES = 3;
 
   def process(cap_url) {
     log.debug("RssEventHandlerService::process ${cap_url}");
+  }
+
+  def getLocalFeedSettings(String feed_code) {
+    def result = local_feed_setting_cache[feed_code];
+    if ( result == null ) {
+      LocalFeedSettings.withNewTransaction {
+        LocalFeedSettings lfs = LocalFeedSettings.findByUriname(feed_code)
+        if ( lfs != null ) {
+          result = [ status: 'ModPresent', authenticationMethod: lfs.authenticationMethod, credentials:lfs.credentials ]
+        }
+        else {
+          result = [ status: 'NoModification' ]
+        }
+        local_feed_setting_cache[feed_code] = result;
+      }
+    }
+    return result;
   }
 
   def handleNotification(link,context) {
@@ -44,10 +62,8 @@ class CapUrlHandlerService {
     String is_official = context.properties.headers['feed-is-official'];
     String original_cap_link = cap_link
 
-    LocalFeedSettings lfs = LocalFeedSettings.findByUriname(source_feed)
-    if ( lfs != null ) {
-      log.debug("Have override local feed settings for ${lfs.uriname}");
-
+    def lfs = getLocalFeedSettings(source_feed);
+    if ( lfs?.status=='ModPresent' ) {
       switch ( lfs.authenticationMethod ) {
         case 'pin':
           cap_link += "?pin=${lfs.credentials}"
@@ -75,10 +91,6 @@ class CapUrlHandlerService {
         def ts_2 = System.currentTimeMillis();
 
         log.debug("test ${cap_link}");
-        // java.net.URL cap_link_url = new java.net.URL(cap_link)
-        // java.net.URLConnection conn = cap_link_url.openConnection()
-        // conn.setConnectTimeout(5000);
-        // conn.setReadTimeout(5000);
         def detected_content_type = null
         HttpBuilder http_client = configure {
           request.uri = cap_link
@@ -125,14 +137,12 @@ class CapUrlHandlerService {
 
           def fetch_completed = System.currentTimeMillis();
 
-          // byte[] alert_bytes = conn.getInputStream().getBytes();
           byte[] alert_bytes = response_content.getBytes()
 
           String cached_alert_xml = staticFeedService.writeAlertXML(alert_bytes, source_feed, new Date(ts_2))
 
           parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
           parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-          // def parsed_cap = parser.parse(conn.getInputStream())
 
           def parsed_cap = parser.parse(new ByteArrayInputStream(alert_bytes));
           String alert_uuid = java.util.UUID.randomUUID().toString()
@@ -164,7 +174,7 @@ class CapUrlHandlerService {
 
             def elapsed = alert_metadata.createdAt - ts_1;
             if ( elapsed > LONG_ALERT_THRESHOLD ) {
-              log.info("Alert processing exceeded LONG_ALERT_THRESHOLD(${elapsed}) ${cap_link_url}");
+              log.info("Alert processing exceeded LONG_ALERT_THRESHOLD(${elapsed}) ${cap_link}");
             }
 
             alert_metadata.PrivateSourceUrl = cap_link
@@ -173,8 +183,6 @@ class CapUrlHandlerService {
             alert_metadata.sourceFeed = source_feed;
             alert_metadata.sourceIsOfficial = is_official;
             alert_metadata.cached_alert_xml = cached_alert_xml;
-
-            // alertCacheService.put(alert_uuid,alert_bytes);
 
             if ( latest_expiry && latest_expiry.trim().length() > 0 )
               alert_metadata.Expires = latest_expiry
@@ -205,8 +213,19 @@ class CapUrlHandlerService {
           completed_ok = true;
         }
       }
+      catch ( java.net.SocketTimeoutException ste ) {
+        log.error("Connection timeout: ${cap_link} ${context} ${ste.message}");
+        // sleep for .5s before retry
+        Thread.sleep(500)
+
+        feedFeedbackService.publishFeedEvent(source_feed,
+                                             source_id,
+                                             "problem processing CAP event (retry ${retries}): ${cap_link} ${ste.message}");
+
+        retries++;
+      }
       catch ( Exception e ) {
-        log.error("problem handling cap alert ${cap_link} ${context} ${e.message}",e);
+        log.error("problem handling cap alert ${cap_link} ${context} ${e.message}");
         // sleep for .5s before retry
         Thread.sleep(500)
 

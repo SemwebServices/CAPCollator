@@ -12,29 +12,31 @@ class WebHookService {
   public checkHooks(String feed, Map alert_info) {
     // log.debug("WebHookService::checkHooks(${feed}, ${alert_info}");
 
-    Subscription s = Subscription.findBySubscriptionId(feed);
-    if ( s ) {
-      s.hooks.each { hook ->
-        def builder = configure {
-          request.uri = hook.hookUrl
-        }
-        builder.post {
-          request.contentType = 'application/json'
-          request.body = alert_info
-  
-          // handle response
-          response.success { fromServer, body ->
-            log.debug("Webhook ${feed} ${hook.hookUrl} OK")
+    Subscription.withTransaction {
+      Subscription s = Subscription.findBySubscriptionId(feed);
+      if ( s ) {
+        s.hooks.each { hook ->
+          def builder = configure {
+            request.uri = hook.hookUrl
           }
+          builder.post {
+            request.contentType = 'application/json'
+            request.body = alert_info
+    
+            // handle response
+            response.success { fromServer, body ->
+              log.debug("Webhook ${feed} ${hook.hookUrl} OK")
+            }
   
-          response.error { fromServer, body ->
-            log.debug("Webhook ${feed} ${hook.hookUrl} FAILED ${resp.status}")
+            response.error { fromServer, body ->
+              log.debug("Webhook ${feed} ${hook.hookUrl} FAILED ${resp.status}")
+            }
           }
         }
       }
-    }
-    else {
-      log.warn("Unable to find subscription for feed ${feed}");
+      else {
+        log.warn("Unable to find subscription for feed ${feed}");
+      }
     }
   }
 }

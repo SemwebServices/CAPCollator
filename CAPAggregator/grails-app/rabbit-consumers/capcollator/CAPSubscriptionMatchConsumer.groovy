@@ -12,8 +12,7 @@ class CAPSubscriptionMatchConsumer {
 
   static rabbitConfig = [
     "exchange": "CAPExchange",
-    "binding": "CAPSubMatch.#",
-    "transacted": true
+    "binding": "CAPSubMatch.#"
   ]
 
   def handleMessage(def body, MessageContext context) {

@@ -8,8 +8,8 @@ class ATOMEventConsumer {
   private static int active_counter = 0;
 
   static rabbitConfig = [
-    "queue": "CAPCollatorATOMQueue",
-    "transacted": true
+    "queue": "CAPCollatorATOMQueue"
+    // "transacted": true
   ]
 
   def handleMessage(def body, MessageContext context) {

@@ -18,6 +18,15 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
+
 @Transactional
 class CapEventHandlerService {
 
@@ -32,8 +41,8 @@ class CapEventHandlerService {
   // Time to live in millis - 1000 * 60 == 1m 
   // private Map geo_query_cache = Collections.synchronizedMap(new PassiveExpiringMap(1000*60))
   
+  ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
-  static int queue_size = 0;
   private static final double EARTH_RADIUS_METERS = 6371000.0;
 
   /**
@@ -41,47 +50,20 @@ class CapEventHandlerService {
    */
   def process(cap_notification) {
 
-    // This is a bit fugly - but whilst there are more than 100 events, wait for the processing to slim down the queue
-    while ( queue_size > 25 ) {
-      synchronized(this) {
-        log.debug("blocking on cap event processing pool ${queue_size}");
-        this.wait(10000);
-      }
-    }
-
-    // break out this call here as this needs to be convered into an executor pool, this handler is
-    // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
-    // vertices can slow down processing
-    queue_size++;
-    log.debug("CapEventHandlerService::process - enqueue - size is ${queue_size}");
-
-    // Ideally we would like this call to block until a thread is available to take the request
-    Promise p = task {
+    executor.execute {
       internalProcess(cap_notification)
-    }
-    p.onError { Throwable err ->
-      log.error("Promise error",err);
-    }
-    p.onComplete { result ->
-      log.debug("Promise completed OK");
     }
 
   }
 
-
   def internalProcess(cap_notification) {
 
-    queue_size--;
-
-    // Wake up anyone who might be blocked
-    if ( queue_size < 100 ) {
-      synchronized(this) {
-        this.notifyAll();
-      }
-    }
+    // break out this call here as this needs to be convered into an executor pool, this handler is
+    // becomming a bottleneck in processing as alerts with high numbers of areas and high numbers of
+    // vertices can slow down processing
 
     long start_time = System.currentTimeMillis();
-    log.debug("CapEventHandlerService::process (queue_size :: ${queue_size}, alert from ${cap_notification.AlertMetadata.sourceFeed})"); 
+    log.debug("CapEventHandlerService::process alert from ${cap_notification.AlertMetadata.sourceFeed})"); 
 
     cap_notification.AlertMetadata.compound_identifier = new String(
                                      cap_notification.AlertMetadata.sourceFeed+'|'+
@@ -321,6 +303,10 @@ class CapEventHandlerService {
       }
 
     }
+    catch ( java.net.SocketTimeoutException e ) {
+      log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n");
+      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ message: "Error: ${e.message}".toString() ])
+    }
     catch ( Exception e ) {
       log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n",e);
       feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ message: "Error: ${e.message}".toString() ])
@@ -328,7 +314,6 @@ class CapEventHandlerService {
     finally {
       log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}");
     }
-
   }
 
   def publishAlert(cap_notification, matching_subscriptions) {
@@ -489,7 +474,7 @@ class CapEventHandlerService {
                                       Map info_element) {
     List result = []
 
-    log.debug("filterNonGeoProperties(...,${cap_notification} ${info_element})");
+    // log.debug("filterNonGeoProperties(...,${cap_notification} ${info_element})");
 
     // In CapUrl handler we might have decorated the the alert URL with some credentials and
     // put that alert in PrivateSourceUrl. Reuse it here. This URL will be removed before the

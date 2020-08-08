@@ -8,8 +8,8 @@ class RSSEventConsumer {
   def rssEventHandlerService
 
   static rabbitConfig = [
-    "queue": "CAPCollatorRSSQueue",
-    "transacted": true
+    "queue": "CAPCollatorRSSQueue"
+    // "transacted": true
   ]
 
   def handleMessage(def body, MessageContext context) {

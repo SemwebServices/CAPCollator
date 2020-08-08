@@ -142,7 +142,7 @@ class ESWrapperService {
                  String sortBy,
                  String sortOrder) {
 
-    log.debug("ESSearchService::search - ${index} ${query}")
+    // log.debug("ESSearchService::search - ${index} ${query}")
 
     def result = [:]
     RestHighLevelClient esclient = getClient()
@@ -158,7 +158,7 @@ class ESWrapperService {
          }
          searchSourceBuilder.sort(sortBy, order);
        }
-       log.debug("srb start to add query and aggregration query string is ${query}")
+       // log.debug("srb start to add query and aggregration query string is ${query}")
 
        // https://www.elastic.co/guide/en/elasticsearch/client/java-rest/master/java-rest-high-search.html
        searchSourceBuilder.query(QueryBuilders.wrapperQuery(query))
@@ -201,7 +201,7 @@ class ESWrapperService {
 
 
   def searchQS(String index, String query) {
-    log.debug("ESSearchService::search - ${index} ${query}")
+    // log.debug("ESSearchService::search - ${index} ${query}")
     def result = [:]
     RestHighLevelClient esclient = getClient()
     try {
@@ -221,7 +221,7 @@ class ESWrapperService {
          if (searchResponse.getAggregations()) {
            result.facets = [:]
            searchResponse.getAggregations().each { entry ->
-             log.debug("Aggregation entry ${entry} ${entry.getName()}");
+             // log.debug("Aggregation entry ${entry} ${entry.getName()}");
              def facet_values = []
              entry.buckets.each { bucket ->
                bucket.each { bi ->

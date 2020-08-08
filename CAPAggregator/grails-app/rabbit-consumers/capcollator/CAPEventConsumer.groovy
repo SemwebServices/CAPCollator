@@ -8,8 +8,8 @@ class CAPEventConsumer {
 
   static rabbitConfig = [
     "exchange": "CAPExchange",
-    "binding": "CAPAlert.#",
-    "transacted": true
+    "binding": "CAPAlert.#"
+    // "transacted": true
   ]
 
   def handleMessage(def body, MessageContext context) {
