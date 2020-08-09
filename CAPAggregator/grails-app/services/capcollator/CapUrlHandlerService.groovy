@@ -9,6 +9,11 @@ import groovyx.net.http.FromServer
 import groovyx.net.http.ChainedHttpConfig
 import static groovyx.net.http.HttpBuilder.configure
 
+// Moving to Apache http client implementation for HttpBuilderNG
+import groovyx.net.http.ApacheHttpBuilder
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.client.config.RequestConfig
+
 
 /**
  * This is where all CAP URLs detected in feeds, be they atom, RSS, or other source types come to be resolved.
@@ -92,10 +97,14 @@ class CapUrlHandlerService {
 
         log.debug("test ${cap_link}");
         def detected_content_type = null
-        HttpBuilder http_client = configure {
+
+        HttpBuilder http_client = ApacheHttpBuilder.configure {
           request.uri = cap_link
-          client.clientCustomizer { HttpURLConnection conn ->
-            conn.connectTimeout = 5000;
+          client.clientCustomizer { HttpClientBuilder builder ->
+            RequestConfig.Builder requestBuilder = RequestConfig.custom()
+            requestBuilder.connectTimeout = 5000
+            requestBuilder.connectionRequestTimeout = 5000
+            builder.defaultRequestConfig = requestBuilder.build()
           }
         }
 
