@@ -21,6 +21,8 @@ import org.apache.http.client.config.RequestConfig
 @Transactional
 class CapUrlHandlerService {
 
+  private static int MAX_HTTP_TIME = 20*1000; // 20s
+
   RabbitMessagePublisher rabbitMessagePublisher
   def eventService
   def staticFeedService
@@ -102,45 +104,41 @@ class CapUrlHandlerService {
           request.uri = cap_link
           client.clientCustomizer { HttpClientBuilder builder ->
             RequestConfig.Builder requestBuilder = RequestConfig.custom()
-            requestBuilder.connectTimeout = 5000
-            requestBuilder.connectionRequestTimeout = 5000
+            requestBuilder.connectTimeout = MAX_HTTP_TIME
+            requestBuilder.connectionRequestTimeout = MAX_HTTP_TIME
             builder.defaultRequestConfig = requestBuilder.build()
           }
         }
 
-        http_client.head {
-          response.success { FromServer resp ->
-            detected_content_type = FromServer.Header.find( resp.headers, 'Content-Type')?.value
+        String response_content = http_client.get {
+          response.parser('application/xml') { ChainedHttpConfig cfg, FromServer fs ->
+            fs.inputStream.text
+          }
+          response.parser('application/octet-stream') { ChainedHttpConfig cfg, FromServer fs ->
+            fs.inputStream.text
+          }
+          response.parser('text/xml') { ChainedHttpConfig cfg, FromServer fs ->
+            fs.inputStream.text
           }
 
-          response.failure {
-            log.warn("Unable to get last modified from server");
+          response.failure { FromServer resp ->
+            log.debug("Failure fetching content : ${resp}")
+            return null;
           }
+
+          response.success { resp, content ->
+            detected_content_type = FromServer.Header.find( resp.headers, 'Content-Type')?.value
+            return content;
+          }
+
         }
 
-        log.debug("URL Connection reports content type ${detected_content_type}");
+        log.debug("URL Connection reports content type (In response to HEAD) ${detected_content_type}");
 
         if ( detected_content_type &&
              ( detected_content_type.toLowerCase().startsWith('text/xml') ||
                detected_content_type.toLowerCase().startsWith('application/octet-stream') ||   // Because of http://www.gestiondelriesgo.gov.co
                detected_content_type.toLowerCase().startsWith('application/xml') ) ) {
-
-          String response_content = http_client.get {
-            response.parser('application/xml') { ChainedHttpConfig cfg, FromServer fs ->
-              fs.inputStream.text
-            }
-            response.parser('application/octet-stream') { ChainedHttpConfig cfg, FromServer fs ->
-              fs.inputStream.text
-            }
-            response.parser('text/xml') { ChainedHttpConfig cfg, FromServer fs ->
-              fs.inputStream.text
-            }
-
-            response.failure { FromServer resp ->
-              log.debug("Failure fetching content : ${resp}")
-              return null;
-            }
-          }
 
           def parser = new XmlSlurper()
 
@@ -229,7 +227,7 @@ class CapUrlHandlerService {
 
         feedFeedbackService.publishFeedEvent(source_feed,
                                              source_id,
-                                             "problem processing CAP event (retry ${retries}): ${cap_link} ${ste.message}");
+                                             "TIMEOUT processing CAP URL (retry ${retries}/elapsed ${System.currentTimeMillis()-ts_1}): ${cap_link} ${ste.message}");
 
         retries++;
       }
@@ -240,7 +238,7 @@ class CapUrlHandlerService {
 
         feedFeedbackService.publishFeedEvent(source_feed,
                                              source_id,
-                                             "problem processing CAP event (retry ${retries}): ${cap_link} ${e.message}");
+                                             "problem processing CAP URL (retry ${retries}/elapsed ${System.currentTimeMillis()-ts_1}): ${cap_link} ${e.message}");
 
 
         retries++;

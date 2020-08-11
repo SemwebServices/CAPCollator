@@ -27,8 +27,19 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
+import groovyx.net.http.HttpBuilder
+import groovyx.net.http.FromServer
+import groovyx.net.http.ChainedHttpConfig
+import static groovyx.net.http.HttpBuilder.configure
+import groovyx.net.http.ApacheHttpBuilder
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.client.config.RequestConfig
+
+
 @Transactional
 class CapEventHandlerService {
+
+  private static int MAX_HTTP_TIME = 20*1000; // 20s
 
   RabbitMessagePublisher rabbitMessagePublisher
   def ESWrapperService
@@ -749,10 +760,45 @@ class CapEventHandlerService {
 
   // https://www.baeldung.com/java-xpath
   Document fetchDOM(String alert_url) {
-    log.debug("Fetch alert from ${alert_url}");
-    InputStream is = new URL(alert_url).openStream();
-    DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-    DocumentBuilder builder = builderFactory.newDocumentBuilder();
-    return builder.parse(is);
+
+    Document result = null;
+
+    HttpBuilder http_client = ApacheHttpBuilder.configure {
+      request.uri = alert_url
+      client.clientCustomizer { HttpClientBuilder builder ->
+        RequestConfig.Builder requestBuilder = RequestConfig.custom()
+        requestBuilder.connectTimeout = MAX_HTTP_TIME
+        requestBuilder.connectionRequestTimeout = MAX_HTTP_TIME
+        builder.defaultRequestConfig = requestBuilder.build()
+      }
+    }
+
+    String response_content = http_client.get {
+      response.parser('application/xml') { ChainedHttpConfig cfg, FromServer fs ->
+        fs.inputStream.text
+      }
+      response.parser('application/octet-stream') { ChainedHttpConfig cfg, FromServer fs ->
+        fs.inputStream.text
+      }
+      response.parser('text/xml') { ChainedHttpConfig cfg, FromServer fs ->
+        fs.inputStream.text
+      }
+
+      response.failure { FromServer resp ->
+        log.debug("Failure fetching content : ${resp}")
+        return null;
+      }
+    }
+
+    if ( response_content ) {
+      log.debug("Fetch alert from ${alert_url}");
+      byte[] content_bytes = response_content.getBytes();
+      InputStream is = new ByteArrayInputStream(content_bytes)
+      DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder builder = builderFactory.newDocumentBuilder();
+      result = builder.parse(is);
+    }
+
+    return result;
   }
 }
