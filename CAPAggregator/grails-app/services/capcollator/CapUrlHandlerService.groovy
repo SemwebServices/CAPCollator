@@ -21,7 +21,7 @@ import org.apache.http.client.config.RequestConfig
 @Transactional
 class CapUrlHandlerService {
 
-  private static int MAX_HTTP_TIME = 20*1000; // 20s
+  private static int MAX_HTTP_TIME = 4*1000; // 4s
 
   RabbitMessagePublisher rabbitMessagePublisher
   def eventService
