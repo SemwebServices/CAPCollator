@@ -160,7 +160,13 @@
                         <div class="col-sm-10"><p class="form-control-static"><g:link controller="alert" action="details" id="${alsrc.AlertBody.identifier}">${alsrc.AlertBody.identifier}</g:link><g:if test="${alsrc.AlertMetadata.Expires != null}">&nbsp;(Expires: ${alsrc.AlertMetadata.Expires})</g:if></p></div>
                       </div>
                       
-                      <div class="form-group"> <label class="col-sm-2 control-label">Alert Sender</label> <div class="col-sm-10"><p class="form-control-static">${alsrc.AlertBody.sender} (via feed ${alsrc.AlertMetadata.sourceFeed}</a>)</p></div> </div>
+                      <div class="form-group"> 
+                        <label class="col-sm-2 control-label">Alert Sender</label> 
+                        <div class="col-sm-10">
+                          <p class="form-control-static">${alsrc.AlertBody.sender} (via feed 
+                            <a href="/feedFacade/sourcefeed/feed/${alsrc.AlertMetadata.sourceFeed}">${alsrc.AlertMetadata.sourceFeed}</a>)</p>
+                        </div> 
+                      </div>
                       <div class="form-group"> <label class="col-sm-2 control-label">Times:</label> <div class="col-sm-10">
                           <table class="table table-striped">
                             <tr><th>Date on alert</th><td>${alsrc.AlertBody.sent}</td></tr>
