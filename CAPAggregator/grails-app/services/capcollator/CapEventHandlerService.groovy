@@ -156,6 +156,8 @@ class CapEventHandlerService {
                       cap_notification.AlertMetadata.errorShapes = [ inner_polygon_ring.toString() ]
                     else
                       cap_notification.AlertMetadata.errorShapes.add(inner_polygon_ring.toString())
+
+                    cap_notification.AlertMetadata.spatialErrorDetail = match_result.spatialErrorDetail
                   }
                   else {
                     // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
@@ -252,6 +254,8 @@ class CapEventHandlerService {
                           cap_notification.AlertMetadata.errorShapes = [ match_result.approximated_poly.toString() ]
                         else
                           cap_notification.AlertMetadata.errorShapes.add(match_result.approximated_poly.toString() )
+
+                        cap_notification.AlertMetadata.spatialErrorDetail = match_result.spatialErrorDetail
                       }
                       else {
                         // We enrich the parsed JSON document with a version of the polygon that ES can index to make the whole
@@ -301,7 +305,8 @@ class CapEventHandlerService {
         if ( cap_notification.AlertMetadata.tags.find { it.startsWith('GEO_SEARCH_ERROR') } != null ) {
           feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
                                                null,
-                                               [ message: "GEO_SEARCH_ERROR",
+                                               [ key: "GEO_SEARCH_ERROR / ${cap_notification?.AlertMetadata.compound_identifier}",
+                                                 message: cap_notification?.AlertMetadata.spatialErrorDetail,
                                                  matchedSubscriptions:matching_subscriptions,
                                                  tags:cap_notification.AlertMetadata.tags,
                                                  history:cap_notification.AlertMetadata.CCHistory] );
@@ -310,17 +315,18 @@ class CapEventHandlerService {
       else {
         feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,
                                              null,
-                                             [ message: "Unable to find any INFO element in alert XML"] );
+                                             [ key:"NO_INFO_ELEMENT / ${cap_notification?.AlertMetadata.compound_identifier}", 
+                                               message: "Unable to find any INFO element in alert XML"] );
       }
 
     }
     catch ( java.net.SocketTimeoutException e ) {
       log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n");
-      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ message: "Error: ${e.message}".toString() ])
+      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ key:'NETWORK_ERROR_FETCHING_ALERT', message: "Error: ${e.message}".toString() ])
     }
     catch ( Exception e ) {
       log.debug("CapEventHandlerService::internalProcess Exception processing CAP notification:\n${cap_notification}\n",e);
-      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ message: "Error: ${e.message}".toString() ])
+      feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ key:'GENERAL_EXCEPTION_PROCESSING_ALERT', message: "Error: ${e.message}".toString() ])
     }
     finally {
       log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}");
@@ -424,6 +430,26 @@ class CapEventHandlerService {
         result.subscriptions = matching_subs.hits;
       }
     }
+    catch ( org.elasticsearch.ElasticsearchStatusException esse ) {
+      log.error("[point] SEARCH ERROR(${e.message}):: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -H 'Content-Type: application/json' -d '${query}'")
+
+      Throwable[] s = esse.getSuppressed();
+      if ( s != null ) {
+
+        s.each { se ->
+          if ( se instanceof org.elasticsearch.client.ResponseException )  {
+            org.elasticsearch.client.ResponseException re = se
+            org.apache.http.HttpEntity httpe = re.getResponse().getEntity();
+            def slurper = new groovy.json.JsonSlurper()
+            def parsed_resp = slurper.parse(httpe.getContent())
+            log.debug("response exception content: ${parsed_resp}");
+            String first_reason = parsed_resp?.error?.root_cause?.get(0)?.reason
+            result.messages.add(first_reason);
+            result.spatialErrorDetail = first_reason;
+          }
+        }
+      }
+    }
     catch ( Exception e ) {
       result.messages.add((e.message+'\n'+query).toString());
       result.status='ERROR';
@@ -466,10 +492,34 @@ class CapEventHandlerService {
         result.subscriptions = matching_subs.hits;
       }
     }
+    catch ( org.elasticsearch.ElasticsearchStatusException esse ) {
+      log.error("Detailed message : ${esse.getDetailedMessage()}");
+
+      Throwable[] s = esse.getSuppressed(); 
+      if ( s != null ) {
+
+        s.each { se ->
+          if ( se instanceof org.elasticsearch.client.ResponseException )  {
+            org.elasticsearch.client.ResponseException re = se
+            org.apache.http.HttpEntity httpe = re.getResponse().getEntity();
+            def slurper = new groovy.json.JsonSlurper()
+            def parsed_resp = slurper.parse(httpe.getContent())
+            log.debug("response exception content: ${parsed_resp}");
+            String first_reason = parsed_resp?.error?.root_cause?.get(0)?.reason
+            result.messages.add(first_reason);
+            result.spatialErrorDetail = first_reason;
+          }
+        }
+      }
+
+      result.messages.add((esse.message+'\n'+query).toString());
+      result.status='ERROR';
+      log.error("[polygon] SEARCH ERROR(${esse.message}):: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -H 'Content-Type: application/json' -d '${query}'", esse)
+    }
     catch ( Exception e ) {
       result.messages.add((e.message+'\n'+query).toString());
       result.status='ERROR';
-      log.error("[polygon] SEARCH ERROR(${e.message}):: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -H 'Content-Type: application/json' -d '${query}'")
+      log.error("[polygon] SEARCH ERROR(${e.message}):: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -H 'Content-Type: application/json' -d '${query}'", e)
     }
     finally {
       log.debug("search completed ok");
@@ -567,7 +617,7 @@ class CapEventHandlerService {
       log.error("Problem in matchSubscriptionCircleAsPolygon(${lat},${lon},${radius},${cap_notification})");
       result.messages.add((e.message+'\n'+query).toString());
       result.status='ERROR';
-      log.error("[circleAsPoly] SEARCH ERROR(${e.message}):: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -H 'Content-Type: application/json' -d '${query}'")
+      log.error("[circleAsPoly] SEARCH ERROR(${e.message}):: Validate with\ncurl -X GET 'http://eshost:9200/alertssubscriptions/_search' -H 'Content-Type: application/json' -d '${query}'", e)
     }
 
     result
