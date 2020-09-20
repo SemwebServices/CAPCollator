@@ -93,8 +93,3 @@ CAPCollator can track usage using google analytics. Add your GTM Code to TOMCAT_
 Example ATOM feed
 
 https://alert-feeds.s3.amazonaws.com/unfiltered/rss.xml
-
-
-
-
-
