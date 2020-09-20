@@ -25,5 +25,11 @@ podTemplate(
         }
       }
     }
+
+   stage ('Remove old builds') {
+      //keep 3 builds per branch
+      properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '3', numToKeepStr: '3']]]);
+    }
   }
+
 }
