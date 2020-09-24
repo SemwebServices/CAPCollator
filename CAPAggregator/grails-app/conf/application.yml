@@ -159,11 +159,11 @@ environments:
     production:
         dataSource:
             dbCreate: update
-            url: jdbc:postgresql://postgres:5432/capcollatorprod
-            username: capcollator
-            password: capcollator
-            driverClassName: org.postgresql.Driver
-            dialect: org.hibernate.dialect.PostgreSQLDialect
+            url: "${CC_DB_URL:jdbc:postgresql://postgres:5432/capcollatorprod}"
+            username: "${CC_USERNAME:capcollator}"
+            password: "${CC_PASSWORD:capcollator}"
+            driverClassName: "${CC_JDBC_DRIVER:org.postgresql.Driver}"
+            dialect: "${CC_HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}"
             properties:
                 jmxEnabled: true
                 initialSize: 5
@@ -182,15 +182,6 @@ environments:
                 testOnReturn: false
                 jdbcInterceptors: ConnectionState
                 defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
----
-rabbitmq:
-    connections:
-      - name: localRMQ
-        host: rabbitmq
-        username: cap
-        password: cap
-        automaticReconnect: true
-        requestedHeartbeat: 60s
 ---
 elasticSearch:
     client:

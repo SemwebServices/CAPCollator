@@ -43,3 +43,17 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 	[pattern: '/**',             filters: 'JOINED_FILTERS']
 ]
 
+
+rabbitmq = [
+  connections:[
+    [
+      name: 'localRMQ',
+      host: System.getenv('RABBIT_HOST')?:'rabbitmq',
+      username: System.getenv('CAP_RABBIT_USER')?:'cap',
+      password: System.getenv('CAP_RABBIT_PASS')?:'cap',
+      automaticReconnect: true,
+      requestedHeartbeat: 120
+    ]
+  ]
+]
+
