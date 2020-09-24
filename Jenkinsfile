@@ -45,6 +45,51 @@ podTemplate(
       }
     }
 
+    stage('Publish Docker Image') {
+      container('docker') {
+        dir('docker') {
+          if ( checkout_details?.GIT_BRANCH == 'master' ) {
+            println("Considering build tag : ${constructed_tag} version:${props.appVersion}");
+            // Some interesting stuff here https://github.com/jenkinsci/pipeline-examples/pull/83/files
+            if ( !is_snapshot ) {
+              do_k8s_update=true
+              docker.withRegistry('','semwebdockerhub') {
+                println("Publishing released version with latest tag and semver ${semantic_version_components}");
+                docker_image.push('latest')
+                docker_image.push("v${app_version}".toString())
+                docker_image.push("v${semantic_version_components[0]}.${semantic_version_components[1]}".toString())
+                docker_image.push("v${semantic_version_components[0]}".toString())
+                deploy_cfg='deploy_latest.yaml'
+              }
+            }
+            else {
+              docker.withRegistry('','semwebdockerhub') {
+                println("Publishing snapshot-latest");
+                docker_image.push('snapshot-latest')
+                deploy_cfg='deploy_snapshot.yaml'
+              }
+            }
+          }
+          else {
+            println("Not publishing docker image for branch ${checkout_details?.GIT_BRANCH}. Please merge to master for a docker image build");
+          }
+        }
+      }
+    }
+
+    stage('Rolling Update') {
+      if ( deploy_cfg != null ) {
+          println("Attempt to deploy : ${deploy_cfg}");
+          // kubernetesDeploy(
+          //   // Credentials for k8s to run the required deployment commands
+          //   kubeconfigId: 'local_k8s',
+          //   // Definition of the deployment
+          //   configs: "k8s/${deploy_cfg}",
+          // )
+      }
+    }
+
+
 
     stage ('Remove old builds') {
       //keep 3 builds per branch
