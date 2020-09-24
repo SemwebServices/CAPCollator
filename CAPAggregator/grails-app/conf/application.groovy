@@ -57,3 +57,15 @@ rabbitmq = [
   ]
 ]
 
+elasticSearch = [
+  client:[
+    mode: 'transport'
+    hosts:[
+      [ 
+        host: System.getenv('CC_ES_HOST')?:'elasticsearch',
+        port: 9300
+      ]
+    ]
+  ]
+]
+

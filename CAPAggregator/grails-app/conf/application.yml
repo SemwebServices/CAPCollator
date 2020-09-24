@@ -183,12 +183,6 @@ environments:
                 jdbcInterceptors: ConnectionState
                 defaultTransactionIsolation: 2 # TRANSACTION_READ_COMMITTED
 ---
-elasticSearch:
-    client:
-        mode: 'transport'
-        hosts:
-        - {host: 'elasticsearch', port: 9300}
----
 gtmcode: none
 mapskey: none
 

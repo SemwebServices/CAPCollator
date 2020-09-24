@@ -12,7 +12,16 @@ class BootStrap {
   def capCollatorSystemService
 
   def init = { servletContext ->
-    log.info("Starting CAPCollator. ${grailsApplication.metadata?.getApplicationName()} ${grailsApplication.metadata?.getApplicationVersion()}");
+
+    log.info("CAPAggregator Starting.....");
+    log.info("  -> rabbitmq.connections.host: ${grailsApplication.config.rabbitmq.connections.host}");
+    log.info("  -> rabbitmq.connections.username: ${grailsApplication.config.rabbitmq.connections[0].username}");
+    log.info("  -> datasource.url : ${grailsApplication.config.dataSource.url}");
+    log.info("  -> datasource.username : ${grailsApplication.config.dataSource.username}");
+    log.info("  -> datasource.dialect : ${grailsApplication.config.dataSource.dialect}");
+    log.info("  -> datasource.driverClassName : ${grailsApplication.config.dataSource.driverClassName}");
+    log.info("  -> grails.serverUrl : ${grailsApplication.config.grails?.serverUrl}");
+    log.info("  -> esconfig : ${grailsApplication.config.grails?.elasticsearch?.client}");
 
     
     LocalFeedSettings.withTransaction { status ->
