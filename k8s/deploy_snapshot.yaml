@@ -15,6 +15,10 @@ spec:
         app: cc-pod
         role: rolling-update
     spec:
+      volumes:
+      - name: cc-pv-storage
+        persistentVolumeClaim:
+          claimName: cc-pv-claim
       containers:
       - name: cc-service-container-pod
         image: semweb/caphub_aggregator:snapshot-latest
@@ -27,6 +31,9 @@ spec:
         envFrom:
           - configMapRef:
               name: cap
+        volumeMounts:
+          - mountPath: "/var/www/html/cap"
+            name: "cc-pv-storage"
   strategy:
     type: RollingUpdate
     rollingUpdate:
