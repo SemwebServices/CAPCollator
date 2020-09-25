@@ -71,3 +71,7 @@ elasticSearch = [
   ]
 ]
 
+eshost = System.getenv('CC_ES_HOST')?:'elasticsearch';
+
+println("ES config block: ${elasticSearch}");
+
