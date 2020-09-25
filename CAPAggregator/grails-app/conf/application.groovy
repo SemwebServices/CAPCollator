@@ -57,6 +57,8 @@ rabbitmq = [
   ]
 ]
 
+println("\n\nCC_ES_HOST:: ${System.getenv('CC_ES_HOST')}\n\n");
+
 elasticSearch = [
   client:[
     mode: 'transport',

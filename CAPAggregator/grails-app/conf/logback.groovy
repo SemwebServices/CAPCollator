@@ -53,6 +53,7 @@ else {
     logger ('grails.app.jobs', WARN)
     logger ('grails.app.services', WARN)
     logger ('grails.app.controllers', WARN)
+    logger ('capaggregator', INFO)
     logger ('capcollator', INFO)
     logger ('capcollator.AlertCacheService', WARN)
     logger ('org.hibernate.orm.deprecation', ERROR)
