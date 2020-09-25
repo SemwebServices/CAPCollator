@@ -59,7 +59,7 @@ rabbitmq = [
 
 elasticSearch = [
   client:[
-    mode: 'transport'
+    mode: 'transport',
     hosts:[
       [ 
         host: System.getenv('CC_ES_HOST')?:'elasticsearch',
