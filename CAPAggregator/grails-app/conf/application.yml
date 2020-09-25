@@ -186,10 +186,11 @@ environments:
 gtmcode: none
 mapskey: none
 
+# These have all moved to DB config
 SystemBaseURL: 'http://demo.semweb.co/CAPCollator'
-
 staticFeedsDir: /tmp/cap
 staticFeedsBaseUrl: 'https://s3-eu-west-1.amazonaws.com/alert-feeds'
+
 # We don't usually configure S3 publishing by default.
 # awsBucketName: 'cap-alerts'
 environments:
