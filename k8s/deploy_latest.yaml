@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capaggregator
+  namespace: swcaptest
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: cc-pod
+  template:
+    metadata:
+      labels:
+        app: cc-pod
+        role: rolling-update
+    spec:
+      volumes:
+      - name: cc-pv-storage
+        persistentVolumeClaim:
+          claimName: cc-pv-claim
+      containers:
+      - name: cc-service-container-pod
+        image: semweb/caphub_aggregator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+          - name: UNUSED_PROP
+            value: "jdbc:postgresql://pg12-postgresql.default:5432/capcollator"
+        envFrom:
+          - configMapRef:
+              name: cap
+        volumeMounts:
+          - mountPath: "/var/www/html/cap"
+            name: "cc-pv-storage"
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cc-service
+  namespace: swcaptest
+  labels:
+    app: cc-service
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: cc-pod
+
