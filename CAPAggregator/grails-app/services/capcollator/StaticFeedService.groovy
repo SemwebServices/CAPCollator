@@ -161,6 +161,7 @@ class StaticFeedService {
 
   // IF therw are S3 credentals configured, push the alert there also
   private pushToS3(String path) {
+    boolean pushed = false;
     try {
       if ( ( bucket_name != null ) && 
            ( bucket_name.length() > 0 ) && 
@@ -188,6 +189,7 @@ class StaticFeedService {
         log.debug("Result of s3.putObject: ${result}");
 
         client.shutdown()
+        pushed=true;
       }
       else {
         // lets not do this - it's too much cruft in the logs
@@ -198,7 +200,7 @@ class StaticFeedService {
       log.error("Problem with AWS mirror",ase);
     }
     finally {
-      log.info("pushToS3(${path}) complete");
+      log.info("pushToS3(${path}) complete. pushed=${pushed}");
     }
   }
 

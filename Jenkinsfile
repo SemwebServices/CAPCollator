@@ -80,12 +80,12 @@ podTemplate(
     stage('Rolling Update') {
       if ( deploy_cfg != null ) {
           println("Attempt to deploy : ${deploy_cfg}");
-          // kubernetesDeploy(
-          //   // Credentials for k8s to run the required deployment commands
-          //   kubeconfigId: 'local_k8s',
-          //   // Definition of the deployment
-          //   configs: "k8s/${deploy_cfg}",
-          // )
+          kubernetesDeploy(
+            // Credentials for k8s to run the required deployment commands
+            kubeconfigId: 'local_k8s',
+            // Definition of the deployment
+            configs: "k8s/${deploy_cfg}",
+          )
       }
     }
 
