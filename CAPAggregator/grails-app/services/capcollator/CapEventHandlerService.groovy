@@ -39,7 +39,10 @@ import org.apache.http.client.config.RequestConfig
 @Transactional
 class CapEventHandlerService {
 
-  private static int MAX_HTTP_TIME = 20*1000; // 20s
+  // Initialise MAX_HTTP_TIME to 20s, but this is no longer static. We plan to reduce this number as the number
+  // of pending notifications increases - so that at times of high throughput, requests will fail faster to clear
+  // any backlog
+  private int MAX_HTTP_TIME = 20*1000; // 20s
 
   RabbitMessagePublisher rabbitMessagePublisher
   def ESWrapperService
@@ -47,6 +50,8 @@ class CapEventHandlerService {
   def gazService
   def feedFeedbackService
   def capUrlHandlerService
+
+  int active_tasks = 0;
 
   // import org.apache.commons.collections4.map.PassiveExpiringMap;
   // Time to live in millis - 1000 * 60 == 1m 
@@ -60,6 +65,13 @@ class CapEventHandlerService {
    * Fired when we have detected a CAP event, to capture the event and index it in our local ES index
    */
   def process(cap_notification) {
+
+    if ( active_tasks < 10 )
+      MAX_HTTP_TIME = 20000; // 20s
+    else
+      MAX_HTTP_TIME = 4000; // 4s
+
+    log.info("CapEventHandlerService::process - active notifications= ${++active_tasks} MaxTime=${MAX_HTTP_TIME}");
 
     executor.execute {
       internalProcess(cap_notification)
@@ -93,7 +105,6 @@ class CapEventHandlerService {
         cap_notification.AlertMetadata['warnings'] = []
       }
 
-      // if ( cap_body.sent != null ) {
       // changing this - use the system timestamp for ordering rather than the date on the alert - which can be odd due to
       // timezone offsets (Incorrectly formatted iso dates don't order properly if they have a timezone offset).
       SimpleDateFormat ts_sdf = new SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss.SSS'Z'".toString());
@@ -329,7 +340,7 @@ class CapEventHandlerService {
       feedFeedbackService.publishFeedEvent(cap_notification.AlertMetadata.sourceFeed,null,[ key:'GENERAL_EXCEPTION_PROCESSING_ALERT', message: "Error: ${e.message}".toString() ])
     }
     finally {
-      log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}");
+      log.info("CapEventHandlerService::internalProcess complete elapsed=${System.currentTimeMillis() - start_time}. active=${--active_tasks}");
     }
   }
 
@@ -819,6 +830,7 @@ class CapEventHandlerService {
         RequestConfig.Builder requestBuilder = RequestConfig.custom()
         requestBuilder.connectTimeout = MAX_HTTP_TIME
         requestBuilder.connectionRequestTimeout = MAX_HTTP_TIME
+        requestBuilder.socketTimeout = MAX_HTTP_TIME;
         builder.defaultRequestConfig = requestBuilder.build()
       }
     }
