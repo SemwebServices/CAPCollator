@@ -11,7 +11,7 @@ class RssEventHandlerService {
   def feedFeedbackService
 
   def handleNotification(body,context) {
-    log.debug("RssEventHandlerService::handleNotification(...,${context})");
+    log.info("RssEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
 
     String source_feed = context.properties.headers['feed-code'];

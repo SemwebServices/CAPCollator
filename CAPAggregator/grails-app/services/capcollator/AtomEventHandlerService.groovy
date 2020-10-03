@@ -13,7 +13,7 @@ class AtomEventHandlerService {
   private static long LONG_ALERT_THRESHOLD = 2000;
 
   def handleNotification(body,context) {
-    log.debug("AtomEventHandlerService::handleNotification(...,${context})");
+    log.info("AtomEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
     String source_feed = context.properties.headers['feed-code'];
 

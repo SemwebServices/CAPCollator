@@ -58,7 +58,7 @@ class CapUrlHandlerService {
 
   def handleNotification(link,context) {
 
-    log.debug("RssEventHandlerService::handleNotification(...,${context})");
+    log.info("RssEventHandlerService::handleNotification(...,${context})");
     log.debug("${context.properties.headers}");
 
     def ts_1 = System.currentTimeMillis();
@@ -216,7 +216,11 @@ class CapUrlHandlerService {
           }
         }
         else {
-          log.warn("${cap_link} (content type ${detected_content_type}) seems not to be XML and therefore cannot be a CAP message - skipping");
+          log.warn("${cap_link} (content type ${detected_content_type}) - unable to parse");
+          if ( parsed_cap == null ) 
+            log.warn("    --> Unable to parse CAP feed - parse returned null");
+          else if ( parsed_cap.identifier == null ) 
+            log.warn("    --> Parsed CAP but no identifier present - may be no warnings in force message");
           completed_ok = true;
         }
       }
