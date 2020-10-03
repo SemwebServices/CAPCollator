@@ -13,6 +13,7 @@ class CAPEventConsumer {
   ]
 
   def handleMessage(def body, MessageContext context) {
+    log.info("CAPEventConsumer::handleMessage");
     capEventHandlerService.process(body);
   }
 }
