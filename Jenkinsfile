@@ -79,12 +79,14 @@ podTemplate(
 
     stage('Rolling Update') {
       if ( deploy_cfg != null ) {
-          println("Attempt to deploy : ${deploy_cfg}");
+          env.CONSTRUCTED_TAG = constructed_tag
+          println("Attempt to deploy : ${deploy_cfg}, env.CONSTRUCTED_TAG=${env.CONSTRUCTED_TAG}");
           kubernetesDeploy(
             // Credentials for k8s to run the required deployment commands
             kubeconfigId: 'local_k8s',
             // Definition of the deployment
             configs: "k8s/${deploy_cfg}",
+            enableConfigSubstitution: true
           )
       }
     }
