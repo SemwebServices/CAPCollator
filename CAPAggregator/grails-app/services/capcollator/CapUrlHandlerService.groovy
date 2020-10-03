@@ -154,8 +154,7 @@ class CapUrlHandlerService {
           def parsed_cap = parser.parse(new ByteArrayInputStream(alert_bytes));
           String alert_uuid = java.util.UUID.randomUUID().toString()
 
-          if ( ( parsed_cap != null ) && 
-               ( parsed_cap.identifier != null ) ) {
+          if ( ( parsed_cap != null ) && ( parsed_cap.identifier != null ) ) {
 
             def ts_3 = System.currentTimeMillis();
             log.debug("Managed to parse link, looks like CAP :: handleNotification ::\"${parsed_cap.identifier}\"");
@@ -216,11 +215,7 @@ class CapUrlHandlerService {
           }
         }
         else {
-          log.warn("${cap_link} (content type ${detected_content_type}) - unable to parse");
-          if ( parsed_cap == null ) 
-            log.warn("    --> Unable to parse CAP feed - parse returned null");
-          else if ( parsed_cap.identifier == null ) 
-            log.warn("    --> Parsed CAP but no identifier present - may be no warnings in force message");
+          log.warn("${cap_link} (content type ${detected_content_type}) - unable to parse or no identifier present");
           completed_ok = true;
         }
       }
