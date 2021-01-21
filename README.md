@@ -23,6 +23,7 @@ message fanout and durable delivery. There have been experiments running the ser
 There are many deployment options, the initial goal was for a local facade, but projects may also use the
 service internally to poll RSS and turn feeds into event streams.
 
+
 ### GeneralUser
 
     CREATE USER capcollator WITH PASSWORD 'capcollator';
