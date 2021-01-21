@@ -6,8 +6,8 @@ podTemplate(
     containerTemplate(name: 'docker',               image:'docker:18',                    ttyEnabled:true, command:'cat')
   ],
   volumes: [
-    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')
-    // hostPathVolume(hostPath: '/var/lib/jenkins/.gradledist', mountPath: '/root/.gradle')
+    hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+    hostPathVolume(hostPath: '/var/lib/jenkins/.gradledist', mountPath: '/home/jenkins/.gradle')
   ])
 {
   node(POD_LABEL) {
