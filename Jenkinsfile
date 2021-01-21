@@ -24,7 +24,7 @@ podTemplate(
       println("Got props: asString:${props} appVersion:${props.appVersion}/${props['appVersion']}/${semantic_version_components}");
       sh 'pwd'
       sh 'id'
-      sh 'echo branch:$BRANCH_NAME'
+      sh 'echo branch:branch:$BRANCH_NAME home:$HOME'
       sh 'echo commit:$checkout_details.GIT_COMMIT'
     }
 
@@ -34,6 +34,10 @@ podTemplate(
           sh './gradlew --no-daemon -x test -x integrationTest --console=plain clean build'
           sh 'ls -la ./build/libs/*'
           sh "cp build/libs/CAPAggregator-${props.appVersion}.war ../docker/CAPAggregator.war".toString()
+          sh 'ls -la ~'
+          sh 'ls -la ~/.gradle'
+          sh 'cd ~'
+          sh 'pwd'
         }
       }
     }
