@@ -87,6 +87,7 @@ class CapEventHandlerService {
 
     long start_time = System.currentTimeMillis();
     log.debug("CapEventHandlerService::process alert from ${cap_notification.AlertMetadata.sourceFeed})"); 
+    cap_notification.AlertMetadata.CCHistory.add(['event':'CC-spatial-processing-start','timestamp':System.currentTimeMillis()]);
 
     cap_notification.AlertMetadata.compound_identifier = new String(
                                      cap_notification.AlertMetadata.sourceFeed+'|'+
