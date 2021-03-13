@@ -6,7 +6,9 @@ to consume alerts that might be applicable in a specific place and with specific
 It runs on a server, usually in a docker-swarm orchestrated cluster, and harvests alerts from a configured collection of sources
 in order to maintain a comprehensive and searchable global index of all currently live CAP alerts, regardless of source.
 
-A demo system is available at [http://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
+The test system is available at [https://test.semweb.co/CAPAggregator/subscriptions/details/unfiltered?tag=mappable](https://test.semweb.co)
+
+Docker images for this module can be found at https://hub.docker.com/r/semweb/caphub_aggregator/tags
 
 This work has been kindly supported by UCAR Subaward SUBAWD001770
 
