@@ -6,7 +6,7 @@ import groovy.transform.CompileStatic
 import grails.plugins.DefaultGrailsPluginManager
 import org.springframework.boot.web.embedded.undertow.UndertowBuilderCustomizer
 import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory
-import io.micronaut.context.annotation.Bean
+import org.springframework.context.annotation.Bean
 import io.undertow.Undertow.Builder
 import io.undertow.UndertowOptions
 import groovy.util.logging.Slf4j
