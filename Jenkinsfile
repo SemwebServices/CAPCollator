@@ -91,6 +91,7 @@ podTemplate(
       //       enableConfigSubstitution: true
       //     )
       // }
+      env.CONSTRUCTED_TAG = constructed_tag
       String deployment_template = 'k8s/'+deploy_cfg
       String target_namespace = 'swcaptest'
 
