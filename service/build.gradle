@@ -10,6 +10,10 @@ buildscript {
     }
 }
 
+plugins {
+  id "com.google.cloud.tools.jib" version "3.1.1"
+}
+
 version "${appVersion}"
 group "capaggregator"
 
@@ -20,6 +24,9 @@ apply plugin:"org.grails.grails-web"
 apply plugin:"com.github.erdi.webdriver-binaries"
 apply plugin:"org.grails.grails-gsp"
 apply plugin:"com.bertramlabs.asset-pipeline"
+
+Map<String, String> env = System.getenv()
+String version_components = appVersion.split('\\.')
 
 repositories {
     maven { url "https://repo.grails.org/grails/core" }
@@ -124,3 +131,47 @@ assets {
     minifyJs = true
     minifyCss = true
 }
+
+jib {
+  from {
+    image = "gcr.io/distroless/java:11"
+  }
+  to {
+    image = "docker.semweb.co/semweb/caphub_feedfacade"
+    if ( appVersion.contains('SNAPSHOT') ) {
+      if ( env.CONSTRUCTED_TAG ) { 
+        tags = ['snapshot-latest', "${env.CONSTRUCTED_TAG}" ]
+      }
+      else { 
+        tags = ['snapshot-latest']
+      }
+    }
+    else { 
+      if ( env.CONSTRUCTED_TAG ) {
+        tags = ['latest', "${env.CONSTRUCTED_TAG}", "$version_components[0]", "${version_components[0]}.${version_components[1]}" ]
+      }
+      else { 
+        tags = ['latest', "$version_components[0]", "${version_components[0]}.${version_components[1]}" ]
+      }
+    }
+  }
+  extraDirectories.paths {
+    // tasks.compileGsonViews.outputs.files.each { fileEntry ->
+    //   path {
+    //     from = fileEntry
+    //     into = '/app/gson-classes'
+    //   }
+    // }
+  }
+  container {
+    // jvmFlags = ['-Dmy.property=example.value', '-Xms512m', '-Xdebug']
+    // mainClass = 'mypackage.MyApp'
+    // args = ['some', 'args']
+    // ports = ['1000', '2000-2003/udp']
+    // labels = [key1:'value1', key2:'value2']
+    // format = 'OCI'
+    extraClasspath = ['/app/gson-classes']
+    ports = ['8080'] // This is the default grails port.
+  }
+}
+

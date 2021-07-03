@@ -1,0 +1,12 @@
+rootProject.name = "${appName}"
+
+// Check for local file too. File should be at same level as this file and named "_settings.gradle"
+File localSettings = new File(rootProject.projectDir, './_settings.gradle')
+
+println 'Checking for local settings at ' + localSettings.getCanonicalPath()
+
+if (localSettings.exists()) {
+  println "Found local settings..."
+  apply from: '_settings.gradle'
+}
+
