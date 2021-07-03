@@ -137,7 +137,7 @@ jib {
     image = "gcr.io/distroless/java:11"
   }
   to {
-    image = "docker.semweb.co/semweb/caphub_feedfacade"
+    image = "docker.semweb.co/semweb/caphub_aggregator"
     if ( appVersion.contains('SNAPSHOT') ) {
       if ( env.CONSTRUCTED_TAG ) { 
         tags = ['snapshot-latest', "${env.CONSTRUCTED_TAG}" ]
