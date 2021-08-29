@@ -22,6 +22,7 @@ import org.apache.http.client.config.RequestConfig
 class CapUrlHandlerService {
 
   private static int MAX_HTTP_TIME = 4*1000; // 4s
+  private static byte[] stylesheet_pattern = '<?xml-stylesheet href='.getBytes();
 
   RabbitMessagePublisher rabbitMessagePublisher
   def eventService
@@ -146,6 +147,10 @@ class CapUrlHandlerService {
 
           byte[] alert_bytes = response_content.getBytes()
 
+          // It would be nice to see if we can extract any stylesheet referenced as <?xml-stylesheet href='capatomproduct.xsl' type='text/xsl'?>
+          // from the first n bytes
+          String xml_stylesheet = findStylesheet(alert_bytes)
+
           String cached_alert_xml = staticFeedService.writeAlertXML(alert_bytes, source_feed, new Date(ts_2))
 
           parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
@@ -183,6 +188,7 @@ class CapUrlHandlerService {
               log.info("Alert processing exceeded LONG_ALERT_THRESHOLD(${elapsed}) ${cap_link}");
             }
 
+            alert_metadata.detectedStylesheetPI = xml_stylesheet
             alert_metadata.PrivateSourceUrl = cap_link
             alert_metadata.SourceUrl = original_cap_link
             alert_metadata.capCollatorUUID = alert_uuid;
@@ -246,6 +252,55 @@ class CapUrlHandlerService {
         log.debug("CAP URL Checker Task Complete");
       }
     }
+  }
+
+  private String findStylesheet(byte[] alert_bytes) {
+    int start_of_stylesheet =  indexOf(alert_bytes, stylesheet_pattern);
+    String stylesheet=null;
+    if ( start_of_stylesheet ) {
+      log.debug("Stylesheet directive starts at ${start_of_stylesheet}");
+    }
+    return stylesheet;
+  }
+
+  public static int indexOf(byte[] data, byte[] pattern) {
+    int[] failure = computeFailure(pattern);
+
+    int j = 0;
+
+    for (int i = 0; i < data.length; i++) {
+      while (j > 0 && pattern[j] != data[i]) {
+        j = failure[j - 1];
+      }
+      if (pattern[j] == data[i]) { 
+        j++; 
+      }
+      if (j == pattern.length) {
+        return i - pattern.length + 1;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Computes the failure function using a boot-strapping process,
+   * where the pattern is matched against itself.
+   */
+  private int[] computeFailure(byte[] pattern) {
+    int[] failure = new int[pattern.length];
+
+    int j = 0;
+    for (int i = 1; i < pattern.length; i++) {
+      while (j>0 && pattern[j] != pattern[i]) {
+        j = failure[j - 1];
+      }
+      if (pattern[j] == pattern[i]) {
+        j++;
+      }
+      failure[i] = j;
+    }
+
+    return failure;
   }
   
   def domNodeToString(node) {
