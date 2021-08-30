@@ -493,7 +493,9 @@ class StaticFeedService {
             // return ( b_date ).compareTo( a_date )
             // return ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
             // Using updated without a namespace should select any element "updated" - be that a:updated or cap:updated
-            return ( b.'updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
+            String a_date = a.getAt(atomns.'updated')?.text()
+            String b_date = b.getAt(atomns.'updated')?.text()
+            return ( b_date ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a_date ?: 'zzz'+(a.name().toString() ) ) )
           }
 
           if ( xml.channel[0].lastBuildDate.size() == 0 ) {
