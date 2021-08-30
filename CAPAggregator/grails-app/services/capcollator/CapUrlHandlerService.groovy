@@ -255,11 +255,11 @@ class CapUrlHandlerService {
   }
 
   private String findStylesheet(byte[] alert_bytes) {
-    int start_of_stylesheet =  indexOf(alert_bytes, stylesheet_pattern);
+    // int start_of_stylesheet =  indexOf(alert_bytes, stylesheet_pattern);
     String stylesheet=null;
-    if ( start_of_stylesheet ) {
-      log.debug("Stylesheet directive starts at ${start_of_stylesheet}");
-    }
+    // if ( start_of_stylesheet ) {
+    //   log.debug("Stylesheet directive starts at ${start_of_stylesheet}");
+    // }
     return stylesheet;
   }
 
@@ -286,7 +286,7 @@ class CapUrlHandlerService {
    * Computes the failure function using a boot-strapping process,
    * where the pattern is matched against itself.
    */
-  private int[] computeFailure(byte[] pattern) {
+  private static int[] computeFailure(byte[] pattern) {
     int[] failure = new int[pattern.length];
 
     int j = 0;
