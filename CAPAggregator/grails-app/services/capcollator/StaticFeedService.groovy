@@ -471,13 +471,19 @@ class StaticFeedService {
 
           def new_item_node = xml.channel[0].appendNode( 'item' );
           new_item_node.appendNode( 'title', "${feed_entry_prefix}${entry_title}${feed_entry_postfix}".toString() );
-          new_item_node.appendNode( 'link', "${feed_base_url}/${cached_alert_file}".toString());
+          // if ( node?.AlertMetadata?.hasStylesheet == 'Y' ) {
+            new_item_node.appendNode( 'link', node?.AlertMetadata?.SourceUrl )
+          // }
+          // else {
+          //   new_item_node.appendNode( 'link', "${feed_base_url}/${cached_alert_file}".toString());
+          // }
           new_item_node.appendNode( 'description', info?.description);
           new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
           new_item_node.appendNode( atomns.'updated', entry_updated_date )
           new_item_node.appendNode( ccns.'sourceFeed', node?.AlertMetadata.sourceFeed )
           new_item_node.appendNode( ccns.'alertId', node?.AlertMetadata?.capCollatorUUID )
           new_item_node.appendNode( ccns.'isoPubDate', iso_pub_date);
+          new_item_node.appendNode( ccns.'preservationCopy', "${feed_base_url}/${cached_alert_file}".toString() );
     
           //      //'dc:creator'('creator')
           //      //'dc:date'('date')
