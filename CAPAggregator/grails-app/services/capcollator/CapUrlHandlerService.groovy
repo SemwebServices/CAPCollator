@@ -189,6 +189,7 @@ class CapUrlHandlerService {
             }
 
             alert_metadata.detectedStylesheetPI = xml_stylesheet
+            alert_metadata.hasStylesheet = (xml_stylesheet == null) ? 'N' : 'Y'
             alert_metadata.PrivateSourceUrl = cap_link
             alert_metadata.SourceUrl = original_cap_link
             alert_metadata.capCollatorUUID = alert_uuid;
@@ -255,20 +256,33 @@ class CapUrlHandlerService {
   }
 
   private String findStylesheet(byte[] alert_bytes) {
-    // int start_of_stylesheet =  indexOf(alert_bytes, stylesheet_pattern);
     String stylesheet=null;
-    // if ( start_of_stylesheet ) {
-    //   log.debug("Stylesheet directive starts at ${start_of_stylesheet}");
-    // }
+    int start_of_pi =  indexOf(alert_bytes, stylesheet_pattern, 350);
+    if ( start_of_pi >= 0 ) {
+      int start_of_stylesheet = start_of_pi+22;
+      byte quote_char = alert_bytes[start_of_stylesheet]
+      int end_of_stylesheet = 0;
+      for ( int i=start_of_stylesheet+1; (end_of_stylesheet==0)&&(i<250) ; i++ ) {
+        if ( alert_bytes[i] == quote_char ) {
+          end_of_stylesheet = i;
+        }
+        else {
+          // println("skip ${alert_bytes[i] as char} (${alert_bytes[i]} looking for ${quote_char})");
+        }
+      }
+      if ( end_of_stylesheet != 0 ) {
+        stylesheet = new String(Arrays.copyOfRange(alert_bytes, start_of_stylesheet+1, end_of_stylesheet))
+      }
+    }
     return stylesheet;
   }
 
-  public static int indexOf(byte[] data, byte[] pattern) {
+  private static int indexOf(byte[] data, byte[] pattern, max_search) {
     int[] failure = computeFailure(pattern);
 
     int j = 0;
 
-    for (int i = 0; i < data.length; i++) {
+    for (int i = 0; ( ( i < data.length ) && ( i < max_search ) ); i++) {
       while (j > 0 && pattern[j] != data[i]) {
         j = failure[j - 1];
       }
