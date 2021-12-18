@@ -50,6 +50,7 @@ class CapEventHandlerService {
   def gazService
   def feedFeedbackService
   def capUrlHandlerService
+  def grailsApplication
 
   int active_tasks = 0;
 
@@ -87,6 +88,7 @@ class CapEventHandlerService {
 
     long start_time = System.currentTimeMillis();
     log.debug("CapEventHandlerService::process alert from ${cap_notification.AlertMetadata.sourceFeed})"); 
+    cap_notification.AlertMetadata.CCHistory.add(['event':'CC-spatial-processing-start','timestamp':System.currentTimeMillis()]);
 
     cap_notification.AlertMetadata.compound_identifier = new String(
                                      cap_notification.AlertMetadata.sourceFeed+'|'+
@@ -321,6 +323,19 @@ class CapEventHandlerService {
                                                  matchedSubscriptions:matching_subscriptions,
                                                  tags:cap_notification.AlertMetadata.tags,
                                                  history:cap_notification.AlertMetadata.CCHistory] );
+
+          if ( grailsApplication.config.fah.MQTTDeliver == 'on' ) {
+            log.debug("Delivering to amq.topic exchange");
+            rabbitMessagePublisher.send {
+              exchange = "amq.topic"
+              routingKey = "GEO_SEARCH_ERROR / ${cap_notification?.AlertMetadata.compound_identifier}"
+              body = [ key: "GEO_SEARCH_ERROR / ${cap_notification?.AlertMetadata.compound_identifier}",
+                       message: cap_notification?.AlertMetadata.spatialErrorDetail,
+                       matchedSubscriptions:matching_subscriptions,
+                       tags:cap_notification.AlertMetadata.tags,
+                       history:cap_notification.AlertMetadata.CCHistory]
+            }
+          }
         }
       }
       else {
@@ -360,6 +375,15 @@ class CapEventHandlerService {
                 exchange = "CAPExchange"
                 routingKey = 'CAPSubMatch.'+sub_id
                 body = cap_notification
+          }
+
+          if ( grailsApplication.config.fah.MQTTDeliver == 'on' ) {
+            log.debug("Delivering to amq.topic exchange");
+            rabbitMessagePublisher.send {
+              exchange = "amq.topic"
+              routingKey = 'CAPSubMatch.'+sub_id
+              body = cap_notification
+            }
           }
         }
       }

@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cc-ingress
+  namespace: swcaptest
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "x-tenant,authorization,content-type"
+spec:
+  tls:
+  - hosts:
+    - test.semweb.co
+    secretName: sw-co-test-letsencrypt-prod-cert
+  rules:
+  - host: test.semweb.co
+    http:
+      paths:
+      - path: /CAPAggregator
+        pathType: Prefix
+        backend:
+          service: 
+            name: cc-service
+            port:
+              number: 8080
