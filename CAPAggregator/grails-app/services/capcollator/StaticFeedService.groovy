@@ -471,13 +471,19 @@ class StaticFeedService {
 
           def new_item_node = xml.channel[0].appendNode( 'item' );
           new_item_node.appendNode( 'title', "${feed_entry_prefix}${entry_title}${feed_entry_postfix}".toString() );
-          new_item_node.appendNode( 'link', "${feed_base_url}/${cached_alert_file}".toString());
+          if ( node?.AlertMetadata?.hasStylesheet == 'Y' ) {
+            new_item_node.appendNode( 'link', node?.AlertMetadata?.SourceUrl )
+          }
+          else {
+            new_item_node.appendNode( 'link', "${feed_base_url}/${cached_alert_file}".toString());
+          }
           new_item_node.appendNode( 'description', info?.description);
           new_item_node.appendNode( 'pubDate', formatted_pub_date ?: node?.AlertBody?.sent);
           new_item_node.appendNode( atomns.'updated', entry_updated_date )
           new_item_node.appendNode( ccns.'sourceFeed', node?.AlertMetadata.sourceFeed )
           new_item_node.appendNode( ccns.'alertId', node?.AlertMetadata?.capCollatorUUID )
           new_item_node.appendNode( ccns.'isoPubDate', iso_pub_date);
+          new_item_node.appendNode( ccns.'preservationCopy', "${feed_base_url}/${cached_alert_file}".toString() );
     
           //      //'dc:creator'('creator')
           //      //'dc:date'('date')
@@ -486,21 +492,16 @@ class StaticFeedService {
     
           // The true asks the sort to mutate the source list. Source elements without a pubDate element high - so the none item
           // entries float to the top of the list
-          def pubdate_parse_format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
           xml.channel[0].children().sort(true) { a,b ->
             // Compare the isoPubDate if it's present, otherwise parse the pubDate and use that
-           
-
-            String a_date = 'zzz';
-            String b_date = 'zzz';
-            if ( ( a.pubDate?.text() != null ) && ( a.pubDate?.text().length() > 0 ) )
-              a_date = iso_utc_formatter.format(pubdate_parse_format.parse(a.pubDate?.text()))
-
-            if ( ( b.pubDate?.text() != null ) && ( b.pubDate?.text().length() > 0 ) )
-              b_date = iso_utc_formatter.format(pubdate_parse_format.parse(b.pubDate?.text()))
-
-            // result = ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
-            return ( b_date ).compareTo( a_date )
+            // String a_date = getDateAsStringForSort(a.pubDate?.text())
+            // String b_date = getDateAsStringForSort(b.pubDate?.text())
+            // return ( b_date ).compareTo( a_date )
+            // return ( b.'atom:updated'?.text() ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a.'atom:updated'?.text() ?: 'zzz'+(a.name().toString() ) ) )
+            // Using updated without a namespace should select any element "updated" - be that a:updated or cap:updated
+            String a_date = a.getAt(atomns.'updated')?.text()
+            String b_date = b.getAt(atomns.'updated')?.text()
+            return ( b_date ?: 'zzz'+(b.name().toString() ) ).compareTo( ( a_date ?: 'zzz'+(a.name().toString() ) ) )
           }
 
           if ( xml.channel[0].lastBuildDate.size() == 0 ) {
@@ -547,6 +548,17 @@ class StaticFeedService {
     else {
       log.warn("Missing alert uuid");
     }
+  }
+
+  private String getDateAsStringForSort(String pubdate) {
+    def pubdate_parse_format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
+    String result = 'zzz'
+    if ( ( pubdate != null ) && ( pubdate.length() > 0 ) ) {
+      def iso_utc_formatter = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ')
+      iso_utc_formatter.setTimeZone(timeZone_utc);
+      result = iso_utc_formatter.format(pubdate_parse_format.parse(pubdate))
+    }
+    return result;
   }
 
   private Map getFirstInfoSection(node) {

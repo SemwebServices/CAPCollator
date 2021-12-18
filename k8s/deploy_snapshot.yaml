@@ -27,7 +27,7 @@ spec:
         - containerPort: 8080
         env:
           - name: UNUSED_PROP
-            value: "jdbc:postgresql://pg12-postgresql.default:5432/capcollator"
+            value: "jdbc:postgresql://postgres.shared:5432/capcollator"
           - name: BUILD_TAG
             value: $CONSTRUCTED_TAG
         envFrom:

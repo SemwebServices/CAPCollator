@@ -1,3 +1,5 @@
+# This repository has moved to https://gitlab.com/alert-hub-org/capaggregator
+
 # About
 
 CAPCollator is a component in a service oriented middleware system that bridges the gap between the diverse set of Common Alerting 
@@ -6,7 +8,9 @@ to consume alerts that might be applicable in a specific place and with specific
 It runs on a server, usually in a docker-swarm orchestrated cluster, and harvests alerts from a configured collection of sources
 in order to maintain a comprehensive and searchable global index of all currently live CAP alerts, regardless of source.
 
-A demo system is available at [http://demo.semweb.co/CAPCollator](https://demo.semweb.co/CAPCollator)
+The test system is available at [https://test.semweb.co/CAPAggregator/subscriptions/details/unfiltered?tag=mappable](https://test.semweb.co)
+
+Docker images for this module can be found at https://hub.docker.com/r/semweb/caphub_aggregator/tags
 
 This work has been kindly supported by UCAR Subaward SUBAWD001770
 
@@ -22,6 +26,7 @@ message fanout and durable delivery. There have been experiments running the ser
 
 There are many deployment options, the initial goal was for a local facade, but projects may also use the
 service internally to poll RSS and turn feeds into event streams.
+
 
 ### GeneralUser
 
@@ -93,3 +98,4 @@ CAPCollator can track usage using google analytics. Add your GTM Code to TOMCAT_
 Example ATOM feed
 
 https://alert-feeds.s3.amazonaws.com/unfiltered/rss.xml
+

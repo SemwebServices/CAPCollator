@@ -22,6 +22,7 @@ import org.apache.http.client.config.RequestConfig
 class CapUrlHandlerService {
 
   private static int MAX_HTTP_TIME = 4*1000; // 4s
+  private static byte[] stylesheet_pattern = '<?xml-stylesheet href='.getBytes();
 
   RabbitMessagePublisher rabbitMessagePublisher
   def eventService
@@ -146,6 +147,10 @@ class CapUrlHandlerService {
 
           byte[] alert_bytes = response_content.getBytes()
 
+          // It would be nice to see if we can extract any stylesheet referenced as <?xml-stylesheet href='capatomproduct.xsl' type='text/xsl'?>
+          // from the first n bytes
+          String xml_stylesheet = findStylesheet(alert_bytes)
+
           String cached_alert_xml = staticFeedService.writeAlertXML(alert_bytes, source_feed, new Date(ts_2))
 
           parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false) 
@@ -183,6 +188,8 @@ class CapUrlHandlerService {
               log.info("Alert processing exceeded LONG_ALERT_THRESHOLD(${elapsed}) ${cap_link}");
             }
 
+            alert_metadata.detectedStylesheetPI = xml_stylesheet
+            alert_metadata.hasStylesheet = (xml_stylesheet == null) ? 'N' : 'Y'
             alert_metadata.PrivateSourceUrl = cap_link
             alert_metadata.SourceUrl = original_cap_link
             alert_metadata.capCollatorUUID = alert_uuid;
@@ -246,6 +253,68 @@ class CapUrlHandlerService {
         log.debug("CAP URL Checker Task Complete");
       }
     }
+  }
+
+  private String findStylesheet(byte[] alert_bytes) {
+    String stylesheet=null;
+    int start_of_pi =  indexOf(alert_bytes, stylesheet_pattern, 350);
+    if ( start_of_pi >= 0 ) {
+      int start_of_stylesheet = start_of_pi+22;
+      byte quote_char = alert_bytes[start_of_stylesheet]
+      int end_of_stylesheet = 0;
+      for ( int i=start_of_stylesheet+1; (end_of_stylesheet==0)&&(i<250) ; i++ ) {
+        if ( alert_bytes[i] == quote_char ) {
+          end_of_stylesheet = i;
+        }
+        else {
+          // println("skip ${alert_bytes[i] as char} (${alert_bytes[i]} looking for ${quote_char})");
+        }
+      }
+      if ( end_of_stylesheet != 0 ) {
+        stylesheet = new String(Arrays.copyOfRange(alert_bytes, start_of_stylesheet+1, end_of_stylesheet))
+      }
+    }
+    return stylesheet;
+  }
+
+  private static int indexOf(byte[] data, byte[] pattern, max_search) {
+    int[] failure = computeFailure(pattern);
+
+    int j = 0;
+
+    for (int i = 0; ( ( i < data.length ) && ( i < max_search ) ); i++) {
+      while (j > 0 && pattern[j] != data[i]) {
+        j = failure[j - 1];
+      }
+      if (pattern[j] == data[i]) { 
+        j++; 
+      }
+      if (j == pattern.length) {
+        return i - pattern.length + 1;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Computes the failure function using a boot-strapping process,
+   * where the pattern is matched against itself.
+   */
+  private static int[] computeFailure(byte[] pattern) {
+    int[] failure = new int[pattern.length];
+
+    int j = 0;
+    for (int i = 1; i < pattern.length; i++) {
+      while (j>0 && pattern[j] != pattern[i]) {
+        j = failure[j - 1];
+      }
+      if (pattern[j] == pattern[i]) {
+        j++;
+      }
+      failure[i] = j;
+    }
+
+    return failure;
   }
   
   def domNodeToString(node) {
