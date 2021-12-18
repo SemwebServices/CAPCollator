@@ -1,3 +1,5 @@
+# This repository has moved to https://gitlab.com/alert-hub-org/capaggregator
+
 # About
 
 CAPCollator is a component in a service oriented middleware system that bridges the gap between the diverse set of Common Alerting 
