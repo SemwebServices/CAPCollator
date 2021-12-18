@@ -1,4 +1,4 @@
-# This repository has moved to https://gitlab.com/alert-hub-org/capaggregator
+# This repository has moved to https://gitlab.com/alert-hub-org/CAPCollator
 
 # About
 
